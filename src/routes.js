@@ -8,6 +8,7 @@ import Tables from "views/examples/Tables.js";
 import Icons from "views/examples/Icons.js";
 import Dashboard from './Gasoline/Dashboard/Dashboard.js';
 import DashboardPagos from "Payment/pages/DashboardPagos.js"; 
+import Pinturas from "views/examples/TallerPinturas.js";
 
 /* Iconos*/ 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -80,5 +81,12 @@ var routes = [
     component: <Register />,
     layout: "/auth",
   },
+  {
+    path: "/Pinturas",
+    name: "Taller de pintura",
+    icon: "ni ni-palette",
+    component: <Pinturas/>,
+    layout: "/propio",
+  }
 ];
 export default routes;
