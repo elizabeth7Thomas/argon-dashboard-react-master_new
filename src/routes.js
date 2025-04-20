@@ -86,7 +86,7 @@ var routes = [
     name: "Taller de pintura",
     icon: "ni ni-palette",
     component: <Pinturas/>,
-    layout: "/propio",
+    layout: "/tallerPintura",
   }
 ];
 export default routes;
