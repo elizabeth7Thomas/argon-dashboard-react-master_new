@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Modal,
   ModalHeader,
@@ -11,8 +11,16 @@ import {
   Input,
 } from "reactstrap";
 
-const ModalAgregarTipoPintura = ({ isOpen, toggle, onSubmit }) => {
+const ModalAgregarTipoPintura = ({ isOpen, toggle, onSubmit, modoEdicion = false, tipoEditar = null }) => {
   const [form, setForm] = useState({ NombreTipoPintura: "" });
+
+  useEffect(() => {
+    if (modoEdicion && tipoEditar) {
+      setForm({ NombreTipoPintura: tipoEditar.NombreTipoPintura });
+    } else {
+      setForm({ NombreTipoPintura: "" });
+    }
+  }, [modoEdicion, tipoEditar]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -27,28 +35,27 @@ const ModalAgregarTipoPintura = ({ isOpen, toggle, onSubmit }) => {
 
   return (
     <Modal isOpen={isOpen} toggle={toggle}>
-      <ModalHeader toggle={toggle}>Agregar Tipo de Pintura</ModalHeader>
+      <ModalHeader toggle={toggle}>
+        {modoEdicion ? "Editar Tipo de Pintura" : "Agregar Tipo de Pintura"}
+      </ModalHeader>
       <ModalBody>
         <Form>
           <FormGroup>
-            <Label for="NombreTipoPintura">Nombre del Tipo de Pintura</Label>
+            <Label>Nombre del Tipo de Pintura</Label>
             <Input
               type="text"
               name="NombreTipoPintura"
               value={form.NombreTipoPintura}
               onChange={handleChange}
-              placeholder="Ej: Azul metálico"
             />
           </FormGroup>
         </Form>
       </ModalBody>
       <ModalFooter>
         <Button color="primary" onClick={handleSubmit}>
-          Agregar
+          {modoEdicion ? "Guardar Cambios" : "Agregar"}
         </Button>
-        <Button color="secondary" onClick={toggle}>
-          Cancelar
-        </Button>
+        <Button color="secondary" onClick={toggle}>Cancelar</Button>
       </ModalFooter>
     </Modal>
   );

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button,DropdownItem,DropdownToggle,DropdownMenu,UncontrolledDropdown } from "reactstrap";
+import { Table, Button,DropdownItem,DropdownToggle,DropdownMenu,UncontrolledDropdown, Container, Card } from "reactstrap";
 import ModalAgregarMovimiento from "./ModalAgregarMovimiento";
+import HeaderTallerPintura from "components/Headers/HeaderTallerPintura";
 
 const TablaMovimientos = (onEditarClick,onVerClick) => {
   const [movimientos, setMovimientos] = useState([]);
@@ -36,9 +37,12 @@ const TablaMovimientos = (onEditarClick,onVerClick) => {
 
   return (
     <>
+    <HeaderTallerPintura/>
+    <Container className="mt--7" fluid>
       <Button color="info" onClick={toggleModal}>
         Agregar Movimiento
       </Button>
+      <Card className="shadow p-4 mb-4">
       <Table className="align-items-center table-flush" responsive>
         <thead className="thead-light">
           <tr>
@@ -84,6 +88,8 @@ const TablaMovimientos = (onEditarClick,onVerClick) => {
         toggle={toggleModal}
         onSubmit={agregarMovimiento}
       />
+      </Card>
+      </Container>
     </>
   );
 };

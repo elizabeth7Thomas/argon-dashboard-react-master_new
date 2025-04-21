@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, UncontrolledDropdown,DropdownItem,DropdownMenu,DropdownToggle } from "reactstrap";
-import ModalAgregarDevolucion from "./ModalAgregarDevolucion";
+import { Table,Container, Button, UncontrolledDropdown,DropdownItem,DropdownMenu,DropdownToggle, Card } from "reactstrap";
+import ModalAgregarDevolucion from "../Modals/ModalAgregarDevolucion";
+import HeaderTallerPintura from "components/Headers/HeaderTallerPintura";
 
 const TablaDevoluciones = ({onEditarClick, onVerClick}) => {
   const [devoluciones, setDevoluciones] = useState([]);
@@ -36,9 +37,12 @@ const TablaDevoluciones = ({onEditarClick, onVerClick}) => {
 
   return (
     <>
-      <Button color="warning" onClick={toggleModal}>
+    <HeaderTallerPintura/>
+    <Container className="mt--7" fluid>
+      <Button color="primary" onClick={toggleModal}>
         Registrar Devolución
       </Button>
+      <Card className="shadow p-4 mb-4">
       <Table striped>
         <thead>
           <tr>
@@ -79,11 +83,9 @@ const TablaDevoluciones = ({onEditarClick, onVerClick}) => {
           )}
         </tbody>
       </Table>
-      <ModalAgregarDevolucion
-        isOpen={modal}
-        toggle={toggleModal}
-        onSubmit={agregarDevolucion}
-      />
+      <ModalAgregarDevolucion isOpen={modal} toggle={toggleModal} onSubmit={agregarDevolucion}/>
+      </Card>
+      </Container>
     </>
   );
 };

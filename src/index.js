@@ -39,6 +39,17 @@ import AdminLayout from "layouts/Admin.js";
 import AuthLayout from "layouts/Auth.js";
 /*IMPORTACION DE TALLER PINTURA */
 import TallerPinturaLayout from "layouts/TallerPintura.js";
+
+import TablaServicios from "components/TallerPintura/Tables/TablaServicios";
+import TablaDevoluciones from "components/TallerPintura/Tables/TablaDevoluciones";
+import TablaTipoPinturas from "components/TallerPintura/Tables/TablaTipoPinturas";
+import TablaTiposServicios from "components/TallerPintura/Tables/TablaTiposServicios";
+import TablaTiposVehiculos from "components/TallerPintura/Tables/TablaTiposVehiculos";
+import TablaInventarios from "components/TallerPintura/Tables/TablaInventarios";
+import TablaVentas from "components/TallerPintura/Tables/TablaVentas";
+import TablaPrecioServicio from "components/TallerPintura/Tables/TablaPrecioServicio";
+import TablaInventarioVehiculos from "components/TallerPintura/Tables/TablaInventarioVehiculos";
+
 /*IMPORTACION DE ADMINISTRACION */
 import Administracion from "layouts/Administracion.js";
 

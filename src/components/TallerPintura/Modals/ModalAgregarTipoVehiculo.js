@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Modal,
   ModalHeader,
@@ -11,8 +11,16 @@ import {
   Input,
 } from "reactstrap";
 
-const ModalAgregarTipoVehiculo = ({ isOpen, toggle, onSubmit }) => {
+const ModalAgregarTipoVehiculo = ({ isOpen, toggle, onSubmit, modoEdicion = false, tipoEditar = null }) => {
   const [form, setForm] = useState({ NombreTipoVehiculo: "" });
+
+  useEffect(() => {
+    if (modoEdicion && tipoEditar) {
+      setForm({ NombreTipoVehiculo: tipoEditar.NombreTipoVehiculo });
+    } else {
+      setForm({ NombreTipoVehiculo: "" });
+    }
+  }, [modoEdicion, tipoEditar]);
 
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -27,7 +35,9 @@ const ModalAgregarTipoVehiculo = ({ isOpen, toggle, onSubmit }) => {
 
   return (
     <Modal isOpen={isOpen} toggle={toggle}>
-      <ModalHeader toggle={toggle}>Agregar Tipo de Vehículo</ModalHeader>
+      <ModalHeader toggle={toggle}>
+        {modoEdicion ? "Editar Tipo de Vehículo" : "Agregar Tipo de Vehículo"}
+      </ModalHeader>
       <ModalBody>
         <Form>
           <FormGroup>
@@ -43,7 +53,7 @@ const ModalAgregarTipoVehiculo = ({ isOpen, toggle, onSubmit }) => {
       </ModalBody>
       <ModalFooter>
         <Button color="primary" onClick={handleSubmit}>
-          Agregar
+          {modoEdicion ? "Guardar Cambios" : "Agregar"}
         </Button>
         <Button color="secondary" onClick={toggle}>
           Cancelar

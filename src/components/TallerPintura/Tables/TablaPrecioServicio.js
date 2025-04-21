@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button,DropdownItem,DropdownMenu,DropdownToggle,UncontrolledDropdown } from "reactstrap";
+import { Table, Button,DropdownItem,DropdownMenu,DropdownToggle,UncontrolledDropdown, Container, Card } from "reactstrap";
 import ModalAgregarPrecioServicio from "../Modals/ModalAgregarPrecioServicio";
+import HeaderTallerPintura from "components/Headers/HeaderTallerPintura";
 
 const TablaPrecioServicio = (onEditarClick,onVerClick) => {
   const [precios, setPrecios] = useState([]);
@@ -30,9 +31,12 @@ const TablaPrecioServicio = (onEditarClick,onVerClick) => {
 
   return (
     <>
+    <HeaderTallerPintura/>
+    <Container className="mt--7" fluid>
       <Button color="primary" onClick={toggleModal}>
         Agregar Precio Servicio
       </Button>
+      <Card className="shadow p-4 mb-4">
       <Table className="align-items-center table-flush" responsive>
         <thead className="thead-light">
           <tr>
@@ -77,11 +81,9 @@ const TablaPrecioServicio = (onEditarClick,onVerClick) => {
           )}
         </tbody>
       </Table>
-      <ModalAgregarPrecioServicio
-        isOpen={modal}
-        toggle={toggleModal}
-        onSubmit={agregarPrecio}
-      />
+      <ModalAgregarPrecioServicio isOpen={modal} toggle={toggleModal} onSubmit={agregarPrecio}/>
+      </Card>
+      </Container>
     </>
   );
 };

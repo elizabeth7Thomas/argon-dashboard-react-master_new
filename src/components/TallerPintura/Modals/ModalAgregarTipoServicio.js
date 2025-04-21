@@ -15,19 +15,32 @@ const ModalAgregarTipoServicio = ({ isOpen, toggle, onSubmit }) => {
   const [form, setForm] = useState({
     NombreTipo: "",
     PrecioBase: "",
-    idServicio: ""
+    idServicio: "",
   });
 
   const [servicios, setServicios] = useState([]);
+  const [loading, setLoading] = useState(true);  // Agregamos un estado de carga
+  const [error, setError] = useState("");  // Para manejar errores
 
   const obtenerServicios = async () => {
-    const res = await fetch("http://localhost:8000/pintura/GET/servicios");
-    const data = await res.json();
-    setServicios(data);
+    try {
+      const res = await fetch("http://localhost:8000/pintura/GET/servicios");
+      if (!res.ok) throw new Error("No se pudo obtener los servicios");
+      const data = await res.json();
+      setServicios(data);  // Guardamos los servicios solo si la respuesta es válida
+    } catch (err) {
+      setError(err.message);  // Guardamos el mensaje de error si algo falla
+    } finally {
+      setLoading(false);  // Terminamos de cargar
+    }
   };
 
   useEffect(() => {
-    if (isOpen) obtenerServicios();
+    if (isOpen) {
+      setLoading(true);  // Cuando se abre el modal, comenzamos a cargar
+      setError("");  // Limpiamos cualquier error anterior
+      obtenerServicios();
+    }
   }, [isOpen]);
 
   const handleChange = (e) => {
@@ -63,19 +76,25 @@ const ModalAgregarTipoServicio = ({ isOpen, toggle, onSubmit }) => {
           </FormGroup>
           <FormGroup>
             <Label for="idServicio">Servicio Relacionado</Label>
-            <Input
-              type="select"
-              name="idServicio"
-              value={form.idServicio}
-              onChange={handleChange}
-            >
-              <option value="">Selecciona un servicio</option>
-              {servicios.map((s) => (
-                <option key={s.idServicio} value={s.idServicio}>
-                  {s.NombreServicio}
-                </option>
-              ))}
-            </Input>
+            {loading ? (
+              <div>Cargando servicios...</div>
+            ) : error ? (
+              <div>Error: {error}</div>
+            ) : (
+              <Input
+                type="select"
+                name="idServicio"
+                value={form.idServicio}
+                onChange={handleChange}
+              >
+                <option value="">Selecciona un servicio</option>
+                {servicios.map((s) => (
+                  <option key={s.idServicio} value={s.idServicio}>
+                    {s.NombreServicio}
+                  </option>
+                ))}
+              </Input>
+            )}
           </FormGroup>
         </Form>
       </ModalBody>

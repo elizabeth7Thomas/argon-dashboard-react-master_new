@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button, UncontrolledDropdown,DropdownItem,DropdownMenu,DropdownToggle} from "reactstrap";
-import ModalAgregarInventarioVehiculo from "./ModalAgregarInventarioVehiculo";
+import { Table, Button, UncontrolledDropdown,DropdownItem,DropdownMenu,DropdownToggle, Container, Card} from "reactstrap";
+import ModalAgregarInventarioVehiculo from "../Modals/ModalAgregarInventarioVehiculo";
+import HeaderTallerPintura from "components/Headers/HeaderTallerPintura";
 
 const TablaInventarioVehiculos = (onVerClick,onEditarClick) => {
   const [vehiculosInventario, setVehiculosInventario] = useState([]);
@@ -37,9 +38,12 @@ const TablaInventarioVehiculos = (onVerClick,onEditarClick) => {
 
   return (
     <>
+    <HeaderTallerPintura/>
+    <Container className="mt--7" fluid>
       <Button color="primary" onClick={toggleModal}>
         Agregar Inventario de Vehículo
       </Button>
+      <Card className="shadow p-4 mb-4">
       <Table className="align-items-center table-flush" responsive>
         <thead className="thead-light">
           <tr>
@@ -80,11 +84,9 @@ const TablaInventarioVehiculos = (onVerClick,onEditarClick) => {
           )}
         </tbody>
       </Table>
-      <ModalAgregarInventarioVehiculo
-        isOpen={modal}
-        toggle={toggleModal}
-        onSubmit={agregarInventarioVehiculo}
-      />
+      <ModalAgregarInventarioVehiculo isOpen={modal} toggle={toggleModal} onSubmit={agregarInventarioVehiculo}/>
+      </Card>
+      </Container>
     </>
   );
 };
