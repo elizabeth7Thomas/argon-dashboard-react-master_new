@@ -9,6 +9,7 @@ import Icons from "views/examples/Icons.js";
 import Dashboard from './Gasoline/Dashboard/Dashboard.js';
 import DashboardPagos from "Payment/pages/DashboardPagos.js"; 
 import Pinturas from "views/examples/TallerPinturas.js";
+import Administracion from "views/examples/Administracion.js";
 
 /* Iconos*/ 
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -87,6 +88,13 @@ var routes = [
     icon: "ni ni-palette",
     component: <Pinturas/>,
     layout: "/tallerPintura",
+  },
+  {
+    path: "/administracion",
+    name: "Administración",
+    icon: "ni ni-badge",
+    component: <Administracion/>,
+    layout: "/admin",
   }
 ];
 export default routes;

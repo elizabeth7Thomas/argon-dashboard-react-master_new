@@ -37,7 +37,10 @@ import "assets/scss/argon-dashboard-react.scss";
 
 import AdminLayout from "layouts/Admin.js";
 import AuthLayout from "layouts/Auth.js";
+/*IMPORTACION DE TALLER PINTURA */
 import TallerPinturaLayout from "layouts/TallerPintura.js";
+/*IMPORTACION DE ADMINISTRACION */
+import Administracion from "layouts/Administracion.js";
 
 
 const root = ReactDOM.createRoot(document.getElementById("root"));
@@ -48,8 +51,20 @@ root.render(
       <Route path="/admin/*" element={<AdminLayout />} />
       <Route path="/auth/*" element={<AuthLayout />} />
       <Route path="/tallerPintura/*" element={<TallerPinturaLayout />} />
+      <Route path="/administracion/*" element={<Administracion />} />
+
       <Route path="*" element={<Navigate to="/admin/index" replace />} />
 
+      {/*TALLER PINTURAS ROUTS*/}
+      <Route path="/admin/servicios" element={<TablaServicios />} />
+      <Route path="/admin/devoluciones" element={<TablaDevoluciones />} />
+      <Route path="/admin/tipos-Pintura" element={<TablaTipoPinturas />} />
+      <Route path="/admin/tipos-Servicios" element={<TablaTiposServicios />} />
+      <Route path="/admin/tipos-Vehiculos" element={<TablaTiposVehiculos />} />
+      <Route path="/admin/inventarios" element={<TablaInventarios />} />
+      <Route path="/admin/ventas" element={<TablaVentas />} />
+      <Route path="/admin/precio-Servicio" element={<TablaPrecioServicio />} />
+      <Route path="/admin/inventario-Vehiculos" element={<TablaInventarioVehiculos />} />
       {/*GASOLINE ROUTS*/}
 
       <Route path="/admin/gasoline/alerts" element={<Alerts />} />
