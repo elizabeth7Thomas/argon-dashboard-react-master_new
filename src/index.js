@@ -26,7 +26,7 @@ import GasolineType from "Gasoline/GasolineTypes/GasolineTypes";
 import PumpStatus from "Gasoline/PumpStatus/PumpStatus";
 import Sales from "Gasoline/Sales/Sales";
 import SalesCart from "Gasoline/SalesCart/SalesCart";
-
+import Pinturas from "views/examples/TallerPinturas";
 /*IMPORTACIONES PAGOS */
 import DashboardPagos from "Payment/pages/DashboardPagos";
 
@@ -39,6 +39,7 @@ import AdminLayout from "layouts/Admin.js";
 import AuthLayout from "layouts/Auth.js";
 /*IMPORTACION DE TALLER PINTURA */
 import TallerPinturaLayout from "layouts/TallerPintura.js";
+import ClientesPage from "Payment/pages/ClientesPage";
 
 import TablaServicios from "components/TallerPintura/Tables/TablaServicios";
 import TablaDevoluciones from "components/TallerPintura/Tables/TablaDevoluciones";
@@ -88,6 +89,13 @@ root.render(
       {/*PAYMENTS ROUTS*/}
 
       <Route path="/admin/payments/dashboard" element={<DashboardPagos />} />
+      <Route path="/admin/payment/clientes" element={<ClientesPage />} />
+
+      {/*TALLER ROUTES*/}
+      <Route path="/admin/taller-pinturas" element={<Pinturas />} />
+
+      {/* Add more routes as needed */}
+
 
     </Routes>
   </BrowserRouter>

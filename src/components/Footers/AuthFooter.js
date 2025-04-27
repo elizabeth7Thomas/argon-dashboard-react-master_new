@@ -31,10 +31,10 @@ const Login = () => {
                 © {new Date().getFullYear()}{" "}
                 <a
                   className="font-weight-bold ml-1"
-                  href="https://www.creative-tim.com?ref=adr-auth-footer"
+                  href="https://www.umes.edu.gt/"
                   target="_blank"
                 >
-                  Creative Tim
+                  Umes
                 </a>
               </div>
             </Col>
@@ -42,34 +42,34 @@ const Login = () => {
               <Nav className="nav-footer justify-content-center justify-content-xl-end">
                 <NavItem>
                   <NavLink
-                    href="https://www.creative-tim.com?ref=adr-auth-footer"
+                    href="https://www.umes.edu.gt/"
                     target="_blank"
                   >
-                    Creative Tim
+                    Umes
                   </NavLink>
                 </NavItem>
                 <NavItem>
                   <NavLink
-                    href="https://www.creative-tim.com/presentation?ref=adr-auth-footer"
+                    href="https://www.umes.edu.gt/nosotros"
                     target="_blank"
                   >
-                    About Us
+                    Nosotros
                   </NavLink>
                 </NavItem>
                 <NavItem>
                   <NavLink
-                    href="http://blog.creative-tim.com?ref=adr-auth-footer"
+                    href="https://www.umes.edu.gt/ingenier%C3%ADa-en-sistemas-quetzaltenango"
                     target="_blank"
                   >
-                    Blog
+                    Ingenieria en Sistemas
                   </NavLink>
                 </NavItem>
                 <NavItem>
                   <NavLink
-                    href="https://github.com/creativetimofficial/argon-dashboard/blob/master/LICENSE.md?ref=adr-auth-footer"
+                    href="https://www.umes.edu.gt/rese%C3%B1a-de-don-bosco"
                     target="_blank"
                   >
-                    MIT License
+                    Don Bosco 
                   </NavLink>
                 </NavItem>
               </Nav>

@@ -1,3 +1,4 @@
+//src/views/examples/TallerPinturas.js
 import React from "react";
 import {
   Container,

@@ -42,7 +42,7 @@ const HeaderGasolineType = () => {
                         <CardTitle tag="h5" className="text-uppercase text-muted mb-0">
                           Precio promedio venta
                         </CardTitle>
-                        <span className="h2 font-weight-bold mb-0">$3.90</span>
+                        <span className="h2 font-weight-bold mb-0">Q 3.90</span>
                       </div>
                       <Col className="col-auto">
                         <div className="icon icon-shape bg-warning text-white rounded-circle shadow">

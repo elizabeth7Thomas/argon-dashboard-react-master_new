@@ -84,7 +84,7 @@ export default function DashboardPagos() {
           <Col>
             <Card className="shadow">
               <CardBody className="d-flex flex-wrap gap-2 justify-content-center">
-                <Button color="info" onClick={() => navigate('/admin/clientes')} className="btn-icon">
+                <Button color="info" onClick={() => navigate('/admin/payment/clientes')} className="btn-icon">
                   <FontAwesomeIcon icon={faUser} className="mr-2" /> Clientes
                   <Badge color="light" className="ml-2">{stats.clientes}</Badge>
                 </Button>

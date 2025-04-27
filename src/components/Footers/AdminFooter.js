@@ -29,11 +29,11 @@ const Footer = () => {
             © {new Date().getFullYear()}{" "}
             <a
               className="font-weight-bold ml-1"
-              href="https://www.creative-tim.com?ref=adr-admin-footer"
+              href="https://www.umes.edu.gt/"
               rel="noopener noreferrer"
               target="_blank"
             >
-              Creative Tim
+              UmeStation
             </a>
           </div>
         </Col>
@@ -42,41 +42,41 @@ const Footer = () => {
           <Nav className="nav-footer justify-content-center justify-content-xl-end">
             <NavItem>
               <NavLink
-                href="https://www.creative-tim.com?ref=adr-admin-footer"
+                href="https://www.umes.edu.gt/nosotros"
                 rel="noopener noreferrer"
                 target="_blank"
               >
-                Creative Tim
+                Nosotros
               </NavLink>
             </NavItem>
 
             <NavItem>
               <NavLink
-                href="https://www.creative-tim.com/presentation?ref=adr-admin-footer"
+                href="https://www.umes.edu.gt/facultad-de-ingenieria"
                 rel="noopener noreferrer"
                 target="_blank"
               >
-                About Us
+                Facultad de Ingenieria
               </NavLink>
             </NavItem>
 
             <NavItem>
               <NavLink
-                href="http://blog.creative-tim.com?ref=adr-admin-footer"
+                href="https://www.umes.edu.gt/academico"
                 rel="noopener noreferrer"
                 target="_blank"
               >
-                Blog
+                Academico
               </NavLink>
             </NavItem>
 
             <NavItem>
               <NavLink
-                href="https://github.com/creativetimofficial/argon-dashboard/blob/master/LICENSE.md?ref=adr-admin-footer"
+                href="https://www.umes.edu.gt/rese%C3%B1a-de-don-bosco"
                 rel="noopener noreferrer"
                 target="_blank"
               >
-                MIT License
+                Don Bosco
               </NavLink>
             </NavItem>
           </Nav>

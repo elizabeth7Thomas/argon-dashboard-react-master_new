@@ -9,27 +9,29 @@ import Icons from "views/examples/Icons.js";
 import Dashboard from './Gasoline/Dashboard/Dashboard.js';
 import DashboardPagos from "Payment/pages/DashboardPagos.js"; 
 import Pinturas from "views/examples/TallerPinturas.js";
-import Administracion from "views/examples/Administracion.js";
+import Alerts from "Gasoline/Alerts/Alerts.js";import Administracion from "views/examples/Administracion.js";
 
 /* Iconos*/ 
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faGasPump, faMoneyCheckAlt } from "@fortawesome/free-solid-svg-icons";
-
-const GasolineIcon = () => <FontAwesomeIcon icon={faGasPump} className="mr-2" />;
-const PaymentIcon = () => <FontAwesomeIcon icon={faMoneyCheckAlt} className="mr-2" style={{ color: 'black', fontSize: '1rem' }}/>;
 
 var routes = [
   {
     path: "/dashboard-pagos",
     name: "Dashboard Pagos",
-    icon: <PaymentIcon />,
+    icon: "ni ni-money-coins",
     component: <DashboardPagos />,
     layout: "/admin",
   },
   {
+    path: "/alerts",
+    name: "Alertas",
+    component: <Alerts />,
+    layout: "/admin",
+    hidden: true
+  },
+  {
     path: "/dashboard",
     name: "Gasoline Dashboard",
-    icon: <GasolineIcon />,
+    icon: "ni ni-delivery-fast",
     component: <Dashboard />,
     layout: "/admin",
   },
@@ -70,15 +72,15 @@ var routes = [
   },
   {
     path: "/login",
-    name: "Login",
-    icon: "ni ni-key-25 text-info",
+    name: "Iniciar Sesion",
+    icon: "ni ni-single-02",
     component: <Login />,
     layout: "/auth",
   },
   {
     path: "/register",
-    name: "Register",
-    icon: "ni ni-circle-08 text-pink",
+    name: "Craer Cuenta",
+    icon: "ni ni-circle-08",
     component: <Register />,
     layout: "/auth",
   },
@@ -96,5 +98,6 @@ var routes = [
     component: <Administracion/>,
     layout: "/admin",
   }
+
 ];
 export default routes;
