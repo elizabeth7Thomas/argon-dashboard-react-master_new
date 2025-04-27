@@ -1,8 +1,4 @@
-/*!
-=========================================================
-* Argon Dashboard React - v1.2.4
-=========================================================
-*/
+
 import { Card, CardBody, CardTitle, Container, Row, Col } from "reactstrap";
 
 const Header = () => {

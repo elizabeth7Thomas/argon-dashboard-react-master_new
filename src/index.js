@@ -54,7 +54,16 @@ import TablaInventarioVehiculos from "components/TallerPintura/Tables/TablaInven
 /*IMPORTACION DE ADMINISTRACION */
 import Administracion from "layouts/Administracion.js";
 
+/* IMPORTACION TALLER MANTENIMIENTO*/
+import VehiculosMantenimiento from "TallerMantenimiento/VehiculosMantenimiento/VehiculosMantenimiento";
+import InventarioMantenimiento from "TallerMantenimiento/InventarioMantenimiento/InventarioMantenimiento";
 
+/*IMPORTACIONES TIENDA CONVENIENCIA*/
+import ProveedoresTienda from "TiendaConveniencia/ProveedoresTienda/ProveedoresTienda";
+import ReportesTienda from "TiendaConveniencia/ReportesTienda/ReportesTienda";
+import Inventario from "TiendaConveniencia/InventarioTienda/Inventario.js";
+import Clientes from "TallerMantenimiento/Clientes";
+import Reports from "views/examples/Reports";
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(
@@ -64,6 +73,7 @@ root.render(
       <Route path="/auth/*" element={<AuthLayout />} />
       <Route path="/tallerPintura/*" element={<TallerPinturaLayout />} />
       <Route path="/administracion/*" element={<Administracion />} />
+
 
       <Route path="*" element={<Navigate to="/admin/index" replace />} />
 
@@ -94,7 +104,18 @@ root.render(
       {/*TALLER ROUTES*/}
       <Route path="/admin/taller-pinturas" element={<Pinturas />} />
 
-      {/* Add more routes as needed */}
+      {/* TALLER MANTENIMIENTO ROUTES*/}
+      <Route path="/admin/vehiculosMantenimiento" element={<VehiculosMantenimiento />} />
+      <Route path="/admin/inventarioMantenimiento" element={<InventarioMantenimiento />} />
+
+      {/*TIENDA CONVENIENCIA ROUTES*/}
+      <Route path = "/admin/clientesMantenimiento" element = {<Clientes />} />
+      <Route path = "/admin/inventario" element = {<Inventario />} />
+      <Route path = "/admin/proveedoresTienda" element = {<ProveedoresTienda />} />
+      <Route path = "/admin/reportesTienda" element = {<ReportesTienda />} />
+
+      {/* Add more routes as needed */}+
+      <Route path="/admin/reports" element={<Reports />} />
 
 
     </Routes>

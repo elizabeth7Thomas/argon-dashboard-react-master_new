@@ -1,74 +1,47 @@
 import React from "react";
-import { useLocation, Route, Routes, Navigate } from "react-router-dom";
-// reactstrap components
-import { Container } from "reactstrap";
-// core components
-import AdminNavbar from "components/Navbars/AdminNavbar.js";
-import AdminFooter from "components/Footers/AdminFooter.js";
-import Sidebar from "components/Sidebar/Sidebar.js";
+import { Container, Row, Col, Card, CardBody, Button } from "reactstrap";
+import HeaderAdministracion from "components/Headers/HeaderAdministracion.js";
 
-import routes from "routes.js";
-
-const TallerPintura = (props) => {
-  const mainContent = React.useRef(null);
-  const location = useLocation();
-
-  React.useEffect(() => {
-    document.documentElement.scrollTop = 0;
-    document.scrollingElement.scrollTop = 0;
-    mainContent.current.scrollTop = 0;
-  }, [location]);
-
-  const getRoutes = (routes) => {
-    return routes.map((prop, key) => {
-      if (prop.layout === "/tallerPintura") {
-        return (
-          <Route path={prop.path} element={prop.component} key={key} exact />
-        );
-      } else {
-        return null;
-      }
-    });
-  };
-
-  const getBrandText = (path) => {
-    for (let i = 0; i < routes.length; i++) {
-      if (
-        props?.location?.pathname.indexOf(routes[i].layout + routes[i].path) !==
-        -1
-      ) {
-        return routes[i].name;
-      }
-    }
-    return "Brand";
-  };
-
+const Administracion = () => {
   return (
     <>
-      <Sidebar
-        {...props}
-        routes={routes}
-        logo={{
-          innerLink: "/tallerPintura/index",
-          imgSrc: require("../assets/img/brand/argon-react.png"),
-          imgAlt: "...",
-        }}
-      />
-      <div className="main-content" ref={mainContent}>
-        <AdminNavbar
-          {...props}
-          brandText={getBrandText(props?.location?.pathname)}
-        />
-        <Routes>
-          {getRoutes(routes)}
-          <Route path="*" element={<Navigate to="/tallerPintura/index" replace />} />
-        </Routes>
-        <Container fluid>
-          <AdminFooter />
-        </Container>
-      </div>
+      <HeaderAdministracion />
+
+      <Container className="mt--6" fluid>
+        <Row>
+          {[
+            { title: "Empleados", color: "primary" },
+            { title: "Alertas", color: "danger" },
+            { title: "Áreas", color: "info" },
+            { title: "Roles", color: "success" },
+            { title: "Jornadas", color: "warning" },
+            { title: "Proveedores", color: "default" },
+            { title: "Servicios", color: "secondary" },
+            { title: "Tipos de Movimientos", color: "dark" },
+            { title: "Movimientos", color: "info" }
+          ].map((modulo, idx) => (
+            <Col md="6" lg="4" key={idx} className="mb-4">
+              <Card className={`bg-gradient-${modulo.color} shadow`}>
+                <CardBody className="d-flex flex-column justify-content-between h-100">
+                  <div>
+                    <h5 className="text-white">{modulo.title}</h5>
+                    <p className="text-white-50 mb-2">
+                      Gestión completa de {modulo.title.toLowerCase()}.
+                    </p>
+                  </div>
+                  <div className="mt-auto">
+                    <Button color="light" size="sm">
+                      Ver {modulo.title}
+                    </Button>
+                  </div>
+                </CardBody>
+              </Card>
+            </Col>
+          ))}
+        </Row>
+      </Container>
     </>
   );
 };
 
-export default TallerPintura;
+export default Administracion;

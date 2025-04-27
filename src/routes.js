@@ -1,103 +1,98 @@
-
 import Index from "views/Index.js";
-import Profile from "views/examples/Profile.js";
-import Maps from "views/examples/Maps.js";
-import Register from "views/examples/Register.js";
+
 import Login from "views/examples/Login.js";
-import Tables from "views/examples/Tables.js";
-import Icons from "views/examples/Icons.js";
+
 import Dashboard from './Gasoline/Dashboard/Dashboard.js';
 import DashboardPagos from "Payment/pages/DashboardPagos.js"; 
 import Pinturas from "views/examples/TallerPinturas.js";
-import Alerts from "Gasoline/Alerts/Alerts.js";import Administracion from "views/examples/Administracion.js";
+import Alerts from "Gasoline/Alerts/Alerts.js";
+import Administracion from "views/examples/Administracion.js";
+import Reports from "views/examples/Reports.js";
+import Tienda from "TiendaConveniencia/Tienda.js";
+import Mantenimiento from "TallerMantenimiento/Mantenimiento.js";
 
-/* Iconos*/ 
+/* Iconos mejor organizados y títulos claros */
 
-var routes = [
+const routes = [
+  // DASHBOARDS
   {
-    path: "/dashboard-pagos",
-    name: "Dashboard Pagos",
-    icon: "ni ni-money-coins",
-    component: <DashboardPagos />,
-    layout: "/admin",
-  },
-  {
-    path: "/alerts",
-    name: "Alertas",
-    component: <Alerts />,
-    layout: "/admin",
-    hidden: true
-  },
-  {
-    path: "/dashboard",
-    name: "Gasoline Dashboard",
-    icon: "ni ni-delivery-fast",
-    component: <Dashboard />,
+    path: "/reports",
+    name: "Sistema de Reportes",
+    icon: "ni ni-collection text-yellow",
+    component: <Reports />,
     layout: "/admin",
   },
   {
     path: "/index",
-    name: "Dashboard",
+    name: "Dashboard Principal",
     icon: "ni ni-tv-2 text-primary",
     component: <Index />,
     layout: "/admin",
   },
   {
-    path: "/icons",
-    name: "Icons",
-    icon: "ni ni-planet text-blue",
-    component: <Icons />,
+    path: "/dashboard",
+    name: "Dashboard Gasolina",
+    icon: "ni ni-delivery-fast text-orange",
+    component: <Dashboard />,
     layout: "/admin",
   },
   {
-    path: "/maps",
-    name: "Maps",
-    icon: "ni ni-pin-3 text-orange",
-    component: <Maps />,
+    path: "/dashboard-pagos",
+    name: "Dashboard Pagos",
+    icon: "ni ni-money-coins text-green",
+    component: <DashboardPagos />,
+    layout: "/admin",
+  },
+
+  // MÓDULOS PRINCIPALES
+  {
+    path: "/tienda",
+    name: "Tienda de Conveniencia",
+    icon: "ni ni-shop text-info",
+    component: <Tienda />,
     layout: "/admin",
   },
   {
-    path: "/user-profile",
-    name: "User Profile",
-    icon: "ni ni-single-02 text-yellow",
-    component: <Profile />,
+    path: "/taller-pintura",
+    name: "Taller de Pintura",
+    icon: "ni ni-palette text-warning",
+    component: <Pinturas />,
     layout: "/admin",
   },
   {
-    path: "/tables",
-    name: "Tables",
-    icon: "ni ni-bullet-list-67 text-red",
-    component: <Tables />,
+    path: "/mantenimiento",
+    name: "Taller de Mantenimiento",
+    icon: "ni ni-settings text-purple",
+    component: <Mantenimiento />,
     layout: "/admin",
-  },
-  {
-    path: "/login",
-    name: "Iniciar Sesion",
-    icon: "ni ni-single-02",
-    component: <Login />,
-    layout: "/auth",
-  },
-  {
-    path: "/register",
-    name: "Craer Cuenta",
-    icon: "ni ni-circle-08",
-    component: <Register />,
-    layout: "/auth",
-  },
-  {
-    path: "/Pinturas",
-    name: "Taller de pintura",
-    icon: "ni ni-palette",
-    component: <Pinturas/>,
-    layout: "/tallerPintura",
   },
   {
     path: "/administracion",
     name: "Administración",
-    icon: "ni ni-badge",
-    component: <Administracion/>,
+    icon: "ni ni-badge text-blue",
+    component: <Administracion />,
     layout: "/admin",
-  }
+  },
+
+  // ALERTAS
+  {
+    path: "/alerts",
+    name: "Alertas del Sistema",
+    icon: "ni ni-bell-55 text-danger",
+    component: <Alerts />,
+    layout: "/admin",
+    hidden: true, // visible solo desde otras partes
+  },
+
+  // AUTENTICACIÓN
+  {
+    path: "/login",
+    name: "Iniciar Sesión",
+    icon: "ni ni-key-25 text-info",
+    component: <Login />,
+    layout: "/auth",
+  },
 
 ];
+
 export default routes;

@@ -233,16 +233,17 @@ const Sidebar = (props) => {
           {/* Divider */}
           <hr className="my-3" />
           {/* Heading */}
-          <h6 className="navbar-heading text-muted">Documentación</h6>
-          {/* Navigation */}
-          <Nav className="mb-md-3" navbar>
-            <NavItem>
-              <NavLink href="/admin/user-profile">
-                <i className="ni ni-spaceship" />
-                Reportes
-              </NavLink>
-            </NavItem>
-          </Nav>
+          {/* Heading */} 
+<h6 className="navbar-heading text-muted">Documentación</h6>
+
+<Nav className="mb-md-3" navbar>
+  <NavItem>
+    <NavLink href="/admin/reportes">
+      <i className="ni ni-single-copy-04 text-yellow" />
+      Reportes
+    </NavLink>
+  </NavItem>
+</Nav>
         </Collapse>
       </Container>
     </Navbar>

@@ -1,332 +1,323 @@
-/*!
-
-=========================================================
-* Argon Dashboard React - v1.2.4
-=========================================================
-
-* Product Page: https://www.creative-tim.com/product/argon-dashboard-react
-* Copyright 2024 Creative Tim (https://www.creative-tim.com)
-* Licensed under MIT (https://github.com/creativetimofficial/argon-dashboard-react/blob/master/LICENSE.md)
-
-* Coded by Creative Tim
-
-=========================================================
-
-* The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
-
-*/
-import { useState } from "react";
-// node.js library that concatenates classes (strings)
-import classnames from "classnames";
-// javascipt plugin for creating charts
-import Chart from "chart.js";
-// react plugin used to create charts
-import { Line, Bar } from "react-chartjs-2";
-// reactstrap components
+// views/Index.js
+import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import {
-  Button,
   Card,
   CardHeader,
   CardBody,
-  NavItem,
-  NavLink,
-  Nav,
-  Progress,
-  Table,
   Container,
   Row,
   Col,
-} from "reactstrap";
-
-// core components
-import {
-  chartOptions,
-  parseOptions,
-  chartExample1,
-  chartExample2,
-} from "variables/charts.js";
+  Button,
+  ListGroup,
+  ListGroupItem,
+  Badge,
+  Progress
+} from 'reactstrap';
+import { 
+  faGasPump, 
+  faPaintRoller, 
+  faTools, 
+  faStore,
+  faExclamationTriangle,
+  faChartLine,
+  faCalendarAlt
+} from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import Header from "components/Headers/Header.js";
 
-const Index = (props) => {
-  const [activeNav, setActiveNav] = useState(1);
-  const [chartExample1Data, setChartExample1Data] = useState("data1");
+const Index = () => {
+  const navigate = useNavigate();
 
-  if (window.Chart) {
-    parseOptions(Chart, chartOptions());
-  }
+  // Datos de ejemplo
+  const recentActivities = [
+    { id: 1, message: "Nuevo servicio en taller de pintura", time: "Hace 15 min", type: "pintura" },
+    { id: 2, message: "Venta de $45.50 en tienda", time: "Hace 30 min", type: "tienda" },
+    { id: 3, message: "Mantenimiento preventivo completado", time: "Hace 1 hora", type: "mantenimiento" },
+    { id: 4, message: "Depósito de combustible al 75%", time: "Hace 2 horas", type: "combustible" }
+  ];
 
-  const toggleNavs = (e, index) => {
-    e.preventDefault();
-    setActiveNav(index);
-    setChartExample1Data("data" + index);
-  };
+  const fuelLevels = [
+    { name: "Regular", percentage: 70, color: "success" },
+    { name: "Premium", percentage: 44, color: "warning" },
+    { name: "Diesel", percentage: 60, color: "info" }
+  ];
+
   return (
     <>
       <Header />
+      
       {/* Page content */}
       <Container className="mt--7" fluid>
-        <Row>
-          <Col className="mb-5 mb-xl-0" xl="8">
-            <Card className="bg-gradient-default shadow">
-              <CardHeader className="bg-transparent">
-                <Row className="align-items-center">
-                  <div className="col">
-                    <h6 className="text-uppercase text-light ls-1 mb-1">
-                      Overview
-                    </h6>
-                    <h2 className="text-white mb-0">Sales value</h2>
-                  </div>
-                  <div className="col">
-                    <Nav className="justify-content-end" pills>
-                      <NavItem>
-                        <NavLink
-                          className={classnames("py-2 px-3", {
-                            active: activeNav === 1,
-                          })}
-                          href="#pablo"
-                          onClick={(e) => toggleNavs(e, 1)}
-                        >
-                          <span className="d-none d-md-block">Month</span>
-                          <span className="d-md-none">M</span>
-                        </NavLink>
-                      </NavItem>
-                      <NavItem>
-                        <NavLink
-                          className={classnames("py-2 px-3", {
-                            active: activeNav === 2,
-                          })}
-                          data-toggle="tab"
-                          href="#pablo"
-                          onClick={(e) => toggleNavs(e, 2)}
-                        >
-                          <span className="d-none d-md-block">Week</span>
-                          <span className="d-md-none">W</span>
-                        </NavLink>
-                      </NavItem>
-                    </Nav>
-                  </div>
-                </Row>
-              </CardHeader>
-              <CardBody>
-                {/* Chart */}
-                <div className="chart">
-                  <Line
-                    data={chartExample1[chartExample1Data]}
-                    options={chartExample1.options}
-                    getDatasetAtEvent={(e) => console.log(e)}
-                  />
-                </div>
-              </CardBody>
-            </Card>
-          </Col>
-          <Col xl="4">
+        {/* Accesos rápidos */}
+        <Row className="mb-4">
+          <Col>
             <Card className="shadow">
-              <CardHeader className="bg-transparent">
-                <Row className="align-items-center">
-                  <div className="col">
-                    <h6 className="text-uppercase text-muted ls-1 mb-1">
-                      Performance
-                    </h6>
-                    <h2 className="mb-0">Total orders</h2>
-                  </div>
-                </Row>
-              </CardHeader>
-              <CardBody>
-                {/* Chart */}
-                <div className="chart">
-                  <Bar
-                    data={chartExample2.data}
-                    options={chartExample2.options}
-                  />
-                </div>
+              <CardBody className="d-flex flex-wrap gap-3 justify-content-center">
+                <Button 
+                  color="primary" 
+                  onClick={() => navigate('/admin/dashboard')}
+                  className="btn-icon"
+                >
+                  <FontAwesomeIcon icon={faGasPump} className="mr-2" />
+                  Combustibles
+                </Button>
+                <Button 
+                  color="warning" 
+                  onClick={() => navigate('/admin/taller-pintura')}
+                  className="btn-icon"
+                >
+                  <FontAwesomeIcon icon={faPaintRoller} className="mr-2" />
+                  Taller Pintura
+                </Button>
+                <Button 
+                  color="purple" 
+                  onClick={() => navigate('/admin/mantenimiento')}
+                  className="btn-icon"
+                >
+                  <FontAwesomeIcon icon={faTools} className="mr-2" />
+                  Mantenimiento
+                </Button>
+                <Button 
+                  color="info" 
+                  onClick={() => navigate('/admin/tienda')}
+                  className="btn-icon"
+                >
+                  <FontAwesomeIcon icon={faStore} className="mr-2" />
+                  Tienda
+                </Button>
+                <Button 
+                  color="success" 
+                  onClick={() => navigate('/admin/dashboard-pagos')}
+                  className="btn-icon"
+                >
+                  <FontAwesomeIcon icon={faChartLine} className="mr-2" />
+                  Pagos
+                </Button>
+                <Button 
+                  color="danger" 
+                  onClick={() => navigate('/admin/alerts')}
+                  className="btn-icon"
+                >
+                  <FontAwesomeIcon icon={faExclamationTriangle} className="mr-2" />
+                  Alertas
+                </Button>
               </CardBody>
             </Card>
           </Col>
         </Row>
-        <Row className="mt-5">
-          <Col className="mb-5 mb-xl-0" xl="8">
+
+        <Row>
+          {/* Mapa de ubicación */}
+          <Col lg="8" className="mb-4">
             <Card className="shadow">
-              <CardHeader className="border-0">
+              <CardHeader className="bg-transparent">
                 <Row className="align-items-center">
-                  <div className="col">
-                    <h3 className="mb-0">Page visits</h3>
-                  </div>
-                  <div className="col text-right">
-                    <Button
-                      color="primary"
-                      href="#pablo"
-                      onClick={(e) => e.preventDefault()}
+                  <Col>
+                    <h2 className="mb-0">
+                      <i className="ni ni-pin-3 mr-2" />
+                      Ubicación de la Estación
+                    </h2>
+                  </Col>
+                  <Col className="text-right">
+                    <Button 
+                      color="primary" 
                       size="sm"
+                      onClick={() => window.open('https://maps.google.com', '_blank')}
                     >
-                      See all
+                      Ver en Maps
                     </Button>
-                  </div>
+                  </Col>
                 </Row>
               </CardHeader>
-              <Table className="align-items-center table-flush" responsive>
-                <thead className="thead-light">
-                  <tr>
-                    <th scope="col">Page name</th>
-                    <th scope="col">Visitors</th>
-                    <th scope="col">Unique users</th>
-                    <th scope="col">Bounce rate</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <th scope="row">/argon/</th>
-                    <td>4,569</td>
-                    <td>340</td>
-                    <td>
-                      <i className="fas fa-arrow-up text-success mr-3" /> 46,53%
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">/argon/index.html</th>
-                    <td>3,985</td>
-                    <td>319</td>
-                    <td>
-                      <i className="fas fa-arrow-down text-warning mr-3" />{" "}
-                      46,53%
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">/argon/charts.html</th>
-                    <td>3,513</td>
-                    <td>294</td>
-                    <td>
-                      <i className="fas fa-arrow-down text-warning mr-3" />{" "}
-                      36,49%
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">/argon/tables.html</th>
-                    <td>2,050</td>
-                    <td>147</td>
-                    <td>
-                      <i className="fas fa-arrow-up text-success mr-3" /> 50,87%
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">/argon/profile.html</th>
-                    <td>1,795</td>
-                    <td>190</td>
-                    <td>
-                      <i className="fas fa-arrow-down text-danger mr-3" />{" "}
-                      46,53%
-                    </td>
-                  </tr>
-                </tbody>
-              </Table>
+              <CardBody>
+                <div className="map-container" style={{ height: "350px", width: "100%" }}>
+                  <iframe
+                    title="Mapa de ubicación"
+                    src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3856.6744325374534!2d-91.54019919999992!3d14.84351920000001!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x858e9821d5d018bf%3A0xb35fd953c69529a9!2sFacultad%20de%20Ingenier%C3%ADa%20Universidad%20Mesoamericana!5e0!3m2!1ses-419!2sgt!4v1745596475136!5m2!1ses-419!2sgt"
+                    width="100%"
+                    height="100%"
+                    style={{ border: 0, borderRadius: "0.375rem" }}
+                    allowFullScreen=""
+                    loading="lazy"
+                  ></iframe>
+                </div>
+              </CardBody>
             </Card>
           </Col>
-          <Col xl="4">
+
+          {/* Acerca de Nosotros */}
+          <Col lg="4" className="mb-4">
             <Card className="shadow">
-              <CardHeader className="border-0">
-                <Row className="align-items-center">
-                  <div className="col">
-                    <h3 className="mb-0">Social traffic</h3>
-                  </div>
-                  <div className="col text-right">
-                    <Button
-                      color="primary"
-                      href="#pablo"
-                      onClick={(e) => e.preventDefault()}
-                      size="sm"
-                    >
-                      See all
-                    </Button>
-                  </div>
-                </Row>
+              <CardHeader className="bg-transparent">
+                <h2 className="mb-0">
+                  <i className="ni ni-bullet-list-67 mr-2" />
+                  Actividad Reciente
+                </h2>
               </CardHeader>
-              <Table className="align-items-center table-flush" responsive>
-                <thead className="thead-light">
-                  <tr>
-                    <th scope="col">Referral</th>
-                    <th scope="col">Visitors</th>
-                    <th scope="col" />
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr>
-                    <th scope="row">Facebook</th>
-                    <td>1,480</td>
-                    <td>
+              <CardBody className="p-0">
+                <ListGroup flush>
+                  {recentActivities.map(activity => (
+                    <ListGroupItem key={activity.id} className="px-4 py-3">
                       <div className="d-flex align-items-center">
-                        <span className="mr-2">60%</span>
-                        <div>
-                          <Progress
-                            max="100"
-                            value="60"
-                            barClassName="bg-gradient-danger"
-                          />
+                        <div className="mr-3">
+                          <Badge 
+                            color={
+                              activity.type === 'pintura' ? 'warning' :
+                              activity.type === 'tienda' ? 'info' :
+                              activity.type === 'mantenimiento' ? 'purple' : 'danger'
+                            } 
+                            pill
+                          >
+                            {activity.type === 'pintura' ? 'P' : 
+                             activity.type === 'tienda' ? 'T' : 
+                             activity.type === 'mantenimiento' ? 'M' : 'C'}
+                          </Badge>
+                        </div>
+                        <div className="flex-grow-1">
+                          <h6 className="mb-0">{activity.message}</h6>
+                          <small className="text-muted">{activity.time}</small>
                         </div>
                       </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Facebook</th>
-                    <td>5,480</td>
-                    <td>
-                      <div className="d-flex align-items-center">
-                        <span className="mr-2">70%</span>
-                        <div>
-                          <Progress
-                            max="100"
-                            value="70"
-                            barClassName="bg-gradient-success"
-                          />
-                        </div>
+                    </ListGroupItem>
+                  ))}
+                </ListGroup>
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
+
+        <Row className="mt-4">
+          {/* Niveles de Combustible */}
+          <Col lg="6" className="mb-4">
+            <Card className="shadow">
+              <CardHeader className="bg-transparent">
+                <h2 className="mb-0">
+                  <FontAwesomeIcon icon={faGasPump} className="mr-2" />
+                  Niveles de Combustible
+                </h2>
+              </CardHeader>
+              <CardBody>
+                {fuelLevels.map((fuel, index) => (
+                  <div key={index} className="mb-4">
+                    <div className="d-flex justify-content-between mb-1">
+                      <span className="font-weight-bold">{fuel.name}</span>
+                      <small>{fuel.percentage}%</small>
+                    </div>
+                    <Progress
+                      color={fuel.color}
+                      value={fuel.percentage}
+                      className="progress-sm"
+                    />
+                  </div>
+                ))}
+                <Button 
+                  color="link" 
+                  className="px-0"
+                  onClick={() => navigate('/admin/dashboard')}
+                >
+                  Ver detalles de combustibles
+                </Button>
+              </CardBody>
+            </Card>
+          </Col>
+
+          {/* Próximos Eventos */}
+          <Col lg="6" className="mb-4">
+            <Card className="shadow">
+              <CardHeader className="bg-transparent">
+                <h2 className="mb-0">
+                  <FontAwesomeIcon icon={faCalendarAlt} className="mr-2" />
+                  Próximos Eventos
+                </h2>
+              </CardHeader>
+              <CardBody>
+                <ListGroup flush>
+                  <ListGroupItem className="px-0">
+                    <div className="d-flex align-items-center">
+                      <div className="mr-3 text-center" style={{ minWidth: '50px' }}>
+                        <h5 className="mb-0 text-primary">15</h5>
+                        <small className="text-muted">MAY</small>
                       </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Google</th>
-                    <td>4,807</td>
-                    <td>
-                      <div className="d-flex align-items-center">
-                        <span className="mr-2">80%</span>
-                        <div>
-                          <Progress max="100" value="80" />
-                        </div>
+                      <div>
+                        <h6 className="mb-0">Mantenimiento preventivo</h6>
+                        <small className="text-muted">Taller de mantenimiento</small>
                       </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">Instagram</th>
-                    <td>3,678</td>
-                    <td>
-                      <div className="d-flex align-items-center">
-                        <span className="mr-2">75%</span>
-                        <div>
-                          <Progress
-                            max="100"
-                            value="75"
-                            barClassName="bg-gradient-info"
-                          />
-                        </div>
+                    </div>
+                  </ListGroupItem>
+                  <ListGroupItem className="px-0">
+                    <div className="d-flex align-items-center">
+                      <div className="mr-3 text-center" style={{ minWidth: '50px' }}>
+                        <h5 className="mb-0 text-primary">20</h5>
+                        <small className="text-muted">MAY</small>
                       </div>
-                    </td>
-                  </tr>
-                  <tr>
-                    <th scope="row">twitter</th>
-                    <td>2,645</td>
-                    <td>
-                      <div className="d-flex align-items-center">
-                        <span className="mr-2">30%</span>
-                        <div>
-                          <Progress
-                            max="100"
-                            value="30"
-                            barClassName="bg-gradient-warning"
-                          />
-                        </div>
+                      <div>
+                        <h6 className="mb-0">Entrega de combustible</h6>
+                        <small className="text-muted">Proveedor GasoCorp</small>
                       </div>
-                    </td>
-                  </tr>
-                </tbody>
-              </Table>
+                    </div>
+                  </ListGroupItem>
+                  <ListGroupItem className="px-0">
+                    <div className="d-flex align-items-center">
+                      <div className="mr-3 text-center" style={{ minWidth: '50px' }}>
+                        <h5 className="mb-0 text-primary">25</h5>
+                        <small className="text-muted">MAY</small>
+                      </div>
+                      <div>
+                        <h6 className="mb-0">Capacitación de personal</h6>
+                        <small className="text-muted">Sala de reuniones</small>
+                      </div>
+                    </div>
+                  </ListGroupItem>
+                </ListGroup>
+                <Button 
+                  color="link" 
+                  className="px-0 mt-3"
+                  onClick={() => navigate('/admin/administracion')}
+                >
+                  Ver calendario completo
+                </Button>
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
+
+        {/* Acerca de Nosotros */}
+        <Row className="mt-4">
+          <Col>
+            <Card className="shadow">
+              <CardHeader className="bg-transparent">
+                <h2 className="mb-0">
+                  <i className="ni ni-single-02 mr-2" />
+                  Acerca de Nosotros
+                </h2>
+              </CardHeader>
+              <CardBody>
+                <p className="mb-4">
+                  En nuestra gasolinera, nos dedicamos a brindar un servicio eficiente, seguro y de alta calidad 
+                  para satisfacer las necesidades de combustible de nuestros clientes. Operamos con estándares 
+                  rigurosos en el abastecimiento, almacenamiento y distribución de gasolina y diésel, garantizando 
+                  productos confiables y atención personalizada.
+                </p>
+                <p>
+                  Además, contamos con sistemas modernos de control y monitoreo para asegurar una operación 
+                  transparente y responsable con el medio ambiente. Nuestra prioridad es ofrecer una experiencia 
+                  rápida y cómoda en cada visita.
+                </p>
+                <div className="mt-4 d-flex justify-content-between">
+                  <div>
+                    <h5 className="mb-2">Horario de atención:</h5>
+                    <p className="mb-0">Lunes a Viernes: 6:00 AM - 10:00 PM</p>
+                    <p>Sábado y Domingo: 7:00 AM - 9:00 PM</p>
+                  </div>
+                  <div>
+                    <h5 className="mb-2">Contacto:</h5>
+                    <p className="mb-0">Tel: 2222-2222</p>
+                    <p>Email: info@gasolinera.com</p>
+                  </div>
+                </div>
+              </CardBody>
             </Card>
           </Col>
         </Row>
