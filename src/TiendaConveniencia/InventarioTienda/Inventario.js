@@ -4,7 +4,7 @@ import HeaderTienda from 'components/Headers/HeaderTienda';
 import {
   Container,
   Row,
-  Col,
+ 
   Card,
   Modal,
   ModalHeader,

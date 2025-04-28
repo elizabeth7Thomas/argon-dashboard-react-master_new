@@ -1,6 +1,5 @@
 import React, { useState } from "react";
-import HeaderMantenimiento from "components/Headers/HeaderMantenimiento";
-import Sidebar from 'components/Sidebar/Sidebar';
+
 import {
   Button,
   Card,

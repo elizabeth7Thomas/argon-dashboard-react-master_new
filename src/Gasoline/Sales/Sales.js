@@ -1,6 +1,6 @@
 // src/gasoline/Sales/Sales.js
 import React, { useState, useCallback } from 'react';
-import PropTypes from 'prop-types';
+
 import {
   Container, Row, Col, Card, CardHeader,
   Button, Badge, CardBody
