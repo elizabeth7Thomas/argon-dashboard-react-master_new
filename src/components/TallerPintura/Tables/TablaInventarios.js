@@ -1,28 +1,26 @@
 // TablaInventario.js
 import React, { useEffect, useState } from "react";
-import {
-  Table,
-  Button,
-  DropdownItem,
-  DropdownMenu,
-  DropdownToggle,
-  UncontrolledDropdown,
-  Container,
-  Card,
-} from "reactstrap";
+import { Table, Button, DropdownItem, DropdownMenu, DropdownToggle, UncontrolledDropdown, Container, Card,} from "reactstrap";
 import ModalAgregarInventario from "../Modals/ModalAgregarInventario";
 import HeaderTallerPintura from "components/Headers/HeaderTallerPintura";
 
-const TablaInventario = ({ onEditarClick, onVerClick }) => {
+const TablaInventario = () => {
   const [inventarios, setInventarios] = useState([]);
   const [modal, setModal] = useState(false);
   const [nextId, setNextId] = useState(1); // Para ID correlativo
+  const [modoEdicion, setModoEdicion] = useState(false);
+  const [tipoEditar, setTipoEditar] = useState(null);
 
-  const toggleModal = () => setModal(!modal);
+  const toggleModal = () => {setModal(!modal);
+    if(modal) {
+      setModoEdicion(false);
+      setTipoEditar(null);
+    }
+  }
 
   const obtenerInventarios = async () => {
     try {
-      const res = await fetch("http://localhost:8000/pintura/GET/inventario");
+      const res = await fetch("http://localhost:8000/pintura/GET/inventarios");
       const data = await res.json();
       const inventariosArray = Array.isArray(data) ? data : [data];
       setInventarios(inventariosArray);
@@ -38,10 +36,36 @@ const TablaInventario = ({ onEditarClick, onVerClick }) => {
   };
 
   const agregarInventario = (nuevoInventario) => {
-    const inventarioConId = { ...nuevoInventario, idInventario: nextId };
-    setInventarios(prev => [...prev, inventarioConId]);
-    setNextId(prev => prev + 1);
+    if (modoEdicion && tipoEditar){
+      const inventariosActualizados = inventarios.map((Inventario) =>
+      Inventario.idInventario === tipoEditar.idInventario
+        ? {...Inventario, NombreProducto: nuevoInventario.NombreProducto, CantidadDisponible: nuevoInventario.CantidadDisponible, idTipoPintura: nuevoInventario.idTipoPintura, TipoInventario: nuevoInventario.TipoInventario, Lote: nuevoInventario.Lote, CodigoColor: nuevoInventario.CodigoColor, FechaAdquisicion: nuevoInventario.FechaAdquisicion, FechaVencimiento: nuevoInventario.FechaVencimiento, EstadoInventario: nuevoInventario.EstadoInventario }
+      : Inventario
+    );
+    setInventarios(inventariosActualizados);
+    }else {
+      const inventarioConId = {
+        idInventario: nextId,
+        ...nuevoInventario,
+      };
+      setInventarios((prev) => [...prev, inventarioConId]);
+      setNextId((prev) => prev + 1);
+    }
     toggleModal();
+  };
+
+  const eliminarInventario = (id) =>{
+    const confirmacion = window.confirm("¿Estás seguro de que deseas eliminar?");
+    if (confirmacion){
+    const nuevosInventarios = inventarios.filter((Inventario) => Inventario.idInventario !== id);
+    setInventarios(nuevosInventarios);
+  }
+  };
+
+  const iniciarEdicion = (Inventario) => {
+    setModoEdicion(true);
+    setTipoEditar(Inventario);
+    setModal(true);
   };
 
   useEffect(() => {
@@ -98,9 +122,8 @@ const TablaInventario = ({ onEditarClick, onVerClick }) => {
                           <i className="fas fa-ellipsis-v" />
                         </DropdownToggle>
                         <DropdownMenu right>
-                          <DropdownItem onClick={() => onVerClick(inv)}>Ver</DropdownItem>
-                          <DropdownItem onClick={() => onEditarClick(inv)}>Editar</DropdownItem>
-                          <DropdownItem>Eliminar</DropdownItem>
+                          <DropdownItem onClick={() => iniciarEdicion(inv)}>Editar</DropdownItem>
+                          <DropdownItem onClick={() => eliminarInventario(inv.idInventario)}>Eliminar</DropdownItem>
                         </DropdownMenu>
                       </UncontrolledDropdown>
                     </td>
@@ -109,13 +132,9 @@ const TablaInventario = ({ onEditarClick, onVerClick }) => {
               )}
             </tbody>
           </Table>
+          <ModalAgregarInventario isOpen={modal} toggle={toggleModal} onSubmit={agregarInventario}/>
         </Card>
       </Container>
-      <ModalAgregarInventario
-        isOpen={modal}
-        toggle={toggleModal}
-        onSubmit={agregarInventario}
-      />
     </>
   );
 };

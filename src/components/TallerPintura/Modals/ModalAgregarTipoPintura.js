@@ -1,15 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Button,
-  Form,
-  FormGroup,
-  Label,
-  Input,
-} from "reactstrap";
+import {Modal,ModalHeader, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input, } from "reactstrap";
 
 const ModalAgregarTipoPintura = ({ isOpen, toggle, onSubmit, modoEdicion = false, tipoEditar = null }) => {
   const [form, setForm] = useState({ NombreTipoPintura: "" });
