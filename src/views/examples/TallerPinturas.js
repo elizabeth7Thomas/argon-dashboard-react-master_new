@@ -1,11 +1,5 @@
 import React from "react";
-import {
-  Container,
-  Card,
-  Row,
-  Col,
-  Button
-} from "reactstrap";
+import {Container, Card, Row, Col, Button} from "reactstrap";
 import { faCalendarAlt, faCar, faChartLine, faClipboardList } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import HeaderTallerPintura from "components/Headers/HeaderTallerPintura";
@@ -14,7 +8,7 @@ const TallerPinturas = () => {
   return (
     <>
       <HeaderTallerPintura />
-      
+      <br></br>
       {/* Contenido principal */}
       <Container className="mt--7" fluid>
         <Row className="mb-4">

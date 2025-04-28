@@ -1,17 +1,7 @@
-import React, { useState } from "react";
-import {
-  Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Button,
-  Form,
-  FormGroup,
-  Label,
-  Input,
-} from "reactstrap";
+import React, { useEffect, useState } from "react";
+import { Modal, ModalHeader, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input,} from "reactstrap";
 
-const ModalAgregarInventario = ({ isOpen, toggle, onSubmit }) => {
+const ModalAgregarInventario = ({ isOpen, toggle, onSubmit, modoEdicion = false, tipoEditar = null }) => {
   const [form, setForm] = useState({
     NombreProducto: "",
     CantidadDisponible: 0,
@@ -24,29 +14,55 @@ const ModalAgregarInventario = ({ isOpen, toggle, onSubmit }) => {
     EstadoInventario: 1,
   });
 
+  useEffect(() => {
+    if (modoEdicion && tipoEditar){
+      setForm({
+        NombreProducto: tipoEditar.NombreProducto,
+        CantidadDisponible: tipoEditar.CantidadDisponible,
+        idTipoPintura: tipoEditar.idTipoPintura,
+        Lote: tipoEditar.Lote,
+        CodigoColor: tipoEditar.CodigoColor,
+        FechaAdquisicion: tipoEditar.FechaAdquisicion,
+        FechaVencimiento: tipoEditar.FechaAdquisicion,
+        EstadoInventario: tipoEditar.EstadoInventario
+      });
+    } else {
+      setForm({
+        NombreProducto: "",
+        CantidadDisponible: 0,
+        idTipoPintura: "",
+        TipoInventario: 1,
+        Lote: 1,
+        CodigoColor: "",
+        FechaAdquisicion: "",
+        FechaVencimiento: "",
+        EstadoInventario: 1,
+
+      });
+    }
+  }, [modoEdicion, tipoEditar]);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
   };
 
   const handleSubmit = () => {
+    if (form.NombreProducto.trim() !== "")
     onSubmit(form);
-    setForm({
-      NombreProducto: "",
-      CantidadDisponible: 0,
-      idTipoPintura: "",
-      TipoInventario: 1,
+    setForm({NombreProducto: "", CantidadDisponible: 0, idTipoPintura: "", TipoInventario: 1,
       Lote: 1,
       CodigoColor: "",
       FechaAdquisicion: "",
       FechaVencimiento: "",
-      EstadoInventario: 1,
-    });
+      EstadoInventario: 1})
   };
 
   return (
-    <Modal isOpen={isOpen} toggle={toggle}>
-      <ModalHeader toggle={toggle}>Agregar Inventario</ModalHeader>
+<Modal isOpen={isOpen} toggle={toggle}>
+      <ModalHeader toggle={toggle}>
+        {modoEdicion ? "Editar Inventario" : "Agregar Inventario"}
+      </ModalHeader>
       <ModalBody>
         <Form>
           <FormGroup>
@@ -134,11 +150,9 @@ const ModalAgregarInventario = ({ isOpen, toggle, onSubmit }) => {
       </ModalBody>
       <ModalFooter>
         <Button color="primary" onClick={handleSubmit}>
-          Agregar
+          {modoEdicion ? "Guardar Cambios" : "Agregar"}
         </Button>
-        <Button color="secondary" onClick={toggle}>
-          Cancelar
-        </Button>
+        <Button color="secondary" onClick={toggle}>Cancelar</Button>
       </ModalFooter>
     </Modal>
   );

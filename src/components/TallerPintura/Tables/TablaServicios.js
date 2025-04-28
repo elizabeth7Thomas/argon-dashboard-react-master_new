@@ -4,7 +4,7 @@ import { Table, Button, DropdownItem, DropdownMenu, DropdownToggle, Uncontrolled
 import ModalAgregarServicio from "../Modals/ModalAgregarServicio";
 import HeaderTallerPintura from "components/Headers/HeaderTallerPintura";
 
-const TablaServicios = ({ onEditarClick, onVerClick }) => {
+const TablaServicios = () => {
   const [servicios, setServicios] = useState([]);
   const [modal, setModal] = useState(false);
   const [nextId, setNextId] = useState(1);
@@ -58,8 +58,9 @@ const TablaServicios = ({ onEditarClick, onVerClick }) => {
   };
 
   const eliminarServicio = (id) => {
-    const nuevosServicios = servicios.filter((servicio) => servicio.idServicio !== id);
-    setServicios(nuevosServicios);
+    const confirmacion = window.confirm("Estás seguro de eliminar este dato?");
+    if (confirmacion){const nuevosServicios = servicios.filter((servicio) => servicio.idServicio !== id);
+    setServicios(nuevosServicios);}
   };
 
   const iniciarEdicion = (servicio) => {
@@ -105,7 +106,6 @@ const TablaServicios = ({ onEditarClick, onVerClick }) => {
                         </DropdownToggle>
                         <DropdownMenu right>
                           <DropdownItem onClick={() => iniciarEdicion(s)}>Editar</DropdownItem>
-                          <DropdownItem onClick={() => onVerClick(s)}>Ver</DropdownItem>
                           <DropdownItem onClick={() => eliminarServicio(s.idServicio)}>Eliminar</DropdownItem>
                         </DropdownMenu>
                       </UncontrolledDropdown>

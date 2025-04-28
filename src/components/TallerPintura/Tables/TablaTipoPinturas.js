@@ -1,14 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  Table,
-  Card,
-  Button,
-  DropdownItem,
-  DropdownMenu,
-  DropdownToggle,
-  UncontrolledDropdown,
-  Container,
-} from "reactstrap";
+import {Table,Card,Button,DropdownItem,DropdownMenu,DropdownToggle,UncontrolledDropdown,Container,} from "reactstrap";
 import ModalAgregarTipoPintura from "../Modals/ModalAgregarTipoPintura";
 import HeaderTallerPintura from "components/Headers/HeaderTallerPintura";
 
@@ -26,6 +17,23 @@ const TablaTipoPinturas = () => {
       setTipoEditar(null);
     }
   };
+
+  const obtenerTiposPinturas = async () =>{
+    try{
+      const res = await fetch("http://localhost:8000/pintura/GET/tipospinturas");
+      const data = await res.json();
+      const TiposPinturaArray = Array.isArray(data) ? data : [data];
+      setTiposPintura(TiposPinturaArray);
+
+      if(TiposPinturaArray.length > 0){
+        const maxId = Math.max(...TiposPinturaArray.map(i => i.idTipoPintura));
+        setNextId(maxId + 1);
+      }
+    }catch (error) {
+     console.error("Error al obtener los datos", error);
+     setTiposPintura([]);   
+    }
+  }
 
   const agregarTipoPintura = (nuevoTipo) => {
     if (modoEdicion && tipoEditar) {
@@ -64,7 +72,7 @@ const TablaTipoPinturas = () => {
 
   useEffect(() => {
     // Inicializar tipos de pintura vacíos (local)
-    setTiposPintura([]);
+    obtenerTiposPinturas([]);
   }, []);
 
   return (
