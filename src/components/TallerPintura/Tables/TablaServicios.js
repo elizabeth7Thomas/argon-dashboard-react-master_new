@@ -36,26 +36,33 @@ const TablaServicios = () => {
     }
   };
 
-  const agregarServicio = (nuevoServicio) => {
+const agregarServicio = async (nuevoServicio) => {
+  try {
     if (modoEdicion && tipoEditar) {
-      // Editar servicio existente
-      const serviciosActualizados = servicios.map((servicio) =>
-        servicio.idServicio === tipoEditar.idServicio
-          ? { ...servicio, NombreServicio: nuevoServicio.NombreServicio, DescripcionServicio: nuevoServicio.DescripcionServicio }
-          : servicio
-      );
-      setServicios(serviciosActualizados);
+      // Aquí se haría PUT (editar) en el futuro
+      console.warn("Modo edición aún no implementado con backend");
     } else {
-      // Agregar nuevo servicio
-      const servicioConId = {
-        ...nuevoServicio,
-        idServicio: nextId,
-      };
-      setServicios((prev) => [...prev, servicioConId]);
-      setNextId((prev) => prev + 1);
+      const res = await fetch("http://localhost:8000/pintura/POST/servicios", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(nuevoServicio)
+      });
+
+      if (res.ok) {
+        const servicioCreado = await res.json();
+        setServicios((prev) => [...prev, servicioCreado]);
+        setNextId((prev) => prev + 1);
+      } else {
+        console.error("Error al agregar servicio:", await res.text());
+      }
     }
-    toggleModal();  
-  };
+  } catch (error) {
+    console.error("Error al conectar con backend:", error);
+  }
+
+  toggleModal();
+};
+
 
   const eliminarServicio = (id) => {
     const confirmacion = window.confirm("Estás seguro de eliminar este dato?");
@@ -69,15 +76,16 @@ const TablaServicios = () => {
     setModal(true);
   };
 
-  useEffect(() => {
-    obtenerServicios();
-  }, []);
+useEffect(() => {
+  obtenerServicios();
+}, []);
 
   return (
     <>
       <HeaderTallerPintura />
+      <br></br><br></br>
       <Container className="mt--7" fluid>
-        <Button color="primary" onClick={toggleModal}>Agregar Servicio</Button>
+        
         <Card className="shadow p-4 mb-4">
           <Table className="align-items-center table-flush" responsive>
             <thead className="thead-light">
@@ -117,6 +125,7 @@ const TablaServicios = () => {
           </Table>
           <ModalAgregarServicio isOpen={modal} toggle={toggleModal} onSubmit={agregarServicio} />
         </Card>
+        <Button color="primary" onClick={toggleModal}>Agregar Servicio</Button>
       </Container>
     </>
   );

@@ -3,17 +3,24 @@ import {Container, Card, Row, Col, Button} from "reactstrap";
 import { faCalendarAlt, faCar, faChartLine, faClipboardList } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import HeaderTallerPintura from "components/Headers/HeaderTallerPintura";
+import { useNavigate } from 'react-router-dom';
+import TablaServicios from "components/TallerPintura/Tables/TablaServicios";
+
 
 const TallerPinturas = () => {
+  const navigate = useNavigate();
   return (
     <>
+    
       <HeaderTallerPintura />
-      <br></br>
+      <br></br><br></br>
       {/* Contenido principal */}
       <Container className="mt--7" fluid>
         <Row className="mb-4">
           <Col>
             <Card className="shadow">
+
+              
               <div className="p-4">
                 <h2 className="mb-0">Gestión Integral del Taller de Pinturas</h2>
                 <p className="text-muted mb-0">Panel de control y administración de servicios</p>
@@ -24,17 +31,67 @@ const TallerPinturas = () => {
         
         {/* Acciones rápidas */}
         <Row className="mb-4">
+
+          {/*Card Servicios*/}
           <Col lg="3" md="6" sm="12">
             <Card className="card-stats shadow-sm h-100">
               <div className="card-body text-center p-4">
                 <div className="icon icon-shape bg-gradient-info text-white rounded-circle mb-3">
                   <FontAwesomeIcon icon={faCar} size="lg" />
                 </div>
-                <h5 className="card-title text-uppercase text-muted mb-2">Nuevo Servicio</h5>
+                <h5 className="card-title text-uppercase text-muted mb-2">Servicios</h5>
+                <p className="text-sm">Ver los servicios</p>
+               <Button color="info" className="mt-2" outline onClick={() => navigate("/admin/servicios")}>
+               Ver
+            </Button>
+              </div>
+            </Card>
+          </Col>
+
+           {/*Card Tipos de pintura*/}
+             <Col lg="3" md="6" sm="12">
+            <Card className="card-stats shadow-sm h-100">
+              <div className="card-body text-center p-4">
+                <div className="icon icon-shape bg-gradient-purple text-white rounded-circle shadow">
+                  <FontAwesomeIcon icon={faCar} size="lg" />
+                </div>
+                <h5 className="card-title text-uppercase text-muted mb-2">Tipos de Pintura</h5>
                 <p className="text-sm">Registrar un nuevo trabajo de pintura</p>
-                <Button color="info" className="mt-2" outline>
-                  Crear
-                </Button>
+               <Button color="info" className="mt-2" outline onClick={() => navigate("/admin/tipos-Pintura")}>
+               Ver
+            </Button>
+              </div>
+            </Card>
+          </Col>
+
+           {/*Card Tipos de servicios*/}
+             <Col lg="3" md="6" sm="12">
+            <Card className="card-stats shadow-sm h-100">
+              <div className="card-body text-center p-4">
+                <div className="icon icon-shape bg-gradient-yellow text-white rounded-circle shadow">
+                  <FontAwesomeIcon icon={faCar} size="lg" />
+                </div>
+                <h5 className="card-title text-uppercase text-muted mb-2">Tipos de Servicios</h5>
+                <p className="text-sm">Ver los tipos de servicios disponibles</p>
+               <Button color="info" className="mt-2" outline onClick={() => navigate("/admin/tipos-Servicios")}>
+               Ver
+            </Button>
+              </div>
+            </Card>
+          </Col>
+
+            {/*Card Tipos de vehículos*/}
+             <Col lg="3" md="6" sm="12">
+            <Card className="card-stats shadow-sm h-100">
+              <div className="card-body text-center p-4">
+                <div className="icon icon-shape bg-gradient-blue text-white rounded-circle shadow">
+                  <FontAwesomeIcon icon={faCar} size="lg" />
+                </div>
+                <h5 className="card-title text-uppercase text-muted mb-2">Tipos de Vehículos</h5>
+                <p className="text-sm">Ver los tipos de vehiculos aceptados</p>
+               <Button color="info" className="mt-2" outline onClick={() => navigate("/admin/tipos-Vehiculos")}>
+               Ver
+            </Button>
               </div>
             </Card>
           </Col>

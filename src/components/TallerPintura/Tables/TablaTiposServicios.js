@@ -1,51 +1,72 @@
-import React, { useState } from "react";
-import { Table, Button, DropdownItem, DropdownMenu, DropdownToggle, UncontrolledDropdown, Container, Card } from "reactstrap";
+import React, { useState, useEffect } from "react";
+import {
+  Table,
+  Button,
+  DropdownItem,
+  DropdownMenu,
+  DropdownToggle,
+  UncontrolledDropdown,
+  Container,
+  Card,
+} from "reactstrap";
 import ModalAgregarTipoServicio from "../Modals/ModalAgregarTipoServicio";
 import HeaderTallerPintura from "components/Headers/HeaderTallerPintura";
 
 const TablaTiposServicios = () => {
   const [tiposServicios, setTiposServicios] = useState([]);
   const [modal, setModal] = useState(false);
-  const [editarTipo, setEditarTipo] = useState(null); // Para editar un tipo específico
+  const [editarTipo, setEditarTipo] = useState(null);
 
-  const toggleModal = () => setModal(!modal);
-
-  const agregarTipoServicio = (nuevo) => {
-    const ultimoID = tiposServicios.length ? Math.max(...tiposServicios.map((tipo) => tipo.idTipoServicio)) : 0;
-    const nuevoID = ultimoID + 1; // ID correlativo
-    const tipoServicioConID = { ...nuevo, idTipoServicio: nuevoID };
-
-    setTiposServicios((prevState) => [...prevState, tipoServicioConID]);
-    toggleModal();
+  const toggleModal = () => {
+    setModal(!modal);
+    setEditarTipo(null); // Reiniciar edición si se cancela
   };
 
-  const editarTipoServicio = (actualizado) => {
-    const updatedServicios = tiposServicios.map((tipo) =>
-      tipo.idTipoServicio === actualizado.idTipoServicio ? actualizado : tipo
-    );
-    setTiposServicios(updatedServicios);
-    setEditarTipo(null); // Resetear el estado de edición
+  const obtenerTiposServicios = async () => {
+    try {
+      const res = await fetch("http://localhost:8000/pintura/GET/tiposervicios");
+      if (!res.ok) throw new Error("Error al obtener los tipos de servicio.");
+      const data = await res.json();
+      setTiposServicios(data);
+    } catch (error) {
+      console.error("Error cargando tipos de servicios:", error.message);
+    }
   };
 
-  const eliminarTipoServicio = (id) => {
-    setTiposServicios((prevState) => prevState.filter((tipo) => tipo.idTipoServicio !== id));
+  useEffect(() => {
+    obtenerTiposServicios();
+  }, []);
+
+  const handleSuccess = () => {
+    obtenerTiposServicios(); // Recargar la tabla después de agregar o editar
+  };
+
+  const eliminarTipoServicio = async (id) => {
+    try {
+      const res = await fetch(`http://localhost:8000/pintura/DELETE/tiposervicios/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Error al eliminar el tipo de servicio.");
+      obtenerTiposServicios(); // Refrescar tabla
+    } catch (error) {
+      console.error("Error al eliminar:", error.message);
+    }
   };
 
   return (
     <>
       <HeaderTallerPintura />
+      <br></br><br></br>
       <Container className="mt--7" fluid>
-        <Button color="primary" onClick={toggleModal}>
-          Agregar Tipo de Servicio
-        </Button>
+        
         <Card className="shadow p-4 mb-4">
           <Table className="align-items-center table-flush" responsive>
             <thead className="thead-light">
               <tr>
                 <th>ID</th>
                 <th>Nombre del Tipo</th>
-                <th>Precio Base</th>
                 <th>ID Servicio</th>
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -60,7 +81,6 @@ const TablaTiposServicios = () => {
                   <tr key={tipo.idTipoServicio}>
                     <td>{tipo.idTipoServicio}</td>
                     <td>{tipo.NombreTipo}</td>
-                    <td>${tipo.PrecioBase}</td>
                     <td>{tipo.idServicio}</td>
                     <td>
                       <UncontrolledDropdown>
@@ -69,7 +89,9 @@ const TablaTiposServicios = () => {
                         </DropdownToggle>
                         <DropdownMenu right>
                           <DropdownItem onClick={() => setEditarTipo(tipo)}>Editar</DropdownItem>
-                          <DropdownItem onClick={() => eliminarTipoServicio(tipo.idTipoServicio)}>Eliminar</DropdownItem>
+                          <DropdownItem onClick={() => eliminarTipoServicio(tipo.idTipoServicio)}>
+                            Eliminar
+                          </DropdownItem>
                         </DropdownMenu>
                       </UncontrolledDropdown>
                     </td>
@@ -78,14 +100,18 @@ const TablaTiposServicios = () => {
               )}
             </tbody>
           </Table>
-          <ModalAgregarTipoServicio
-            isOpen={modal || editarTipo !== null}
-            toggle={toggleModal}
-            tipoServicio={editarTipo}
-            onSubmit={editarTipo ? editarTipoServicio : agregarTipoServicio}
-          />
         </Card>
       </Container>
+      <Button color="primary" onClick={toggleModal}>
+          Agregar Tipo de Servicio
+        </Button>
+
+      <ModalAgregarTipoServicio
+        isOpen={modal || editarTipo !== null}
+        toggle={toggleModal}
+        tipoServicio={editarTipo}
+        onSuccess={handleSuccess}
+      />
     </>
   );
 };

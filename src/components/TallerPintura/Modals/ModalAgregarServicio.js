@@ -1,23 +1,32 @@
-// ModalAgregarServicio.js
-import React, { useEffect,useState } from "react";
-import { Modal, ModalHeader, ModalBody, ModalFooter, Button, FormGroup, Label, Input, Form } from "reactstrap";
+import React, { useEffect, useState } from "react";
+import {
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Button,
+  FormGroup,
+  Label,
+  Input,
+  Form,
+} from "reactstrap";
 
-const ModalAgregarServicio = ({ isOpen, toggle, onSubmit,modoEdicion=false,tipoEditar=null }) => {
+const ModalAgregarServicio = ({ isOpen, toggle, modoEdicion = false, tipoEditar = null }) => {
   const [form, setForm] = useState({
     NombreServicio: "",
-    DescripcionServicio: ""
+    DescripcionServicio: "",
   });
 
   useEffect(() => {
     if (modoEdicion && tipoEditar) {
       setForm({
         NombreServicio: tipoEditar.NombreServicio,
-        DescripcionServicio: tipoEditar.DescripcionServicio
+        DescripcionServicio: tipoEditar.DescripcionServicio,
       });
     } else {
       setForm({
         NombreServicio: "",
-        DescripcionServicio: ""
+        DescripcionServicio: "",
       });
     }
   }, [modoEdicion, tipoEditar]);
@@ -26,17 +35,33 @@ const ModalAgregarServicio = ({ isOpen, toggle, onSubmit,modoEdicion=false,tipoE
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-
-  const handleSubmit = () => {
-    // Crear un nuevo servicio con los datos del formulario
+  const handleSubmit = async () => {
     const nuevoServicio = {
-      idServicio: Math.random(), // Generar un id aleatorio para fines de demostración
       NombreServicio: form.NombreServicio,
-      DescripcionServicio: form.DescripcionServicio
+      DescripcionServicio: form.DescripcionServicio,
     };
-    
-    onSubmit(nuevoServicio); // Pasar el nuevo servicio al componente padre
-    setForm({ NombreServicio: "", DescripcionServicio: "" }); // Limpiar formulario
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/pintura/POST/servicios", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(nuevoServicio),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Servicio creado:", data);
+        toggle(); // Cierra el modal
+        setForm({ NombreServicio: "", DescripcionServicio: "" }); // Limpiar formulario
+      } else {
+        const errorData = await response.json();
+        console.error("Error al crear servicio:", errorData);
+      }
+    } catch (error) {
+      console.error("Error de red:", error);
+    }
   };
 
   return (
@@ -63,8 +88,12 @@ const ModalAgregarServicio = ({ isOpen, toggle, onSubmit,modoEdicion=false,tipoE
         </Form>
       </ModalBody>
       <ModalFooter>
-        <Button color="primary" onClick={handleSubmit}>Agregar</Button>
-        <Button color="secondary" onClick={toggle}>Cancelar</Button>
+        <Button color="primary" onClick={handleSubmit}>
+          Agregar
+        </Button>
+        <Button color="secondary" onClick={toggle}>
+          Cancelar
+        </Button>
       </ModalFooter>
     </Modal>
   );
