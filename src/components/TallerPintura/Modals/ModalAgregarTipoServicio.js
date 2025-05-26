@@ -11,34 +11,35 @@ import {
   Form,
 } from "reactstrap";
 
-const ModalAgregarTipoServicio = ({ isOpen, toggle, onSubmit }) => {
+const ModalAgregarTipoServicio = ({ isOpen, toggle, onSuccess }) => {
   const [form, setForm] = useState({
     NombreTipo: "",
-    PrecioBase: "",
     idServicio: "",
   });
 
   const [servicios, setServicios] = useState([]);
-  const [loading, setLoading] = useState(true);  // Agregamos un estado de carga
-  const [error, setError] = useState("");  // Para manejar errores
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [submitError, setSubmitError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   const obtenerServicios = async () => {
     try {
       const res = await fetch("http://localhost:8000/pintura/GET/servicios");
       if (!res.ok) throw new Error("No se pudo obtener los servicios");
       const data = await res.json();
-      setServicios(data);  // Guardamos los servicios solo si la respuesta es válida
+      setServicios(data);
     } catch (err) {
-      setError(err.message);  // Guardamos el mensaje de error si algo falla
+      setError(err.message);
     } finally {
-      setLoading(false);  // Terminamos de cargar
+      setLoading(false);
     }
   };
 
   useEffect(() => {
     if (isOpen) {
-      setLoading(true);  // Cuando se abre el modal, comenzamos a cargar
-      setError("");  // Limpiamos cualquier error anterior
+      setLoading(true);
+      setError("");
       obtenerServicios();
     }
   }, [isOpen]);
@@ -47,9 +48,42 @@ const ModalAgregarTipoServicio = ({ isOpen, toggle, onSubmit }) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = () => {
-    onSubmit(form);
-    setForm({ NombreTipo: "", PrecioBase: "", idServicio: "" });
+  const handleSubmit = async () => {
+    if (!form.NombreTipo || !form.idServicio) {
+      setSubmitError("Todos los campos son obligatorios.");
+      return;
+    }
+
+    setSubmitting(true);
+    setSubmitError("");
+
+    try {
+      const response = await fetch("http://localhost:8000/pintura/POST/tiposervicios", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          NombreTipo: form.NombreTipo,
+          idServicio: parseInt(form.idServicio),
+        }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || "Error al guardar los datos.");
+      }
+
+      const result = await response.json();
+      console.log("Guardado exitosamente:", result);
+      if (onSuccess) onSuccess();
+      toggle();
+      setForm({ NombreTipo: "", idServicio: "" });
+    } catch (err) {
+      setSubmitError(err.message);
+    } finally {
+      setSubmitting(false);
+    }
   };
 
   return (
@@ -62,15 +96,6 @@ const ModalAgregarTipoServicio = ({ isOpen, toggle, onSubmit }) => {
             <Input
               name="NombreTipo"
               value={form.NombreTipo}
-              onChange={handleChange}
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label for="PrecioBase">Precio Base</Label>
-            <Input
-              type="number"
-              name="PrecioBase"
-              value={form.PrecioBase}
               onChange={handleChange}
             />
           </FormGroup>
@@ -96,13 +121,14 @@ const ModalAgregarTipoServicio = ({ isOpen, toggle, onSubmit }) => {
               </Input>
             )}
           </FormGroup>
+          {submitError && <p className="text-danger">{submitError}</p>}
         </Form>
       </ModalBody>
       <ModalFooter>
-        <Button color="primary" onClick={handleSubmit}>
-          Agregar
+        <Button color="primary" onClick={handleSubmit} disabled={submitting}>
+          {submitting ? "Agregando..." : "Agregar"}
         </Button>
-        <Button color="secondary" onClick={toggle}>
+        <Button color="secondary" onClick={toggle} disabled={submitting}>
           Cancelar
         </Button>
       </ModalFooter>

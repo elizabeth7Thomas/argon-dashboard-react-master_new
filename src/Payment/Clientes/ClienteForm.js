@@ -14,10 +14,10 @@ export default function ClienteForm({ isOpen, toggle, formData, setFormData, onS
 
     try {
       if (isEditing) {
-        // Editar cliente
+        
         await axios.put(`http://localhost:3001/pagos/cliente/actualizar/${idCliente}`, formData);
       } else {
-        // Crear nuevo cliente
+        
         await axios.post("http://localhost:3001/pagos/cliente/crear", formData);
       }
 

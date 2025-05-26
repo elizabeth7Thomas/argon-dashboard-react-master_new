@@ -32,6 +32,7 @@ const TablaPrecioServicio = (onEditarClick,onVerClick) => {
   return (
     <>
     <HeaderTallerPintura/>
+    <br></br>
     <Container className="mt--7" fluid>
       <Button color="primary" onClick={toggleModal}>
         Agregar Precio Servicio

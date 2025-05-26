@@ -20,7 +20,7 @@ const TablaTipoPinturas = () => {
 
   const obtenerTiposPinturas = async () =>{
     try{
-      const res = await fetch("http://localhost:8000/pintura/GET/tipospinturas");
+      const res = await fetch("http://localhost:8000/pintura/GET/tipopinturas");
       const data = await res.json();
       const TiposPinturaArray = Array.isArray(data) ? data : [data];
       setTiposPintura(TiposPinturaArray);
@@ -78,10 +78,9 @@ const TablaTipoPinturas = () => {
   return (
     <>
       <HeaderTallerPintura />
+      <br></br> <br></br>
       <Container className="mt--7" fluid>
-        <Button color="primary" onClick={toggleModal}>
-          Agregar Tipo de Pintura
-        </Button>
+      
         <Card className="shadow p-4 mb-4">
           <Table className="align-items-center table-flush" responsive>
             <thead className="thead-light">
@@ -134,7 +133,11 @@ const TablaTipoPinturas = () => {
             tipoEditar={tipoEditar}
           />
         </Card>
+          <Button color="primary" onClick={toggleModal}>
+          Agregar Tipo de Pintura
+        </Button>
       </Container>
+
     </>
   );
 };
