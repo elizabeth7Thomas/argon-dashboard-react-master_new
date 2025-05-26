@@ -53,6 +53,15 @@ import TablaInventarioVehiculos from "components/TallerPintura/Tables/TablaInven
 
 /*IMPORTACION DE ADMINISTRACION */
 import Administracion from "layouts/Administracion.js";
+import Empleados from "../src/Admin/Empleados/Empleados";
+import Areas from "../src/Admin/Areas/AreaList";
+import Alertas from "../src/Admin/Alertas/AlertaList";
+import Roles from "../src/Admin/Roles/RolList";
+import Jornadas from "../src/Admin/Jornadas/JornadaList";
+import Proveedores from "../src/Admin/Proveedores/ProveedorList";
+import Servicios from "../src/Admin/Servicios/ServicioList";
+import Movimientos from "../src/Admin/Movimientos/MovimientoList";
+
 
 /* IMPORTACION TALLER MANTENIMIENTO*/
 import VehiculosMantenimiento from "TallerMantenimiento/VehiculosMantenimiento/VehiculosMantenimiento";
@@ -113,6 +122,17 @@ root.render(
       <Route path = "/admin/inventario" element = {<Inventario />} />
       <Route path = "/admin/proveedoresTienda" element = {<ProveedoresTienda />} />
       <Route path = "/admin/reportesTienda" element = {<ReportesTienda />} />
+
+      {/* ADMINISTRACION ROUTES */}
+      <Route path="/admin/empleados" element={<Empleados />} />
+      <Route path="/admin/areas" element={<Areas />} />
+      <Route path="/admin/alertas" element={<Alertas />} />
+      <Route path="/admin/roles" element={<Roles />} />
+      <Route path="/admin/jornadas" element={<Jornadas />} />
+      <Route path="/admin/proveedores" element={<Proveedores />} />
+      <Route path="/admin/servicios" element={<Servicios />} />
+      <Route path="/admin/movimientos" element={<Movimientos />} />
+
 
       {/* Add more routes as needed */}+
       <Route path="/admin/reports" element={<Reports />} />

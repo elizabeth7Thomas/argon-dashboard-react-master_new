@@ -10,7 +10,7 @@ const TallerPinturas = () => {
       <HeaderTallerPintura />
       <br></br>
       {/* Contenido principal */}
-      <Container className="mt--7" fluid>
+      <Container className="mt--5" fluid>
         <Row className="mb-4">
           <Col>
             <Card className="shadow">
