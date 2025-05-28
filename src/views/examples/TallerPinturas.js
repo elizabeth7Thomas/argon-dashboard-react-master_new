@@ -4,11 +4,13 @@ import { faCalendarAlt, faCar, faChartLine, faClipboardList } from "@fortawesome
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import HeaderTallerPintura from "components/Headers/HeaderTallerPintura";
 import { useNavigate } from 'react-router-dom';
-import TablaServicios from "components/TallerPintura/Tables/TablaServicios";
+
+
 
 
 const TallerPinturas = () => {
   const navigate = useNavigate();
+  
   return (
     <>
     
@@ -57,9 +59,19 @@ const TallerPinturas = () => {
                 </div>
                 <h5 className="card-title text-uppercase text-muted mb-2">Tipos de Pintura</h5>
                 <p className="text-sm">Registrar un nuevo trabajo de pintura</p>
-               <Button color="info" className="mt-2" outline onClick={() => navigate("/admin/tipos-Pintura")}>
-               Ver
-            </Button>
+              <Button
+                outline
+                className="mt-2"
+                style={{
+                  color: '#8A2BE2',
+                  borderColor: '#8A2BE2',
+                  backgroundColor: 'transparent'
+                }}
+                onClick={() => navigate("/admin/tipos-Pintura")}
+              >
+                Ver
+              </Button>
+
               </div>
             </Card>
           </Col>
@@ -73,9 +85,18 @@ const TallerPinturas = () => {
                 </div>
                 <h5 className="card-title text-uppercase text-muted mb-2">Tipos de Servicios</h5>
                 <p className="text-sm">Ver los tipos de servicios disponibles</p>
-               <Button color="info" className="mt-2" outline onClick={() => navigate("/admin/tipos-Servicios")}>
-               Ver
-            </Button>
+                      <Button
+                        outline
+                        className="mt-2"
+                        style={{
+                          color: '#FFD700',
+                          borderColor: '#FFD700',
+                          backgroundColor: 'transparent'
+                        }}
+                        onClick={() => navigate("/admin/tipos-Servicios")}
+                      >
+                        Ver
+                      </Button>
               </div>
             </Card>
           </Col>
@@ -89,7 +110,7 @@ const TallerPinturas = () => {
                 </div>
                 <h5 className="card-title text-uppercase text-muted mb-2">Tipos de Vehículos</h5>
                 <p className="text-sm">Ver los tipos de vehiculos aceptados</p>
-               <Button color="info" className="mt-2" outline onClick={() => navigate("/admin/tipos-Vehiculos")}>
+               <Button color="primary" className="mt-2" outline onClick={() => navigate("/admin/tipos-Vehiculos")}>
                Ver
             </Button>
               </div>

@@ -26,6 +26,16 @@ const TablaTiposVehiculos = () => {
       setTipoEditar(null);
     }
   };
+  const obtenerTipoVehiculos = async () => {
+    try{
+      const res = await fetch("http://127.0.0.1:8000/pintura/GET/tipovehiculos");
+      if(!res.ok) throw new Error("Error al obtener el tipo de vehiculos");
+      const data = await res.json();
+      setTiposVehiculos(data);
+    }catch(error){
+      console.error("Error al cargar los datos", error.message);
+    }
+  };
 
   const agregarTipoVehiculo = (nuevoTipo) => {
     if (modoEdicion && tipoEditar) {
@@ -60,16 +70,15 @@ const TablaTiposVehiculos = () => {
   };
 
   useEffect(() => {
-    setTiposVehiculos([]);
+    obtenerTipoVehiculos();
   }, []);
 
   return (
     <>
       <HeaderTallerPintura />
+      <br></br> <br></br>
       <Container className="mt--7" fluid>
-        <Button color="primary" onClick={toggleModal}>
-          Agregar Tipo de Vehículo
-        </Button>
+      
         <Card className="shadow p-4 mb-4">
           <Table className="align-items-center table-flush" responsive>
             <thead className="thead-light">
@@ -122,7 +131,11 @@ const TablaTiposVehiculos = () => {
           modoEdicion={modoEdicion}
           tipoEditar={tipoEditar}
         />
+        <Button color="primary" onClick={toggleModal}>
+          Agregar Tipo de Vehículo
+        </Button>
       </Container>
+        
     </>
   );
 };

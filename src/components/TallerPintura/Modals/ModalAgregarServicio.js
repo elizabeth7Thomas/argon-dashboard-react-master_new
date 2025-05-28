@@ -64,7 +64,7 @@ const ModalAgregarServicio = ({ isOpen, toggle, modoEdicion = false, tipoEditar 
     }
   };
 
-  return (
+   return (
     <Modal isOpen={isOpen} toggle={toggle}>
       <ModalHeader toggle={toggle}>Agregar nuevo servicio</ModalHeader>
       <ModalBody>
@@ -72,17 +72,21 @@ const ModalAgregarServicio = ({ isOpen, toggle, modoEdicion = false, tipoEditar 
           <FormGroup>
             <Label for="NombreServicio">Nombre del Servicio</Label>
             <Input
+              id="NombreServicio"
               name="NombreServicio"
               value={form.NombreServicio}
               onChange={handleChange}
+              placeholder="Ingrese el nombre del servicio"
             />
           </FormGroup>
           <FormGroup>
             <Label for="DescripcionServicio">Descripción</Label>
             <Input
+              id="DescripcionServicio"
               name="DescripcionServicio"
               value={form.DescripcionServicio}
               onChange={handleChange}
+              placeholder="Ingrese una descripción"
             />
           </FormGroup>
         </Form>

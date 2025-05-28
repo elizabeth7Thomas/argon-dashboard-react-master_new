@@ -21,7 +21,7 @@ const PagosRoutes = () => {
       <Route path="/" element={<Home />} />
       <Route path="/admin/payments/dashboard" element={<DashboardPagos />} />
       <Route path="/admin/payment/clientes" element={<ClientesPage />} />
-      <Route path="/admin/metodos-pago" element={<MetodosPagoPage />} />
+      <Route path="/admin/metodospago" element={<MetodosPagoPage />} />
       <Route path="/admin/transacciones" element={<TransaccionesPage />} />
       <Route path="/admin/devoluciones" element={<DevolucionesPage />} />
       <Route path="/admin/bancos" element={<BancosPage />} />

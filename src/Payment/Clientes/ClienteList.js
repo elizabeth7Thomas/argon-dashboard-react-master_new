@@ -28,10 +28,10 @@ function ClienteList({ clientes, onEdit, onDelete, onView }) {
               <td>{cliente.email}</td>
               <td>{cliente.telefono}</td>
               <td>
-                <Button size="sm" color="info" className="mr-2" onClick={() => onView(cliente)}>
+                <Button size="sm" color="info" className="me-2" onClick={() => onView(cliente)}>
                   <FontAwesomeIcon icon={faEye} />
                 </Button>
-                <Button size="sm" color="warning" className="mr-2" onClick={() => onEdit(cliente)}>
+                <Button size="sm" color="warning" className="me-2" onClick={() => onEdit(cliente)}>
                   <FontAwesomeIcon icon={faEdit} />
                 </Button>
                 <Button size="sm" color="danger" onClick={() => onDelete(cliente)}>
@@ -47,22 +47,34 @@ function ClienteList({ clientes, onEdit, onDelete, onView }) {
 }
 
 export default function ClientesForm() {
-  const [clientes, setClientes] = useState([]); 
+  const [clientes, setClientes] = useState([]);
 
   useEffect(() => {
     const fetchClientes = async () => {
+      
       try {
-    
-        const response = await axios.get("http://localhost:3001/clientes/obtener");
-        const clientesData = response.data.clientes || [];  
-        setClientes(clientesData); 
+        const response = await axios.get("http://localhost:3001/pagos/cliente/obtener", {
+          headers: {
+            "Cache-Control": "no-cache"
+          }
+        });
+
+        console.log("Respuesta del servidor:", response);
+        console.log("Clientes recibidos:", response.data.clientes);
+
+        if (response.status === 200 && response.data && Array.isArray(response.data.clientes)) {
+          setClientes(response.data.clientes);
+        } else {
+          console.warn("La respuesta del servidor no contiene la lista esperada de clientes.");
+          setClientes([]);
+        }
       } catch (error) {
-        console.error("Error al cargar los clientes", error);
+        console.error("Error al cargar los clientes:", error);
         alert("Error al cargar los clientes");
       }
     };
 
-    fetchClientes(); 
+    fetchClientes();
   }, []);
 
   const handleView = (cliente) => {
@@ -75,12 +87,11 @@ export default function ClientesForm() {
 
   const handleDelete = async (cliente) => {
     try {
-     
       await axios.put(`http://localhost:3001/clientes/eliminar/${cliente._id}`);
       alert(`Cliente ${cliente.nombreCliente} eliminado`);
-      setClientes(clientes.filter((c) => c._id !== cliente._id)); 
+      setClientes(clientes.filter((c) => c._id !== cliente._id));
     } catch (error) {
-      console.error("Error al eliminar el cliente", error);
+      console.error("Error al eliminar el cliente:", error);
       alert("Hubo un error al eliminar el cliente");
     }
   };
@@ -88,7 +99,6 @@ export default function ClientesForm() {
   return (
     <div className="container mt-4">
       <h2>Lista de Clientes</h2>
-      
       <ClienteList
         clientes={clientes}
         onView={handleView}

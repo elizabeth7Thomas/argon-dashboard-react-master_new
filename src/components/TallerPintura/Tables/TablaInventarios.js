@@ -75,10 +75,9 @@ const TablaInventario = () => {
   return (
     <>
       <HeaderTallerPintura />
+      <br></br><br></br>
       <Container className="mt--7" fluid>
-        <Button color="primary" onClick={toggleModal}>
-          Agregar Inventario
-        </Button>
+       
         <Card className="shadow p-4 mb-4">
           <Table className="align-items-center table-flush" responsive>
             <thead className="thead-light">
@@ -134,6 +133,9 @@ const TablaInventario = () => {
           </Table>
           <ModalAgregarInventario isOpen={modal} toggle={toggleModal} onSubmit={agregarInventario}/>
         </Card>
+         <Button color="primary" onClick={toggleModal}>
+          Agregar Inventario
+        </Button>
       </Container>
     </>
   );

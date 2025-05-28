@@ -26,10 +26,32 @@ const ModalAgregarTipoVehiculo = ({ isOpen, toggle, onSubmit, modoEdicion = fals
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = () => {
-    if (form.NombreTipoVehiculo.trim() !== "") {
-      onSubmit(form);
-      setForm({ NombreTipoVehiculo: "" });
+  const handleSubmit = async () => {
+   const nuevoVehiculo = {
+    NombreTipoVehiculo: form.NombreTipoVehiculo
+   };
+
+   try{
+    const response = await fetch("http://127.0.0.1:8000/pintura/POST/tipovehiculos",{
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(nuevoVehiculo),
+    });
+
+    if(response.ok){
+      const data = await response.json();
+      console.log("Nuevo tipo de vehiculo agregado", data);
+      toggle();
+      setForm({NombreTipoVehiculo: ""});
+
+    }else{
+        const errorData = await response.json();
+        console.error("Error al crear:", errorData);
+    }
+   }catch (error) {
+      console.error("Error de red:", error);
     }
   };
 

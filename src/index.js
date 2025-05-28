@@ -31,6 +31,7 @@ import Pinturas from "views/examples/TallerPinturas";
 import DashboardPagos from "Payment/pages/DashboardPagos";
 
 
+
 import "assets/plugins/nucleo/css/nucleo.css";
 import "@fortawesome/fontawesome-free/css/all.min.css";
 import "assets/scss/argon-dashboard-react.scss";
@@ -39,8 +40,13 @@ import AdminLayout from "layouts/Admin.js";
 import AuthLayout from "layouts/Auth.js";
 /*IMPORTACION DE TALLER PINTURA */
 import TallerPinturaLayout from "layouts/TallerPintura.js";
-import ClientesPage from "Payment/pages/ClientesPage";
 
+/* IMPORTACION DE PAGOS*/
+import ClientesPage from "Payment/pages/ClientesPage";
+import MetodosPagoPage from "Payment/pages/MetodosPagoPage";
+import TransaccionesPage from "Payment/pages/TransaccionesPage";
+
+/* IMPORTACION TALLER DE PINTURA*/
 import TablaServicios from "components/TallerPintura/Tables/TablaServicios";
 import TablaDevoluciones from "components/TallerPintura/Tables/TablaDevoluciones";
 import TablaTipoPinturas from "components/TallerPintura/Tables/TablaTipoPinturas";
@@ -100,6 +106,8 @@ root.render(
 
       <Route path="/admin/payments/dashboard" element={<DashboardPagos />} />
       <Route path="/admin/payment/clientes" element={<ClientesPage />} />
+      <Route path="/admin/payment/metodos" element = {<MetodosPagoPage />} />
+      <Route path="/admin/payment/transacciones" element = {<TransaccionesPage />} />
 
       {/*TALLER ROUTES*/}
       <Route path="/admin/taller-pinturas" element={<Pinturas />} />

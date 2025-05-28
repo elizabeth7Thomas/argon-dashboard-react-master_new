@@ -122,7 +122,7 @@ export default function DashboardPagos() {
                 </Button>
                 <Button 
                   color="primary" 
-                  onClick={() => navigate('/admin/metodos-pago')} 
+                  onClick={() => navigate('/admin/payment/metodos')} 
                   className="btn-icon"
                 >
                   <FontAwesomeIcon icon={faCreditCard} className="mr-2" /> 
@@ -131,7 +131,7 @@ export default function DashboardPagos() {
                 </Button>
                 <Button 
                   color="success" 
-                  onClick={() => navigate('/admin/transacciones')} 
+                  onClick={() => navigate('/admin/payment/transacciones')} 
                   className="btn-icon"
                 >
                   <FontAwesomeIcon icon={faExchangeAlt} className="mr-2" /> 

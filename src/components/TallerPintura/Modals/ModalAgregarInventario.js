@@ -1,161 +1,192 @@
-import React, { useEffect, useState } from "react";
-import { Modal, ModalHeader, ModalBody, ModalFooter, Button, Form, FormGroup, Label, Input,} from "reactstrap";
+import React, { useState } from "react";
+import {
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Button,
+  FormGroup,
+  Label,
+  Input,
+  Form,
+} from "reactstrap";
 
-const ModalAgregarInventario = ({ isOpen, toggle, onSubmit, modoEdicion = false, tipoEditar = null }) => {
-  const [form, setForm] = useState({
+const CrearInventarioModal = ({ isOpen, toggle }) => {
+  const [formData, setFormData] = useState({
+    accion: "crear",
+    TipoInventario: "",
     NombreProducto: "",
-    CantidadDisponible: 0,
     idTipoPintura: "",
-    TipoInventario: 1,
-    Lote: 1,
+    Lote: "",
     CodigoColor: "",
+    CantidadDisponible: "",
     FechaAdquisicion: "",
     FechaVencimiento: "",
-    EstadoInventario: 1,
+    EstadoInventario: true,
+    deleted: false,
   });
 
-  useEffect(() => {
-    if (modoEdicion && tipoEditar){
-      setForm({
-        NombreProducto: tipoEditar.NombreProducto,
-        CantidadDisponible: tipoEditar.CantidadDisponible,
-        idTipoPintura: tipoEditar.idTipoPintura,
-        Lote: tipoEditar.Lote,
-        CodigoColor: tipoEditar.CodigoColor,
-        FechaAdquisicion: tipoEditar.FechaAdquisicion,
-        FechaVencimiento: tipoEditar.FechaAdquisicion,
-        EstadoInventario: tipoEditar.EstadoInventario
-      });
-    } else {
-      setForm({
-        NombreProducto: "",
-        CantidadDisponible: 0,
-        idTipoPintura: "",
-        TipoInventario: 1,
-        Lote: 1,
-        CodigoColor: "",
-        FechaAdquisicion: "",
-        FechaVencimiento: "",
-        EstadoInventario: 1,
-
-      });
-    }
-  }, [modoEdicion, tipoEditar]);
-
   const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm({ ...form, [name]: value });
+    const { name, value, type, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
   };
 
-  const handleSubmit = () => {
-    if (form.NombreProducto.trim() !== "")
-    onSubmit(form);
-    setForm({NombreProducto: "", CantidadDisponible: 0, idTipoPintura: "", TipoInventario: 1,
-      Lote: 1,
-      CodigoColor: "",
-      FechaAdquisicion: "",
-      FechaVencimiento: "",
-      EstadoInventario: 1})
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    try {
+      const response = await fetch("http://127.0.0.1:8000/pintura/POST/inventarios", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          ...formData,
+          TipoInventario: parseInt(formData.TipoInventario),
+          idTipoPintura: formData.idTipoPintura ? parseInt(formData.idTipoPintura) : null,
+          CantidadDisponible: parseInt(formData.CantidadDisponible),
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        console.error("Error al crear inventario:", error);
+        alert("Error: " + JSON.stringify(error.detail));
+        return;
+      }
+
+      const data = await response.json();
+      console.log("Inventario creado:", data);
+      alert("Inventario creado exitosamente");
+      toggle(); // cerrar modal
+    } catch (error) {
+      console.error("Error de red:", error);
+      alert("Error de red: " + error.message);
+    }
   };
 
   return (
-<Modal isOpen={isOpen} toggle={toggle}>
-      <ModalHeader toggle={toggle}>
-        {modoEdicion ? "Editar Inventario" : "Agregar Inventario"}
-      </ModalHeader>
+    <Modal isOpen={isOpen} toggle={toggle}>
+      <ModalHeader toggle={toggle}>Crear Inventario</ModalHeader>
       <ModalBody>
         <Form>
+          <Input type="hidden" name="accion" value="crear" />
+
           <FormGroup>
-            <Label>Nombre del Producto</Label>
+            <Label for="TipoInventario">Tipo de Inventario</Label>
             <Input
-              name="NombreProducto"
-              value={form.NombreProducto}
-              onChange={handleChange}
-              placeholder="Ej: Pintura Azul"
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label>Cantidad Disponible</Label>
-            <Input
-              type="number"
-              name="CantidadDisponible"
-              value={form.CantidadDisponible}
-              onChange={handleChange}
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label>ID Tipo Pintura</Label>
-            <Input
-              type="number"
-              name="idTipoPintura"
-              value={form.idTipoPintura}
-              onChange={handleChange}
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label>Tipo Inventario</Label>
-            <Input
-              type="number"
+              id="TipoInventario"
               name="TipoInventario"
-              value={form.TipoInventario}
+              type="number"
+              value={formData.TipoInventario}
+              onChange={handleChange}
+              required
+            />
+          </FormGroup>
+
+          <FormGroup>
+            <Label for="NombreProducto">Nombre del Producto</Label>
+            <Input
+              id="NombreProducto"
+              name="NombreProducto"
+              type="text"
+              value={formData.NombreProducto}
+              onChange={handleChange}
+              required
+            />
+          </FormGroup>
+
+          <FormGroup>
+            <Label for="idTipoPintura">Tipo de Pintura (opcional)</Label>
+            <Input
+              id="idTipoPintura"
+              name="idTipoPintura"
+              type="number"
+              value={formData.idTipoPintura}
               onChange={handleChange}
             />
           </FormGroup>
+
           <FormGroup>
-            <Label>Lote</Label>
+            <Label for="Lote">Lote</Label>
             <Input
-              type="number"
+              id="Lote"
               name="Lote"
-              value={form.Lote}
+              type="text"
+              value={formData.Lote}
               onChange={handleChange}
             />
           </FormGroup>
+
           <FormGroup>
-            <Label>Código de Color</Label>
+            <Label for="CodigoColor">Código de Color</Label>
             <Input
+              id="CodigoColor"
               name="CodigoColor"
-              value={form.CodigoColor}
-              onChange={handleChange}
-              placeholder="Ej: AZL456"
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label>Fecha de Adquisición</Label>
-            <Input
-              type="date"
-              name="FechaAdquisicion"
-              value={form.FechaAdquisicion}
+              type="text"
+              value={formData.CodigoColor}
               onChange={handleChange}
             />
           </FormGroup>
+
           <FormGroup>
-            <Label>Fecha de Vencimiento</Label>
+            <Label for="CantidadDisponible">Cantidad Disponible</Label>
             <Input
-              type="date"
-              name="FechaVencimiento"
-              value={form.FechaVencimiento}
-              onChange={handleChange}
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label>Estado Inventario</Label>
-            <Input
+              id="CantidadDisponible"
+              name="CantidadDisponible"
               type="number"
-              name="EstadoInventario"
-              value={form.EstadoInventario}
+              value={formData.CantidadDisponible}
+              onChange={handleChange}
+              required
+            />
+          </FormGroup>
+
+          <FormGroup>
+            <Label for="FechaAdquisicion">Fecha de Adquisición</Label>
+            <Input
+              id="FechaAdquisicion"
+              name="FechaAdquisicion"
+              type="date"
+              value={formData.FechaAdquisicion}
               onChange={handleChange}
             />
+          </FormGroup>
+
+          <FormGroup>
+            <Label for="FechaVencimiento">Fecha de Vencimiento</Label>
+            <Input
+              id="FechaVencimiento"
+              name="FechaVencimiento"
+              type="date"
+              value={formData.FechaVencimiento}
+              onChange={handleChange}
+            />
+          </FormGroup>
+
+          <FormGroup check>
+            <Label check>
+              <Input
+                type="checkbox"
+                name="EstadoInventario"
+                checked={formData.EstadoInventario}
+                onChange={handleChange}
+              />
+              Inventario Activo
+            </Label>
           </FormGroup>
         </Form>
       </ModalBody>
       <ModalFooter>
         <Button color="primary" onClick={handleSubmit}>
-          {modoEdicion ? "Guardar Cambios" : "Agregar"}
+          Guardar
         </Button>
-        <Button color="secondary" onClick={toggle}>Cancelar</Button>
+        <Button color="secondary" onClick={toggle}>
+          Cancelar
+        </Button>
       </ModalFooter>
     </Modal>
   );
 };
 
-export default ModalAgregarInventario;
+export default CrearInventarioModal;

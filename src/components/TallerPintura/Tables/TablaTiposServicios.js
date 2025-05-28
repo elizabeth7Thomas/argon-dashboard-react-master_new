@@ -24,7 +24,7 @@ const TablaTiposServicios = () => {
 
   const obtenerTiposServicios = async () => {
     try {
-      const res = await fetch("http://localhost:8000/pintura/GET/tiposervicios");
+      const res = await fetch("http://127.0.0.1:8000/pintura/GET/tiposervicios");
       if (!res.ok) throw new Error("Error al obtener los tipos de servicio.");
       const data = await res.json();
       setTiposServicios(data);

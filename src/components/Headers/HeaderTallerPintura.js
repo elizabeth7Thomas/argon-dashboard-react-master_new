@@ -133,7 +133,7 @@ const HeaderTallerPintura = () => {
                   <Row>
                     <div className="col">
                       <CardTitle tag="h5" className="text-uppercase text-muted mb-0">
-                        Citas Hoy
+                        Inventario Vehiculos
                       </CardTitle>
                       <span className="h2 font-weight-bold mb-0">{stats.agenda.value}</span>
                       <p className="mt-2 mb-0 text-muted text-sm">
