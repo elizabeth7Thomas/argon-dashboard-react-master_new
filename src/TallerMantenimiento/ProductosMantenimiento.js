@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import axios from "axios";
 import {
   Button,
   Card,
@@ -18,8 +19,12 @@ import {
   Label,
 } from "reactstrap";
 
+const BASE_URL = "https://tallerrepuestos.vercel.app/tallerrepuestos";
+
 const ProductosMantenimiento = () => {
   const [productos, setProductos] = useState([]);
+  const [categoriasList, setCategoriasList] = useState([]);
+  const [busquedaCategoria, setBusquedaCategoria] = useState("");
   const [modal, setModal] = useState(false);
   const [modoEdicion, setModoEdicion] = useState(false);
   const [productoEditando, setProductoEditando] = useState(null);
@@ -28,85 +33,173 @@ const ProductosMantenimiento = () => {
     nombre: "",
     descripcion: "",
     precio: "",
-    idCategoria: "",
+    id_categoria: "",
+    existencia_minima: "",
+    status: 1,
   });
 
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [productoAEliminar, setProductoAEliminar] = useState(null);
+
+  useEffect(() => {
+    obtenerTodosLosProductos();
+    obtenerTodasLasCategorias();
+  }, []);
+
+  const obtenerTodosLosProductos = async () => {
+    try {
+      const resp = await axios.get(`${BASE_URL}/productos`);
+      setProductos(resp.data);
+    } catch (error) {
+      console.error("Error al obtener productos:", error);
+    }
+  };
+
+  const obtenerTodasLasCategorias = async () => {
+    try {
+      const resp = await axios.get(`${BASE_URL}/categorias`);
+      // Filtramos solo status = 1 (activos)
+      const activos = resp.data.filter((c) => c.status === 1);
+      setCategoriasList(
+        activos.map((c) => ({
+          id: c.idcategoria,
+          nombre: c.nombre,
+        }))
+      );
+    } catch (error) {
+      console.error("Error al obtener categorías:", error);
+    }
+  };
+
+  // Filtrado de categorías por nombre
+  const categoriasFiltradas = categoriasList.filter((c) =>
+    c.nombre.toLowerCase().includes(busquedaCategoria.toLowerCase())
+  );
+
+  // Abrir/Cerrar modal de Agregar/Editar
   const toggle = () => {
     setModal(!modal);
     if (!modal) {
+      // si abrimos para “Nuevo”, limpiamos formulario
       setFormulario({
         nombre: "",
         descripcion: "",
         precio: "",
-        idCategoria: "",
+        id_categoria: "",
+        existencia_minima: "",
+        status: 1,
       });
       setModoEdicion(false);
       setProductoEditando(null);
+      setBusquedaCategoria("");
     }
   };
 
+  // Manejar cambios en formulario
   const handleChange = (e) => {
     setFormulario({ ...formulario, [e.target.name]: e.target.value });
   };
 
-  const handleAgregar = () => {
-    const nuevoProducto = {
-      idProducto: Date.now(),
-      nombre: formulario.nombre,
-      descripcion: formulario.descripcion,
-      precio: parseFloat(formulario.precio),
-      idCategoria: parseInt(formulario.idCategoria),
-      categoria: {
-        idCategoria: parseInt(formulario.idCategoria),
-        nombre: "Nombre temporal",
-        descripcion: "Descripción temporal",
-      },
-    };
+  // 2) Agregar Producto → POST /productos
+  const handleAgregar = async () => {
+    // validaciones mínimas
+    if (
+      !formulario.nombre.trim() ||
+      !formulario.descripcion.trim() ||
+      !formulario.precio ||
+      !formulario.id_categoria
+    ) {
+      return;
+    }
 
-    setProductos([...productos, nuevoProducto]);
-    toggle();
+    try {
+      const nuevo = {
+        nombre: formulario.nombre.trim(),
+        descripcion: formulario.descripcion.trim(),
+        precio: parseFloat(formulario.precio),
+        id_categoria: parseInt(formulario.id_categoria, 10),
+        existencia_minima: parseInt(formulario.existencia_minima || "0", 10),
+        status: formulario.status,
+      };
+
+      await axios.post(`${BASE_URL}/productos`, nuevo);
+      await obtenerTodosLosProductos();
+      toggle();
+    } catch (error) {
+      console.error("Error al crear producto:", error);
+    }
   };
 
+  // 3) Cargar formulario para edición
   const handleEditarClick = (producto) => {
     setFormulario({
       nombre: producto.nombre,
       descripcion: producto.descripcion,
       precio: producto.precio,
-      idCategoria: producto.idCategoria,
+      id_categoria: producto.idcategoria.toString(),
+      existencia_minima: producto.existenciaminima.toString(),
+      status: producto.status,
     });
     setModoEdicion(true);
     setProductoEditando(producto);
     setModal(true);
-  };
-
-  const handleActualizar = () => {
-    const actualizados = productos.map((p) =>
-      p.idProducto === productoEditando.idProducto
-        ? {
-            ...p,
-            nombre: formulario.nombre,
-            descripcion: formulario.descripcion,
-            precio: parseFloat(formulario.precio),
-            idCategoria: parseInt(formulario.idCategoria),
-            categoria: {
-              idCategoria: parseInt(formulario.idCategoria),
-              nombre: "Nombre temporal",
-              descripcion: "Descripción temporal",
-            },
-          }
-        : p
+    setBusquedaCategoria(
+      categoriasList.find((c) => c.id === producto.idcategoria)?.nombre || ""
     );
-    setProductos(actualizados);
-    toggle();
   };
 
-  const handleEliminar = (id) => {
-    setProductos(productos.filter((p) => p.idProducto !== id));
+  // 4) Actualizar Producto → PUT /productos/:id
+  const handleActualizar = async () => {
+    if (!productoEditando) return;
+
+    try {
+      const actualizado = {
+        nombre: formulario.nombre.trim(),
+        descripcion: formulario.descripcion.trim(),
+        precio: parseFloat(formulario.precio),
+        id_categoria: parseInt(formulario.id_categoria, 10),
+        existencia_minima: parseInt(formulario.existencia_minima || "0", 10),
+        status: formulario.status,
+      };
+
+      await axios.put(
+        `${BASE_URL}/productos/${productoEditando.idproducto}`,
+        actualizado
+      );
+      await obtenerTodosLosProductos();
+      toggle();
+    } catch (error) {
+      console.error("Error al actualizar producto:", error);
+    }
+  };
+
+  const solicitarBorrado = (producto) => {
+    setProductoAEliminar(producto);
+    setShowDeleteModal(true);
+  };
+
+  const confirmarBorrado = async () => {
+    if (!productoAEliminar) return;
+
+    try {
+      await axios.delete(
+        `${BASE_URL}/productos/${productoAEliminar.idproducto}`
+      );
+      await obtenerTodosLosProductos();
+      setShowDeleteModal(false);
+      setProductoAEliminar(null);
+    } catch (error) {
+      console.error("Error al borrar producto:", error);
+    }
+  };
+
+  const cancelarBorrado = () => {
+    setShowDeleteModal(false);
+    setProductoAEliminar(null);
   };
 
   return (
     <>
-      
       <Container className="mt-4" fluid>
         <Row>
           <Col>
@@ -125,39 +218,47 @@ const ProductosMantenimiento = () => {
                       <th>Descripción</th>
                       <th>Precio</th>
                       <th>Categoría</th>
+                      <th>Existencia Mínima</th>
                       <th>Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {productos.map((producto) => (
-                      <tr key={producto.idProducto}>
-                        <td>{producto.nombre}</td>
-                        <td>{producto.descripcion}</td>
-                        <td>{producto.precio}</td>
-                        <td>{producto.categoria?.nombre}</td>
-                        <td>
-                          <Button
-                            size="sm"
-                            color="warning"
-                            className="me-2"
-                            onClick={() => handleEditarClick(producto)}
-                          >
-                            Editar
-                          </Button>
-                          <Button
-                            size="sm"
-                            color="danger"
-                            onClick={() => handleEliminar(producto.idProducto)}
-                          >
-                            Eliminar
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                    {productos.length === 0 && (
+                    {productos.length > 0 ? (
+                      productos.map((p) => {
+                        const categoria = categoriasList.find(
+                          (c) => c.id === p.idcategoria
+                        );
+                        return (
+                          <tr key={p.idproducto}>
+                            <td>{p.nombre}</td>
+                            <td>{p.descripcion}</td>
+                            <td>{p.precio}</td>
+                            <td>{categoria?.nombre || "N/A"}</td>
+                            <td>{p.existenciaminima}</td>
+                            <td>
+                              <Button
+                                size="sm"
+                                color="warning"
+                                className="me-2"
+                                onClick={() => handleEditarClick(p)}
+                              >
+                                Editar
+                              </Button>
+                              <Button
+                                size="sm"
+                                color="danger"
+                                onClick={() => solicitarBorrado(p)}
+                              >
+                                Eliminar
+                              </Button>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    ) : (
                       <tr>
-                        <td colSpan="5" className="text-center">
-                          No hay productos agregados
+                        <td colSpan="6" className="text-center">
+                          No hay productos disponibles
                         </td>
                       </tr>
                     )}
@@ -169,7 +270,7 @@ const ProductosMantenimiento = () => {
         </Row>
       </Container>
 
-      {/* Modal Agregar/Editar */}
+      {/* Moda para agregar y editar p*/}
       <Modal isOpen={modal} toggle={toggle}>
         <ModalHeader toggle={toggle}>
           {modoEdicion ? "Editar Producto" : "Agregar Producto"}
@@ -198,17 +299,44 @@ const ProductosMantenimiento = () => {
               <Label>Precio</Label>
               <Input
                 type="number"
+                step="0.01"
                 name="precio"
                 value={formulario.precio}
                 onChange={handleChange}
               />
             </FormGroup>
+
+            {/* espacio para la categoria*/}
             <FormGroup>
-              <Label>ID Categoría</Label>
+              <Label>Buscar Categoría</Label>
+              <Input
+                type="text"
+                placeholder="Escribe nombre de categoría..."
+                value={busquedaCategoria}
+                onChange={(e) => setBusquedaCategoria(e.target.value)}
+                className="mb-2"
+              />
+              <Input
+                type="select"
+                name="id_categoria"
+                value={formulario.id_categoria}
+                onChange={handleChange}
+              >
+                <option value="">-- Selecciona una categoría --</option>
+                {categoriasFiltradas.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.nombre}
+                  </option>
+                ))}
+              </Input>
+            </FormGroup>
+
+            <FormGroup>
+              <Label>Existencia Mínima</Label>
               <Input
                 type="number"
-                name="idCategoria"
-                value={formulario.idCategoria}
+                name="existencia_minima"
+                value={formulario.existencia_minima}
                 onChange={handleChange}
               />
             </FormGroup>
@@ -225,6 +353,42 @@ const ProductosMantenimiento = () => {
             </Button>
           )}
           <Button color="secondary" onClick={toggle}>
+            Cancelar
+          </Button>
+        </ModalFooter>
+      </Modal>
+
+      {/* Modal de Confirmación de eliminacion */}
+      <Modal isOpen={showDeleteModal} toggle={cancelarBorrado}>
+        <ModalHeader toggle={cancelarBorrado}>
+          Confirmar eliminación
+        </ModalHeader>
+        <ModalBody>
+          {productoAEliminar && (
+            <>
+              <p>
+                Estás a punto de eliminar el producto con los siguientes datos:
+              </p>
+              <ul>
+                <li>
+                  <strong>Nombre:</strong> {productoAEliminar.nombre}
+                </li>
+                <li>
+                  <strong>Descripción:</strong> {productoAEliminar.descripcion}
+                </li>
+                <li>
+                  <strong>Precio:</strong> {productoAEliminar.precio}
+                </li>
+              </ul>
+              <p>¿Deseas continuar?</p>
+            </>
+          )}
+        </ModalBody>
+        <ModalFooter>
+          <Button color="danger" onClick={confirmarBorrado}>
+            Sí, eliminar
+          </Button>
+          <Button color="secondary" onClick={cancelarBorrado}>
             Cancelar
           </Button>
         </ModalFooter>

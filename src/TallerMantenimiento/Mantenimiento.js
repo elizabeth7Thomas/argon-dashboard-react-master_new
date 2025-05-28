@@ -3,6 +3,12 @@ import HeaderMantenimiento from 'components/Headers/HeaderMantenimiento';
 import ProductosMantenimiento from './ProductosMantenimiento';
 import Clientes from './Clientes';
 import VehiculosMantenimiento from './VehiculosMantenimiento/VehiculosMantenimiento';
+import CategoriasMantenimiento from './CategoriasMantenimiento';
+import TipoServicioMantenimiento from './TipoServicioMantenimiento';
+import ServiciosMantenimiento from './ServiciosMantenimiento';
+import Empleados from './Empleados';
+import PrecioHistorial from './PrecioHistorial';
+import Inventario from './InventariosLote';
 
 import {
   Container,
@@ -21,15 +27,23 @@ import {
   faFileInvoice
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+//import Inventario from 'TiendaConveniencia/InventarioTienda/Inventario';
 
 const Mantenimiento = () => {
   const [selectedSection, setSelectedSection] = useState(null);
 
   const secciones = [
     { id: 'clientes', label: 'Clientes', icon: faUsers, color: 'primary' },
+    { id: 'categorias', label: 'Categorías', icon: faCogs, color: 'info' },
     { id: 'productos', label: 'Productos', icon: faCogs, color: 'success' },
     { id: 'vehiculos', label: 'Vehículos', icon: faCar, color: 'warning' },
     { id: 'ventas', label: 'Ventas', icon: faFileInvoice, color: 'danger' },
+    { id: 'tipo_servicio', label: 'tipo_servicio', icon: faFileInvoice, color: 'secondary' },
+    { id: 'servicios', label: 'Servicios', icon: faFileInvoice, color: 'dark' },
+    { id: 'Empleados', label: 'Empleados', icon: faFileInvoice, color: 'dark' },
+    { id: 'PrecioHistorial', label: 'PrecioHistorial', icon: faFileInvoice, color: 'dark' },
+    { id: 'inventario', label: 'Inventario', icon: faCogs, color: 'primary' },
+    { id: 'movimientos', label: 'Movimientos', icon: faCogs, color: 'primary' },
   ];
 
   return (
@@ -72,9 +86,18 @@ const Mantenimiento = () => {
               </CardHeader>
               <CardBody>
                 {selectedSection === 'clientes' && <Clientes />}
+                {selectedSection === 'categorias' && <CategoriasMantenimiento/>}
                 {selectedSection === 'productos' && <ProductosMantenimiento />}
                 {selectedSection === 'vehiculos' && <VehiculosMantenimiento />}
                 {selectedSection === 'ventas' && (
+                  <p>🚧 Módulo de ventas en construcción...</p>
+                )}
+                {selectedSection === 'tipo_servicio' && <TipoServicioMantenimiento />}
+                {selectedSection === 'servicios' && <ServiciosMantenimiento />}
+                {selectedSection === 'Empleados' && <Empleados />}
+                {selectedSection === 'PrecioHistorial' && <PrecioHistorial />}
+                {selectedSection === 'inventario' && <Inventario />}
+                {selectedSection === 'movimientos' && (
                   <p>🚧 Módulo de ventas en construcción...</p>
                 )}
               </CardBody>

@@ -1,0 +1,304 @@
+// src/components/CategoriasMantenimiento.jsx
+
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import {
+  Button,
+  Card,
+  CardHeader,
+  CardBody,
+  Table,
+  Container,
+  Row,
+  Col,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Form,
+  FormGroup,
+  Input,
+  Label,
+} from "reactstrap";
+
+const BASE_URL = "https://tallerrepuestos.vercel.app/tallerrepuestos";
+
+const CategoriasMantenimiento = () => {
+  const [categorias, setCategorias] = useState([]);
+  const [modal, setModal] = useState(false);
+  const [modoEdicion, setModoEdicion] = useState(false);
+  const [categoriaEditando, setCategoriaEditando] = useState(null);
+
+  const [formulario, setFormulario] = useState({
+    nombre: "",
+    descripcion: "",
+    status: 1,
+  });
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [categoriaAEliminar, setCategoriaAEliminar] = useState(null);
+
+  useEffect(() => {
+    obtenerTodasLasCategorias();
+  }, []);
+
+  const obtenerTodasLasCategorias = async () => {
+    try {
+      const resp = await axios.get(`${BASE_URL}/categorias`);
+      setCategorias(resp.data);
+    } catch (error) {
+      console.error("Error al obtener categorías:", error);
+    }
+  };
+
+  const toggle = () => {
+    setModal(!modal);
+    if (!modal) {
+      setFormulario({
+        nombre: "",
+        descripcion: "",
+        status: 1,
+      });
+      setModoEdicion(false);
+      setCategoriaEditando(null);
+    }
+  };
+
+  // Manejar cambios en formulario
+  const handleChange = (e) => {
+    setFormulario({ ...formulario, [e.target.name]: e.target.value });
+  };
+
+  const handleAgregar = async () => {
+    // validaciones mínimas
+    if (!formulario.nombre.trim()) {
+      return;
+    }
+
+    try {
+      const nueva = {
+        nombre: formulario.nombre.trim(),
+        descripcion: formulario.descripcion.trim(),
+        status: formulario.status,
+      };
+
+      await axios.post(`${BASE_URL}/categorias`, nueva);
+      await obtenerTodasLasCategorias();
+      toggle();
+    } catch (error) {
+      console.error("Error al crear categoría:", error);
+    }
+  };
+
+  const handleEditarClick = (categoria) => {
+    setFormulario({
+      nombre: categoria.nombre,
+      descripcion: categoria.descripcion,
+      status: categoria.status,
+    });
+    setModoEdicion(true);
+    setCategoriaEditando(categoria);
+    setModal(true);
+  };
+
+  const handleActualizar = async () => {
+    if (!categoriaEditando) return;
+
+    try {
+      const actualizado = {
+        nombre: formulario.nombre.trim(),
+        descripcion: formulario.descripcion.trim(),
+        status: formulario.status,
+      };
+
+      await axios.put(
+        `${BASE_URL}/categorias/${categoriaEditando.idcategoria}`,
+        actualizado
+      );
+      await obtenerTodasLasCategorias();
+      toggle();
+    } catch (error) {
+      console.error("Error al actualizar categoría:", error);
+    }
+  };
+
+  const solicitarBorrado = (categoria) => {
+    setCategoriaAEliminar(categoria);
+    setShowDeleteModal(true);
+  };
+
+  const confirmarBorrado = async () => {
+    if (!categoriaAEliminar) return;
+
+    try {
+      await axios.delete(
+        `${BASE_URL}/categorias/${categoriaAEliminar.idcategoria}`
+      );
+      await obtenerTodasLasCategorias();
+      setShowDeleteModal(false);
+      setCategoriaAEliminar(null);
+    } catch (error) {
+      console.error("Error al borrar categoría:", error);
+    }
+  };
+
+  const cancelarBorrado = () => {
+    setShowDeleteModal(false);
+    setCategoriaAEliminar(null);
+  };
+
+  return (
+    <>
+      <Container className="mt-4" fluid>
+        <Row>
+          <Col>
+            <Card>
+              <CardHeader className="d-flex justify-content-between align-items-center">
+                <h3>Lista de Categorías</h3>
+                <Button color="primary" onClick={toggle}>
+                  Agregar Categoría
+                </Button>
+              </CardHeader>
+              <CardBody>
+                <Table responsive>
+                  <thead>
+                    <tr>
+                      <th>Nombre</th>
+                      <th>Descripción</th>
+                      <th>Status</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {categorias.length > 0 ? (
+                      categorias.map((c) => (
+                        <tr key={c.idcategoria}>
+                          <td>{c.nombre}</td>
+                          <td>{c.descripcion}</td>
+                          <td>{c.status === 1 ? "Activo" : "Inactivo"}</td>
+                          <td>
+                            <Button
+                              size="sm"
+                              color="warning"
+                              className="me-2"
+                              onClick={() => handleEditarClick(c)}
+                            >
+                              Editar
+                            </Button>
+                            <Button
+                              size="sm"
+                              color="danger"
+                              onClick={() => solicitarBorrado(c)}
+                            >
+                              Eliminar
+                            </Button>
+                          </td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="4" className="text-center">
+                          No hay categorías disponibles
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </Table>
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
+
+      {/* Moda para agregar y editar c */}
+      <Modal isOpen={modal} toggle={toggle}>
+        <ModalHeader toggle={toggle}>
+          {modoEdicion ? "Editar Categoría" : "Agregar Categoría"}
+        </ModalHeader>
+        <ModalBody>
+          <Form>
+            <FormGroup>
+              <Label>Nombre</Label>
+              <Input
+                type="text"
+                name="nombre"
+                value={formulario.nombre}
+                onChange={handleChange}
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label>Descripción</Label>
+              <Input
+                type="text"
+                name="descripcion"
+                value={formulario.descripcion}
+                onChange={handleChange}
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label>Status</Label>
+              <Input
+                type="select"
+                name="status"
+                value={formulario.status}
+                onChange={handleChange}
+              >
+                <option value={1}>Activo</option>
+                <option value={0}>Inactivo</option>
+              </Input>
+            </FormGroup>
+          </Form>
+        </ModalBody>
+        <ModalFooter>
+          {modoEdicion ? (
+            <Button color="success" onClick={handleActualizar}>
+              Actualizar
+            </Button>
+          ) : (
+            <Button color="primary" onClick={handleAgregar}>
+              Agregar
+            </Button>
+          )}
+          <Button color="secondary" onClick={toggle}>
+            Cancelar
+          </Button>
+        </ModalFooter>
+      </Modal>
+
+      {/* Modal de Confirmación de eliminacion */}
+      <Modal isOpen={showDeleteModal} toggle={cancelarBorrado}>
+        <ModalHeader toggle={cancelarBorrado}>
+          Confirmar eliminación
+        </ModalHeader>
+        <ModalBody>
+          {categoriaAEliminar && (
+            <>
+              <p>
+                Estás a punto de eliminar la categoría con los siguientes datos:
+              </p>
+              <ul>
+                <li>
+                  <strong>Nombre:</strong> {categoriaAEliminar.nombre}
+                </li>
+                <li>
+                  <strong>Descripción:</strong> {categoriaAEliminar.descripcion}
+                </li>
+              </ul>
+              <p>¿Deseas continuar?</p>
+            </>
+          )}
+        </ModalBody>
+        <ModalFooter>
+          <Button color="danger" onClick={confirmarBorrado}>
+            Sí, eliminar
+          </Button>
+          <Button color="secondary" onClick={cancelarBorrado}>
+            Cancelar
+          </Button>
+        </ModalFooter>
+      </Modal>
+    </>
+  );
+};
+
+export default CategoriasMantenimiento;
