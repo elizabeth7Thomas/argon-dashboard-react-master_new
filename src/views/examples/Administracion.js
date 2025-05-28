@@ -103,7 +103,7 @@ export default function Administracion() {
                 </Button>
                 <Button 
                   color="purple" 
-                  onClick={() => navigate('/admin/servicios')}
+                  onClick={() => navigate('/admin/services')}
                   className="btn-icon"
                 >
                   <FontAwesomeIcon icon={faCogs} className="mr-2" />

@@ -1,30 +1,21 @@
+// src/Admin/Empleados/Empleados.js
 import React, { useEffect, useState } from 'react';
-import {
-  Container, Row, Col, Card, CardHeader, CardBody,
-  Button, Badge, Modal
-} from 'reactstrap';
-import Header from "components/Headers/HeaderAdministracion";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faPlus, faUsers } from "@fortawesome/free-solid-svg-icons";
-import EmpleadoForm from './EmpleadoForm';
-import EmpleadoList from './EmpleadoList';
-import routes from 'routes';
 import axios from 'axios';
+import routes from '../routes';
+import EmpleadoList from './EmpleadoList';
+import EmpleadoForm from './EmpleadoForm';
+import { Modal, ModalHeader, ModalBody } from 'reactstrap';
+import HeaderAdministracion from 'components/Headers/HeaderAdministracion';
 
 export default function Empleados() {
   const [empleados, setEmpleados] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingData, setEditingData] = useState(null);
 
-  const toggleModal = () => {
-    setModalOpen(!modalOpen);
-    if (!modalOpen) setEditingData(null);
-  };
-
   const fetchEmpleados = async () => {
     try {
-      const response = await axios.get(routes.Administracion.Empleados);
-      setEmpleados(response.data);
+      const response = await axios.get(routes.Administracion.Empleados.GET_ALL);
+      setEmpleados(response.data.empleados || []);
     } catch (error) {
       console.error("Error al obtener empleados:", error);
     }
@@ -34,29 +25,20 @@ export default function Empleados() {
     fetchEmpleados();
   }, []);
 
-  const handleSave = async (empleado) => {
-    try {
-      if (editingData) {
-        await axios.put(`${routes.Administracion.Empleados}/${editingData.empleadoId}`, empleado);
-      } else {
-        await axios.post(routes.Administracion.Empleados, empleado);
-      }
-      fetchEmpleados();
-      toggleModal();
-    } catch (error) {
-      console.error("Error al guardar empleado:", error);
-    }
+  const toggleModal = () => {
+    setModalOpen(!modalOpen);
+    if (modalOpen) setEditingData(null); // limpiar datos al cerrar modal
   };
 
-  const handleEdit = (empleado) => {
-    setEditingData(empleado);
+  const handleEdit = (item) => {
+    setEditingData(item);
     setModalOpen(true);
   };
 
   const handleDelete = async (id) => {
     if (window.confirm("¿Deseas eliminar este empleado?")) {
       try {
-        await axios.delete(`${routes.Administracion.Empleados}/${id}`);
+        await axios.delete(routes.Administracion.Empleados.DELETE(id));
         fetchEmpleados();
       } catch (error) {
         console.error("Error al eliminar empleado:", error);
@@ -64,61 +46,46 @@ export default function Empleados() {
     }
   };
 
+ const handleSave = async (empleadoPayload) => {
+  try {
+    if (editingData) {
+      await axios.put(routes.Administracion.Empleados.UPDATE(editingData.empleado.id), empleadoPayload);
+      alert("Empleado actualizado con éxito");
+    } else {
+      const response = await axios.post(routes.Administracion.Empleados.CREATE, empleadoPayload);
+      alert(response.data.message + "\nUsuario: " + response.data.autenticacion.usuario + "\nContraseña temporal: " + response.data.autenticacion.contraseniaTemporal);
+    }
+    fetchEmpleados();
+    toggleModal();
+    } catch (error) {
+      console.error("Error al guardar empleado:", error);
+      alert("Ocurrió un error al guardar el empleado");
+    }
+  };
+
   return (
-    <>
-      <Header />
-      <Container className="mt-5" fluid>
-        <Row className="mb-4">
-          <Col>
-            <Card className="shadow">
-              <CardHeader>
-                <Row className="align-items-center">
-                  <Col>
-                    <h3>
-                      <FontAwesomeIcon icon={faUsers} className="mr-2" />
-                      Gestión de Empleados
-                    </h3>
-                  </Col>
-                  <Col className="text-right">
-                    <Badge color="info" pill>Activo</Badge>
-                  </Col>
-                </Row>
-              </CardHeader>
-            </Card>
-          </Col>
-        </Row>
+    
+    <div>
+      <HeaderAdministracion title="Empleados" />
+      <button className="btn btn-primary mb-3" onClick={toggleModal}>Agregar Empleado</button>
 
-        <Row>
-          <Col>
-            <Card className="shadow">
-              <CardBody>
-                <div className="d-flex justify-content-between align-items-center mb-3">
-                  <h4 className="mb-0">Listado de Empleados</h4>
-                  <Button color="success" onClick={toggleModal}>
-                    <FontAwesomeIcon icon={faPlus} className="mr-2" />
-                    Nuevo Empleado
-                  </Button>
-                </div>
-                <EmpleadoList
-                  empleados={empleados}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                  onClose={() => {}}
-                />
-              </CardBody>
-            </Card>
-          </Col>
-        </Row>
+      <EmpleadoList 
+        empleados={empleados} 
+        onEdit={handleEdit} 
+        onDelete={handleDelete} 
+        onClose={toggleModal} 
+      />
 
-        {/* Modal Formulario */}
-        <Modal isOpen={modalOpen} toggle={toggleModal}>
-          <EmpleadoForm
-            onSave={handleSave}
-            onCancel={toggleModal}
-            initialData={editingData}
+      <Modal isOpen={modalOpen} toggle={toggleModal}>
+        <ModalHeader toggle={toggleModal}>{editingData ? "Editar Empleado" : "Nuevo Empleado"}</ModalHeader>
+        <ModalBody>
+          <EmpleadoForm 
+            onSave={handleSave} 
+            onCancel={toggleModal} 
+            initialData={editingData} 
           />
-        </Modal>
-      </Container>
-    </>
+        </ModalBody>
+      </Modal>
+    </div>
   );
 }
