@@ -18,7 +18,6 @@
 import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
-
 /*IMPORTACIONES GASOLINA*/
 import Alerts from "Gasoline/Alerts/Alerts";
 import Deposits from "Gasoline/Deposits/Deposits";
@@ -59,6 +58,15 @@ import TablaInventarioVehiculos from "components/TallerPintura/Tables/TablaInven
 
 /*IMPORTACION DE ADMINISTRACION */
 import Administracion from "layouts/Administracion.js";
+import Empleados from "../src/Admin/Empleados/Empleados";
+import Areas from "../src/Admin/Areas/Areas";
+import Alertas from "../src/Admin/Alertas/Alertas";
+import Roles from "../src/Admin/Roles/Roles";
+import Jornadas from "../src/Admin/Jornadas/Jornadas";
+import Proveedores from "../src/Admin/Proveedores/Proveedores";
+import Servicios from "../src/Admin/Servicios/Servicios";
+import Movimientos from "../src/Admin/Movimientos/Movimientos";
+
 
 /* IMPORTACION TALLER MANTENIMIENTO*/
 import VehiculosMantenimiento from "TallerMantenimiento/VehiculosMantenimiento/VehiculosMantenimiento";
@@ -121,6 +129,17 @@ root.render(
       <Route path = "/admin/inventario" element = {<Inventario />} />
       <Route path = "/admin/proveedoresTienda" element = {<ProveedoresTienda />} />
       <Route path = "/admin/reportesTienda" element = {<ReportesTienda />} />
+
+      {/* ADMINISTRACION ROUTES */}
+      <Route path="/admin/empleados" element={<Empleados />} />
+      <Route path="/admin/areas" element={<Areas />} />
+      <Route path="/admin/alertas" element={<Alertas />} />
+      <Route path="/admin/roles" element={<Roles />} />
+      <Route path="/admin/jornadas" element={<Jornadas />} />
+      <Route path="/admin/proveedores" element={<Proveedores />} />
+      <Route path="/admin/services" element={<Servicios />} />
+      <Route path="/admin/movimientos" element={<Movimientos />} />
+
 
       {/* Add more routes as needed */}+
       <Route path="/admin/reports" element={<Reports />} />

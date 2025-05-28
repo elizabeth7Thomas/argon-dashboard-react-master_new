@@ -22,9 +22,6 @@ const HeaderAdministracion = () => {
               <h2 className="text-white mb-0">Panel de Administración</h2>
               <nav aria-label="breadcrumb">
                 <ol className="breadcrumb breadcrumb-dark">
-                  <li className="breadcrumb-item">
-                    <a href="#/">Inicio</a>
-                  </li>
                   <li className="breadcrumb-item active" aria-current="page">
                     Administración
                   </li>

@@ -103,7 +103,7 @@ export default function Administracion() {
                 </Button>
                 <Button 
                   color="purple" 
-                  onClick={() => navigate('/admin/servicios')}
+                  onClick={() => navigate('/admin/services')}
                   className="btn-icon"
                 >
                   <FontAwesomeIcon icon={faCogs} className="mr-2" />
@@ -265,7 +265,7 @@ export default function Administracion() {
               <CardBody className="d-flex flex-wrap gap-3 justify-content-center">
                 <Button 
                   color="primary" 
-                  onClick={() => navigate('/admin/empleados/nuevo')}
+                  onClick={() => navigate('/admin/empleados')}
                   className="btn-icon"
                 >
                   <FontAwesomeIcon icon={faUsers} className="mr-2" />
