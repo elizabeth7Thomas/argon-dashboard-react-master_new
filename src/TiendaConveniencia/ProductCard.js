@@ -1,11 +1,11 @@
 import React from "react";
 
-function ProductCard({ product, onAdd }) {
+function ProductCard({ producto, onAdd }) {
   const {
-    name = "Sin nombre",
-    price = 0,
-    image = "https://via.placeholder.com/100?text=Sin+Imagen",
-  } = product || {};
+    nombre = "Sin nombre",
+    precio = 0,
+    imagen = "https://via.placeholder.com/100?text=Sin+Imagen",
+  } = producto || {};
 
   return (
     <div
@@ -34,8 +34,8 @@ function ProductCard({ product, onAdd }) {
         }}
       >
         <img
-          src={image}
-          alt={name}
+          src={imagen}
+          alt={nombre}
           style={{
             maxWidth: "100%",
             maxHeight: "100%",
@@ -43,12 +43,12 @@ function ProductCard({ product, onAdd }) {
           }}
         />
       </div>
-      <div style={{ fontWeight: "bold", marginBottom: "4px" }}>{name}</div>
+      <div style={{ fontWeight: "bold", marginBottom: "4px" }}>{nombre}</div>
       <div style={{ color: "green", marginBottom: "6px" }}>
-        Q{Number(price).toFixed(2)}
+        Q{Number(precio).toFixed(2)}
       </div>
       <button
-        onClick={() => onAdd(product)}
+        onClick={() => onAdd && onAdd(producto)}
         style={{
           padding: "4px 8px",
           fontSize: "11px",

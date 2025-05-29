@@ -10,6 +10,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
+
 const HeaderTienda = () => {
   const navigate = useNavigate();
   
@@ -59,7 +60,10 @@ const HeaderTienda = () => {
 
             {/* Devoluciones */}
             <Col lg="6" xl="3">
-              <Card className="card-stats mb-4 mb-xl-0 hover-card">
+                <Card 
+                className="card-stats mb-4 mb-xl-0 hover-card" 
+                onClick={() => navigate("/admin/tienda/devoluciones")}
+              >
                 <CardBody>
                   <Row>
                     <div className="col">

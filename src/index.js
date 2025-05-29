@@ -78,6 +78,7 @@ import ReportesTienda from "TiendaConveniencia/ReportesTienda/ReportesTienda";
 import Inventario from "TiendaConveniencia/InventarioTienda/Inventario.js";
 import Clientes from "TallerMantenimiento/Clientes";
 import Reports from "views/examples/Reports";
+import Devoluciones from "TiendaConveniencia/Devoluciones/Devoluciones";
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(
@@ -129,6 +130,7 @@ root.render(
       <Route path = "/admin/inventario" element = {<Inventario />} />
       <Route path = "/admin/proveedoresTienda" element = {<ProveedoresTienda />} />
       <Route path = "/admin/reportesTienda" element = {<ReportesTienda />} />
+      <Route path = "/admin/tienda/devoluciones" element = {<Devoluciones />} />
 
       {/* ADMINISTRACION ROUTES */}
       <Route path="/admin/empleados" element={<Empleados />} />

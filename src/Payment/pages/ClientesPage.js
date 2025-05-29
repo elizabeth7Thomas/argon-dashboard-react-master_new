@@ -2,6 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { Container, Card, CardBody, Button } from "reactstrap";
 import HeaderClients from "../../components/Headers/HeaderClients";
+import HeaderPagos from "components/Headers/HeaderPagos";
 import ClienteForm from "../Clientes/ClienteForm";
 import ClienteList from "../Clientes/ClienteList";
 import ClienteDetail from "../Clientes/ClienteDetail";
@@ -73,7 +74,7 @@ export default function Clientes() {
 
   return (
     <>
-      <HeaderClients />
+      <HeaderPagos />
       <Container className="mt--6" fluid>
         <Card>
           <CardBody>

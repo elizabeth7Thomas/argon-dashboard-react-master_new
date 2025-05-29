@@ -1,10 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import axios from 'axios';
 import HeaderTienda from 'components/Headers/HeaderTienda';
 import {
   Container,
   Row,
- 
   Card,
   Modal,
   ModalHeader,
@@ -32,18 +30,36 @@ const Inventario = () => {
     es_materia_prima: false,
   });
 
-  useEffect(() => {
-    obtenerProductos();
-  }, []);
+  // Datos simulados (mock)
+  const mockProductos = [
+    {
+      id: 1,
+      nombre: 'Producto A',
+      descripcion: 'Descripción del producto A',
+      precio_referencia: 25,
+      unidad_medida: 'unidad',
+      stock: 100,
+      stock_minimo: 10,
+      tipo: 'Tipo 1',
+      marca: 'Marca A',
+    },
+    {
+      id: 2,
+      nombre: 'Producto B',
+      descripcion: 'Descripción del producto B',
+      precio_referencia: 40,
+      unidad_medida: 'kg',
+      stock: 50,
+      stock_minimo: 5,
+      tipo: 'Tipo 2',
+      marca: 'Marca B',
+    },
+  ];
 
-  const obtenerProductos = async () => {
-    try {
-      const res = await axios.get('http://localhost:3001/inventario');
-      setProductos(res.data);
-    } catch (error) {
-      console.error('Error al obtener productos: ', error);
-    }
-  };
+  useEffect(() => {
+    // En lugar de llamar al backend, usamos los datos simulados
+    setProductos(mockProductos);
+  }, []);
 
   const manejarCambio = (e) => {
     const { name, value, type, checked } = e.target;
@@ -53,32 +69,27 @@ const Inventario = () => {
     });
   };
 
-  const agregarProducto = async (e) => {
+  const agregarProducto = (e) => {
     e.preventDefault();
-    try {
-      await axios.post('http://localhost:3001/inventario', formData);
-      obtenerProductos();
-      setMostrarFormulario(false);
-      setFormData({
-        nombre: '', descripcion: '', precio_referencia: '',
-        unidad_medida: '', stock: '', stock_minimo: '',
-        id_tipo: '', id_marca: '', es_materia_prima: false
-      });
-    } catch (error) {
-      console.error('Error al agregar el producto', error);
-    }
+    const nuevoProducto = {
+      ...formData,
+      id: productos.length + 1,
+      tipo: 'Tipo simulado',
+      marca: 'Marca simulada',
+    };
+    setProductos([...productos, nuevoProducto]);
+    setMostrarFormulario(false);
+    setFormData({
+      nombre: '', descripcion: '', precio_referencia: '',
+      unidad_medida: '', stock: '', stock_minimo: '',
+      id_tipo: '', id_marca: '', es_materia_prima: false
+    });
   };
 
-  const eliminarProducto = async (id) => {
+  const eliminarProducto = (id) => {
     const confirmacion = window.confirm('¿Estás seguro de que deseas eliminar este producto?');
     if (!confirmacion) return;
-
-    try {
-      await axios.delete(`http://localhost:3001/inventario/${id}`);
-      obtenerProductos();
-    } catch (error) {
-      console.error('Error al eliminar el producto', error);
-    }
+    setProductos(productos.filter((p) => p.id !== id));
   };
 
   return (
@@ -131,7 +142,6 @@ const Inventario = () => {
                   Ingresar Producto
                 </button>
 
-                {/* Modal con el formulario */}
                 <Modal isOpen={mostrarFormulario} toggle={() => setMostrarFormulario(!mostrarFormulario)}>
                   <ModalHeader toggle={() => setMostrarFormulario(!mostrarFormulario)}>Agregar Producto</ModalHeader>
                   <Form onSubmit={agregarProducto}>
@@ -181,7 +191,6 @@ const Inventario = () => {
                     </ModalFooter>
                   </Form>
                 </Modal>
-
               </div>
             </Card>
           </div>

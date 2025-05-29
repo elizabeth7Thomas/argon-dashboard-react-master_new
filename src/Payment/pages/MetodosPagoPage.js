@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Container, Card, CardBody, Button } from "reactstrap";
-import Header from "components/Headers/Header";
+import HeaderPagos from "components/Headers/HeaderPagos";
 import MetodoPagoForm from "../MetodosPago/MetodoPagoForm";
 import MetodoPagoList from "../MetodosPago/MetodoPagoList";
 import MetodoPagoDetail from "../MetodosPago/MetodoPagoDetail";
@@ -41,7 +41,7 @@ export default function MetodosPagoPage() {
 
   return (
     <>
-      <Header />
+      <HeaderPagos />
       <Container className="mt--6" fluid>
         <Card>
           <CardBody>

@@ -40,21 +40,80 @@ function Tienda() {
   const [categories, setCategories] = useState(["Todas"]);
 
   // Cargar productos desde la API
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        const res = await axios.get("http://localhost:3001/inventario");
-        setProducts(res.data);
-        
-        // Extraer categorías únicas
-        const uniqueCategories = ["Todas", ...new Set(res.data.map(p => p.categoria))];
-        setCategories(uniqueCategories);
-      } catch (error) {
-        console.error("Error al obtener productos del inventario:", error);
-      }
-    };
-    fetchProducts();
-  }, []);
+ useEffect(() => {
+  const fetchProducts = async () => {
+    try {
+      const res = await axios.get("http://localhost:3001/inventario");
+      // Mapear campos para que ProductList entienda los productos
+      const mappedProducts = res.data.map(p => ({
+        id: p.id,
+        name: p.nombre,
+        description: p.descripcion,
+        category: p.categoria,
+        price: p.precio,
+        image: p.imagen
+      }));
+      setProducts(mappedProducts);
+      
+      // Categorías desde datos originales para filtro
+      const uniqueCategories = ["Todas", ...new Set(res.data.map(p => p.categoria))];
+      setCategories(uniqueCategories);
+
+    } catch (error) {
+      console.error("Error al obtener productos del inventario:", error);
+
+      // Productos estáticos para fallback
+      const staticProducts = [
+        {
+          id: 1,
+          nombre: "Croquetas para perro",
+          descripcion: "Saco de 20 kg para razas medianas",
+          categoria: "Perros",
+          precio: 250.00,
+          imagen: "https://via.placeholder.com/100?text=Croquetas"
+        },
+        {
+          id: 2,
+          nombre: "Arena para gato",
+          descripcion: "Arena absorbente 10 kg",
+          categoria: "Gatos",
+          precio: 120.00,
+          imagen: "https://via.placeholder.com/100?text=Arena"
+        },
+        {
+          id: 3,
+          nombre: "Jaula para loro",
+          descripcion: "Jaula metálica con perchas",
+          categoria: "Exóticos",
+          precio: 400.00,
+          imagen: "https://via.placeholder.com/100?text=Jaula"
+        },
+        {
+          id: 4,
+          nombre: "Shampoo para perro",
+          descripcion: "Con aroma a coco y antipulgas",
+          categoria: "Perros",
+          precio: 80.00,
+          imagen: "https://via.placeholder.com/100?text=Shampoo"
+        }
+      ];
+
+      // Mapear productos estáticos al formato esperado
+      const mappedStatic = staticProducts.map(p => ({
+        id: p.id,
+        name: p.nombre,
+        description: p.descripcion,
+        category: p.categoria,
+        price: p.precio,
+        image: p.imagen
+      }));
+
+      setProducts(mappedStatic);
+      setCategories(["Todas", ...new Set(staticProducts.map(p => p.categoria))]);
+    }
+  };
+  fetchProducts();
+}, []);
 
   // Filtrar productos
   useEffect(() => {

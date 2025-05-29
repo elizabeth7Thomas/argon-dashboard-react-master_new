@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Container, Card, CardBody, Button } from "reactstrap";
-import Header from "components/Headers/Header";
+import HeaderPagos from "components/Headers/HeaderPagos";
 import TransaccionList from "../Transacciones/TransaccionList";
 import TransaccionForm from "../Transacciones/TransaccionForm";
 import TransaccionDetail from "../Transacciones/TransaccionDetail";
