@@ -15,13 +15,13 @@ const HeaderTienda = () => {
   const navigate = useNavigate();
   
   return (
-    <div className="header bg-gradient-primary pb-8 pt-5 pt-md-8">
+    <div className="header bg-gradient-info pb-6 pt-5 ">
       <Container fluid>
         <div className="header-body">
-          <Row className="align-items-center mb-4">
+          <Row className="align-items-center py-4">
             <Col>
               <h2 className="text-white mb-0">
-                <FontAwesomeIcon icon={faStore} className="mr-2" />
+               
                 Tienda de Conveniencia
               </h2>
             </Col>
@@ -41,12 +41,7 @@ const HeaderTienda = () => {
                         Inventario
                       </CardTitle>
                       <span className="h2 font-weight-bold mb-0">5,700</span>
-                      <p className="mt-2 mb-0 text-muted text-sm">
-                        <span className="text-success mr-2">
-                          <i className="fas fa-arrow-up" /> 12.5%
-                        </span>
-                        <span className="text-nowrap">Disponibles</span>
-                      </p>
+                      
                     </div>
                     <Col className="col-auto">
                       <div className="icon icon-shape bg-danger text-white rounded-circle shadow">
@@ -71,12 +66,7 @@ const HeaderTienda = () => {
                         Devoluciones
                       </CardTitle>
                       <span className="h2 font-weight-bold mb-0">2,356</span>
-                      <p className="mt-2 mb-0 text-muted text-sm">
-                        <span className="text-danger mr-2">
-                          <i className="fas fa-arrow-up" /> 3.48%
-                        </span>
-                        <span className="text-nowrap">Último mes</span>
-                      </p>
+                    
                     </div>
                     <Col className="col-auto">
                       <div className="icon icon-shape bg-warning text-white rounded-circle shadow">
@@ -101,12 +91,7 @@ const HeaderTienda = () => {
                         Proveedores
                       </CardTitle>
                       <span className="h2 font-weight-bold mb-0">24</span>
-                      <p className="mt-2 mb-0 text-muted text-sm">
-                        <span className="text-success mr-2">
-                          <i className="fas fa-arrow-up" /> 2.5%
-                        </span>
-                        <span className="text-nowrap">Activos</span>
-                      </p>
+                     
                     </div>
                     <Col className="col-auto">
                       <div className="icon icon-shape bg-yellow text-white rounded-circle shadow">
@@ -131,12 +116,7 @@ const HeaderTienda = () => {
                         Ventas Hoy
                       </CardTitle>
                       <span className="h2 font-weight-bold mb-0">$1,245</span>
-                      <p className="mt-2 mb-0 text-muted text-sm">
-                        <span className="text-success mr-2">
-                          <i className="fas fa-arrow-up" /> 8.7%
-                        </span>
-                        <span className="text-nowrap">vs. Ayer</span>
-                      </p>
+                   
                     </div>
                     <Col className="col-auto">
                       <div className="icon icon-shape bg-info text-white rounded-circle shadow">

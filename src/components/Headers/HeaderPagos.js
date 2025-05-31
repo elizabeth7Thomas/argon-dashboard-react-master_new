@@ -10,7 +10,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const HeaderPagos = ({ stats = {} }) => {
   return (
-    <div className="header bg-gradient-primary pb-6 pt-5">
+    <div className="header bg-gradient-info pb-6 pt-5">
       <Container fluid>
         <div className="header-body">
           {/* Título y breadcrumb */}
@@ -18,14 +18,7 @@ const HeaderPagos = ({ stats = {} }) => {
             <Col lg="6">
               <h2 className="text-white mb-0">Sistema de Pagos</h2>
               <nav aria-label="breadcrumb">
-                <ol className="breadcrumb breadcrumb-dark bg-transparent mb-0">
-                  <li className="breadcrumb-item">
-                    <a href="#/">Inicio</a>
-                  </li>
-                  <li className="breadcrumb-item active" aria-current="page">
-                    Pagos
-                  </li>
-                </ol>
+               
               </nav>
             </Col>
           </Row>
@@ -48,12 +41,7 @@ const HeaderPagos = ({ stats = {} }) => {
                       </div>
                     </Col>
                   </Row>
-                  <p className="mt-3 mb-0 text-muted text-sm">
-                    <span className="text-success mr-2">
-                      <i className="fa fa-arrow-up"></i> 12.5%
-                    </span>
-                    <span className="text-nowrap">Últimas 24h</span>
-                  </p>
+                 
                 </CardBody>
               </Card>
             </Col>
@@ -74,12 +62,7 @@ const HeaderPagos = ({ stats = {} }) => {
                       </div>
                     </Col>
                   </Row>
-                  <p className="mt-3 mb-0 text-muted text-sm">
-                    <span className="text-success mr-2">
-                      <i className="fas fa-arrow-up"></i> 8.3%
-                    </span>
-                    <span className="text-nowrap">Este mes</span>
-                  </p>
+               
                 </CardBody>
               </Card>
             </Col>
@@ -100,12 +83,7 @@ const HeaderPagos = ({ stats = {} }) => {
                       </div>
                     </Col>
                   </Row>
-                  <p className="mt-3 mb-0 text-muted text-sm">
-                    <span className="text-success mr-2">
-                      <i className="fas fa-arrow-up"></i> 2.1%
-                    </span>
-                    <span className="text-nowrap">Desde último mes</span>
-                  </p>
+                  
                 </CardBody>
               </Card>
             </Col>
@@ -126,12 +104,7 @@ const HeaderPagos = ({ stats = {} }) => {
                       </div>
                     </Col>
                   </Row>
-                  <p className="mt-3 mb-0 text-muted text-sm">
-                    <span className="text-danger mr-2">
-                      <i className="fas fa-arrow-down"></i> 1.5%
-                    </span>
-                    <span className="text-nowrap">Última semana</span>
-                  </p>
+            
                 </CardBody>
               </Card>
             </Col>

@@ -1,266 +1,123 @@
-import React from "react";
-import {Container, Card, Row, Col, Button} from "reactstrap";
-import { faCalendarAlt, faCar, faChartLine, faClipboardList } from "@fortawesome/free-solid-svg-icons";
+import React, { useState } from "react";
+import {
+  Container,
+  Card,
+  Row,
+  Col,
+  Button,
+  CardBody,
+} from "reactstrap";
+import {
+  faCar,
+  faCalendarAlt,
+  faClipboardList,
+  faChartLine,
+  faPaintRoller,
+  faCogs,
+  faTruck,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
 import HeaderTallerPintura from "components/Headers/HeaderTallerPintura";
-import { useNavigate } from 'react-router-dom';
-
-
-
+import TablaServicios from "components/TallerPintura/Tables/TablaServicios";
+import TablaTipoPinturas from "components/TallerPintura/Tables/TablaTipoPinturas";
+import TablaTiposServicios from "components/TallerPintura/Tables/TablaTiposServicios";
+import TablaTiposVehiculos from "components/TallerPintura/Tables/TablaTiposVehiculos";
 
 const TallerPinturas = () => {
-  const navigate = useNavigate();
-  
+  const [activeComponent, setActiveComponent] = useState(null);
+
+  const renderComponent = () => {
+    switch (activeComponent) {
+      case "servicios":
+        return <TablaServicios />;
+      case "tiposPintura":
+        return <TablaTipoPinturas />;
+      case "tiposServicios":
+        return <TablaTiposServicios />;
+      case "tiposVehiculos":
+        return <TablaTiposVehiculos />;
+      default:
+        return <p className="text-muted">Selecciona una opción para comenzar.</p>;
+    }
+  };
+
   return (
     <>
-    
       <HeaderTallerPintura />
-      <br></br><br></br>
-      {/* Contenido principal */}
-      <Container className="mt--5" fluid>
+
+      <Container className="mt-5" fluid>
+        {/* Botones de navegación */}
         <Row className="mb-4">
           <Col>
             <Card className="shadow">
+              <CardBody className="d-flex flex-wrap gap-2 justify-content-center">
+                <Button
+                  color="primary"
+                  onClick={() => setActiveComponent("servicios")}
+                  className="btn-icon"
+                >
+                  <FontAwesomeIcon icon={faCar} className="mr-2" />
+                  Servicios
+                </Button>
 
-              
-              <div className="p-4">
-                <h2 className="mb-0">Gestión Integral del Taller de Pinturas</h2>
-                <p className="text-muted mb-0">Panel de control y administración de servicios</p>
-              </div>
+                <Button
+                color="primary"
+                  onClick={() => setActiveComponent("tiposPintura")}
+                  className="btn-icon"
+                 
+                >
+                  <FontAwesomeIcon icon={faPaintRoller} className="mr-2" />
+                  Tipos de Pintura
+                </Button>
+
+                <Button
+                  color="primary"
+                  onClick={() => setActiveComponent("tiposServicios")}
+                  className="btn-icon"
+                >
+                  <FontAwesomeIcon icon={faCogs} className="mr-2" />
+                  Tipos de Servicios
+                </Button>
+
+                <Button
+                  color="primary"
+                  onClick={() => setActiveComponent("tiposVehiculos")}
+                  className="btn-icon"
+                >
+                  <FontAwesomeIcon icon={faTruck} className="mr-2" />
+                  Tipos de Vehículos
+                </Button>
+
+                <Button color="primary" disabled className="btn-icon">
+                  <FontAwesomeIcon icon={faCalendarAlt} className="mr-2" />
+                  Agenda
+                </Button>
+
+                <Button color="primary" disabled className="btn-icon">
+                  <FontAwesomeIcon icon={faClipboardList} className="mr-2" />
+                  Reportes
+                </Button>
+
+                <Button color="primary" disabled className="btn-icon">
+                  <FontAwesomeIcon icon={faChartLine} className="mr-2" />
+                  Estadísticas
+                </Button>
+              </CardBody>
             </Card>
           </Col>
         </Row>
-        
-        {/* Acciones rápidas */}
-        <Row className="mb-4">
 
-          {/*Card Servicios*/}
-          <Col lg="3" md="6" sm="12">
-            <Card className="card-stats shadow-sm h-100">
-              <div className="card-body text-center p-4">
-                <div className="icon icon-shape bg-gradient-info text-white rounded-circle mb-3">
-                  <FontAwesomeIcon icon={faCar} size="lg" />
-                </div>
-                <h5 className="card-title text-uppercase text-muted mb-2">Servicios</h5>
-                <p className="text-sm">Ver los servicios</p>
-               <Button color="info" className="mt-2" outline onClick={() => navigate("/admin/servicios")}>
-               Ver
-            </Button>
-              </div>
-            </Card>
-          </Col>
-
-           {/*Card Tipos de pintura*/}
-             <Col lg="3" md="6" sm="12">
-            <Card className="card-stats shadow-sm h-100">
-              <div className="card-body text-center p-4">
-                <div className="icon icon-shape bg-gradient-purple text-white rounded-circle shadow">
-                  <FontAwesomeIcon icon={faCar} size="lg" />
-                </div>
-                <h5 className="card-title text-uppercase text-muted mb-2">Tipos de Pintura</h5>
-                <p className="text-sm">Registrar un nuevo trabajo de pintura</p>
-              <Button
-                outline
-                className="mt-2"
-                style={{
-                  color: '#8A2BE2',
-                  borderColor: '#8A2BE2',
-                  backgroundColor: 'transparent'
-                }}
-                onClick={() => navigate("/admin/tipos-Pintura")}
-              >
-                Ver
-              </Button>
-
-              </div>
-            </Card>
-          </Col>
-
-           {/*Card Tipos de servicios*/}
-             <Col lg="3" md="6" sm="12">
-            <Card className="card-stats shadow-sm h-100">
-              <div className="card-body text-center p-4">
-                <div className="icon icon-shape bg-gradient-yellow text-white rounded-circle shadow">
-                  <FontAwesomeIcon icon={faCar} size="lg" />
-                </div>
-                <h5 className="card-title text-uppercase text-muted mb-2">Tipos de Servicios</h5>
-                <p className="text-sm">Ver los tipos de servicios disponibles</p>
-                      <Button
-                        outline
-                        className="mt-2"
-                        style={{
-                          color: '#FFD700',
-                          borderColor: '#FFD700',
-                          backgroundColor: 'transparent'
-                        }}
-                        onClick={() => navigate("/admin/tipos-Servicios")}
-                      >
-                        Ver
-                      </Button>
-              </div>
-            </Card>
-          </Col>
-
-            {/*Card Tipos de vehículos*/}
-             <Col lg="3" md="6" sm="12">
-            <Card className="card-stats shadow-sm h-100">
-              <div className="card-body text-center p-4">
-                <div className="icon icon-shape bg-gradient-blue text-white rounded-circle shadow">
-                  <FontAwesomeIcon icon={faCar} size="lg" />
-                </div>
-                <h5 className="card-title text-uppercase text-muted mb-2">Tipos de Vehículos</h5>
-                <p className="text-sm">Ver los tipos de vehiculos aceptados</p>
-               <Button color="primary" className="mt-2" outline onClick={() => navigate("/admin/tipos-Vehiculos")}>
-               Ver
-            </Button>
-              </div>
-            </Card>
-          </Col>
-          
-          <Col lg="3" md="6" sm="12">
-            <Card className="card-stats shadow-sm h-100">
-              <div className="card-body text-center p-4">
-                <div className="icon icon-shape bg-gradient-success text-white rounded-circle mb-3">
-                  <FontAwesomeIcon icon={faCalendarAlt} size="lg" />
-                </div>
-                <h5 className="card-title text-uppercase text-muted mb-2">Agenda</h5>
-                <p className="text-sm">Programar citas y seguimientos</p>
-                <Button color="success" className="mt-2" outline>
-                  Ver agenda
-                </Button>
-              </div>
-            </Card>
-          </Col>
-          
-          <Col lg="3" md="6" sm="12">
-            <Card className="card-stats shadow-sm h-100">
-              <div className="card-body text-center p-4">
-                <div className="icon icon-shape bg-gradient-warning text-white rounded-circle mb-3">
-                  <FontAwesomeIcon icon={faClipboardList} size="lg" />
-                </div>
-                <h5 className="card-title text-uppercase text-muted mb-2">Reportes</h5>
-                <p className="text-sm">Generar informes de productividad</p>
-                <Button color="warning" className="mt-2" outline>
-                  Generar
-                </Button>
-              </div>
-            </Card>
-          </Col>
-          
-          <Col lg="3" md="6" sm="12">
-            <Card className="card-stats shadow-sm h-100">
-              <div className="card-body text-center p-4">
-                <div className="icon icon-shape bg-gradient-danger text-white rounded-circle mb-3">
-                  <FontAwesomeIcon icon={faChartLine} size="lg" />
-                </div>
-                <h5 className="card-title text-uppercase text-muted mb-2">Estadísticas</h5>
-                <p className="text-sm">Métricas de rendimiento del taller</p>
-                <Button color="danger" className="mt-2" outline>
-                  Ver análisis
-                </Button>
-              </div>
-            </Card>
-          </Col>
-        </Row>
-        
-        {/* Sección de resumen */}
+        {/* Contenedor del componente dinámico */}
         <Row>
-          <Col lg="8">
+          <Col>
             <Card className="shadow">
               <div className="card-header bg-transparent">
-                <h3 className="mb-0">Actividad Reciente</h3>
+                <h3 className="mb-0">Formulario</h3>
               </div>
-              <div className="card-body">
-                <div className="timeline timeline-one-side">
-                  <div className="timeline-block mb-3">
-                    <span className="timeline-step bg-info">
-                      <i className="ni ni-bell-55" />
-                    </span>
-                    <div className="timeline-content">
-                      <h6 className="text-sm font-weight-bold mb-0">Nuevo servicio registrado</h6>
-                      <p className="text-sm mt-1 mb-0">Pintura completa para Toyota Corolla 2022</p>
-                      <span className="text-xs text-muted">Hace 15 minutos</span>
-                    </div>
-                  </div>
-                  <div className="timeline-block mb-3">
-                    <span className="timeline-step bg-danger">
-                      <i className="ni ni-credit-card" />
-                    </span>
-                    <div className="timeline-content">
-                      <h6 className="text-sm font-weight-bold mb-0">Pago recibido</h6>
-                      <p className="text-sm mt-1 mb-0">Servicio #4589 - $1,250.00 MXN</p>
-                      <span className="text-xs text-muted">Hace 2 horas</span>
-                    </div>
-                  </div>
-                  <div className="timeline-block mb-3">
-                    <span className="timeline-step bg-success">
-                      <i className="ni ni-check-bold" />
-                    </span>
-                    <div className="timeline-content">
-                      <h6 className="text-sm font-weight-bold mb-0">Servicio completado</h6>
-                      <p className="text-sm mt-1 mb-0">Pulido y encerado para Honda Civic</p>
-                      <span className="text-xs text-muted">Hoy, 10:30 AM</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </Col>
-          
-          <Col lg="4">
-            <Card className="shadow">
-              <div className="card-header bg-transparent">
-                <h3 className="mb-0">Estado del Inventario</h3>
-              </div>
-              <div className="card-body">
-                <div className="d-flex justify-content-between mb-3">
-                  <span className="text-sm font-weight-bold">Pintura Roja</span>
-                  <span className="text-sm">15 litros</span>
-                </div>
-                <div className="progress mb-4">
-                  <div 
-                    className="progress-bar bg-danger" 
-                    role="progressbar" 
-                    style={{width: '30%'}}
-                  />
-                </div>
-                
-                <div className="d-flex justify-content-between mb-3">
-                  <span className="text-sm font-weight-bold">Pintura Azul</span>
-                  <span className="text-sm">8 litros</span>
-                </div>
-                <div className="progress mb-4">
-                  <div 
-                    className="progress-bar bg-primary" 
-                    role="progressbar" 
-                    style={{width: '16%'}}
-                  />
-                </div>
-                
-                <div className="d-flex justify-content-between mb-3">
-                  <span className="text-sm font-weight-bold">Pintura Negra</span>
-                  <span className="text-sm">22 litros</span>
-                </div>
-                <div className="progress mb-4">
-                  <div 
-                    className="progress-bar bg-dark" 
-                    role="progressbar" 
-                    style={{width: '44%'}}
-                  />
-                </div>
-                
-                <div className="d-flex justify-content-between mb-3">
-                  <span className="text-sm font-weight-bold">Barniz</span>
-                  <span className="text-sm">12 litros</span>
-                </div>
-                <div className="progress">
-                  <div 
-                    className="progress-bar bg-warning" 
-                    role="progressbar" 
-                    style={{width: '24%'}}
-                  />
-                </div>
-              </div>
+              <CardBody>
+                {renderComponent()}
+              </CardBody>
             </Card>
           </Col>
         </Row>

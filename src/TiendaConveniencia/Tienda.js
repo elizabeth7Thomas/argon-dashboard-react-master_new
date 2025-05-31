@@ -156,6 +156,7 @@ function Tienda() {
   return (
     <>
       <HeaderTienda />
+      <br></br><br></br><br></br><br></br><br></br>
       <Container className="mt--7" fluid>
         <Row className="mb-4">
           <Col>

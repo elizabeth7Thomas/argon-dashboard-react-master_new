@@ -13,20 +13,14 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const HeaderAdministracion = () => {
   return (
-    <div className="header bg-gradient-success pb-6 pt-5">
+    <div className="header bg-gradient-info pb-6 pt-5">
       <Container fluid>
         <div className="header-body">
           {/* Título y breadcrumb */}
           <Row className="align-items-center py-4">
             <Col lg="6">
               <h2 className="text-white mb-0">Panel de Administración</h2>
-              <nav aria-label="breadcrumb">
-                <ol className="breadcrumb breadcrumb-dark">
-                  <li className="breadcrumb-item active" aria-current="page">
-                    Administración
-                  </li>
-                </ol>
-              </nav>
+             
             </Col>
           </Row>
 
@@ -48,12 +42,7 @@ const HeaderAdministracion = () => {
                       </div>
                     </Col>
                   </Row>
-                  <p className="mt-3 mb-0 text-muted text-sm">
-                    <span className="text-success mr-2">
-                      <i className="fa fa-arrow-up"></i> 3.48%
-                    </span>
-                    <span className="text-nowrap">Desde último mes</span>
-                  </p>
+                  
                 </CardBody>
               </Card>
             </Col>
@@ -74,12 +63,7 @@ const HeaderAdministracion = () => {
                       </div>
                     </Col>
                   </Row>
-                  <p className="mt-3 mb-0 text-muted text-sm">
-                    <span className="text-danger mr-2">
-                      <i className="fas fa-arrow-down"></i> 1.10%
-                    </span>
-                    <span className="text-nowrap">Desde ayer</span>
-                  </p>
+                 
                 </CardBody>
               </Card>
             </Col>
@@ -100,12 +84,7 @@ const HeaderAdministracion = () => {
                       </div>
                     </Col>
                   </Row>
-                  <p className="mt-3 mb-0 text-muted text-sm">
-                    <span className="text-success mr-2">
-                      <i className="fas fa-arrow-up"></i> 12%
-                    </span>
-                    <span className="text-nowrap">Desde último trimestre</span>
-                  </p>
+                 
                 </CardBody>
               </Card>
             </Col>
@@ -126,12 +105,7 @@ const HeaderAdministracion = () => {
                       </div>
                     </Col>
                   </Row>
-                  <p className="mt-3 mb-0 text-muted text-sm">
-                    <span className="text-success mr-2">
-                      <i className="fas fa-arrow-up"></i> 5.3%
-                    </span>
-                    <span className="text-nowrap">Desde último año</span>
-                  </p>
+                
                 </CardBody>
               </Card>
             </Col>
