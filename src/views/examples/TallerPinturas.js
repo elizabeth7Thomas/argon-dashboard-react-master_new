@@ -89,20 +89,14 @@ const TallerPinturas = () => {
                   Tipos de Vehículos
                 </Button>
 
-                <Button color="primary" disabled className="btn-icon">
-                  <FontAwesomeIcon icon={faCalendarAlt} className="mr-2" />
-                  Agenda
-                </Button>
+              
 
                 <Button color="primary" disabled className="btn-icon">
                   <FontAwesomeIcon icon={faClipboardList} className="mr-2" />
                   Reportes
                 </Button>
 
-                <Button color="primary" disabled className="btn-icon">
-                  <FontAwesomeIcon icon={faChartLine} className="mr-2" />
-                  Estadísticas
-                </Button>
+             
               </CardBody>
             </Card>
           </Col>
