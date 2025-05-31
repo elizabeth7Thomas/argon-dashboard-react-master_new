@@ -6,7 +6,6 @@ import {
   CardHeader,
   CardBody,
   Table,
-  Container,
   Row,
   Col,
   Modal,
@@ -18,6 +17,8 @@ import {
   Label,
   Input,
 } from "reactstrap";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 
 const BASE_URL = "https://tallerrepuestos.vercel.app/tallerrepuestos";
 
@@ -115,16 +116,17 @@ const PrecioHistorial = () => {
 
   return (
     <>
-      <Container fluid className="mt-4">
-        <Row><Col>
-          <Card>
-            <CardHeader className="d-flex justify-content-between align-items-center">
+     
+        <Row>
+          <Col>
+          <Card className="shadow">
+            <CardHeader className="border-0 d-flex justify-content-between align-items-center">
               <h3>Historial de Precios</h3>
               <Button color="primary" onClick={toggle}>Agregar Registro</Button>
             </CardHeader>
             <CardBody>
-              <Table responsive>
-                <thead><tr>
+              <Table responsive hover className="align-items-center table-flush">
+                <thead className="thead-light"><tr>
                   <th>ID Historial</th><th>Producto</th><th>Precio Anterior</th>
                   <th>Precio Nuevo</th><th>Fecha Cambio</th><th>Acciones</th>
                 </tr></thead>
@@ -139,8 +141,12 @@ const PrecioHistorial = () => {
                         <td>{h.precionuevo}</td>
                         <td>{new Date(h.fechacambio).toLocaleString()}</td>
                         <td>
-                          <Button size="sm" color="warning" className="me-2" onClick={() => editarClick(h)}>Editar</Button>
-                          <Button size="sm" color="danger" onClick={() => solicitarBorrado(h)}>Eliminar</Button>
+                          <Button size="sm" color="info" className="me-2" onClick={() => editarClick(h)}>
+                            <FontAwesomeIcon icon={faEdit} className="mr-0" />
+                          </Button>
+                          <Button size="sm" color="danger" onClick={() => solicitarBorrado(h)}>
+                            <FontAwesomeIcon icon={faTrashAlt} className="mr-0" />
+                          </Button>
                         </td>
                       </tr>
                     );
@@ -152,7 +158,6 @@ const PrecioHistorial = () => {
             </CardBody>
           </Card>
         </Col></Row>
-      </Container>
 
       <Modal isOpen={modal} toggle={toggle}>
         <ModalHeader toggle={toggle}>{modoEdicion ? "Editar Registro" : "Agregar Registro"}</ModalHeader>
