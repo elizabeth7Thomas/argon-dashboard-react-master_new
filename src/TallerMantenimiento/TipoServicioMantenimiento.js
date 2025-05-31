@@ -8,7 +8,6 @@ import {
   CardHeader,
   CardBody,
   Table,
-  Container,
   Row,
   Col,
   Modal,
@@ -20,7 +19,8 @@ import {
   Input,
   Label,
 } from "reactstrap";
-
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 // Ajusta esta URL según tu despliegue
 const BASE_URL = "https://tallerrepuestos.vercel.app/tallerrepuestos";
 
@@ -37,11 +37,11 @@ const TipoServicioMantenimiento = () => {
     status: 1,
   });
 
-  // Estado para el modal de confirmación de borrado
+
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [tipoAEliminar, setTipoAEliminar] = useState(null);
 
-  // 1) Al montar, obtenemos todos los tipos de servicio
+
   useEffect(() => {
     obtenerTodosLosTipos();
   }, []);
@@ -55,11 +55,9 @@ const TipoServicioMantenimiento = () => {
     }
   };
 
-  // Abrir/Cerrar modal de Agregar/Editar
   const toggle = () => {
     setModal(!modal);
     if (!modal) {
-      // si abrimos para “Nuevo”, limpiamos formulario
       setFormulario({
         descripcion: "",
         costo: "",
@@ -71,12 +69,11 @@ const TipoServicioMantenimiento = () => {
     }
   };
 
-  // Manejar cambios en formulario
+
   const handleChange = (e) => {
     setFormulario({ ...formulario, [e.target.name]: e.target.value });
   };
 
-  // 2) Agregar Tipo de Servicio → POST /tiposervicio
   const handleAgregar = async () => {
     if (
       !formulario.descripcion.trim() ||
@@ -102,7 +99,7 @@ const TipoServicioMantenimiento = () => {
     }
   };
 
-  // 3) Cargar formulario para edición
+
   const handleEditarClick = (tipo) => {
     setFormulario({
       descripcion: tipo.descripcion,
@@ -115,7 +112,6 @@ const TipoServicioMantenimiento = () => {
     setModal(true);
   };
 
-  // 4) Actualizar Tipo de Servicio → PUT /tiposervicio/:id
   const handleActualizar = async () => {
     if (!tipoEditando) return;
 
@@ -138,13 +134,11 @@ const TipoServicioMantenimiento = () => {
     }
   };
 
-  // 5A) Mostrar modal de confirmación antes de eliminar
   const solicitarBorrado = (tipo) => {
     setTipoAEliminar(tipo);
     setShowDeleteModal(true);
   };
 
-  // 5B) Confirmar y ejecutar borrado → DELETE /tiposervicio/:id
   const confirmarBorrado = async () => {
     if (!tipoAEliminar) return;
 
@@ -167,19 +161,18 @@ const TipoServicioMantenimiento = () => {
 
   return (
     <>
-      <Container className="mt-4" fluid>
         <Row>
           <Col>
-            <Card>
-              <CardHeader className="d-flex justify-content-between align-items-center">
-                <h3>Lista de Tipos de Servicio</h3>
+            <Card className="shadow">
+              <CardHeader className="border-0 d-flex justify-content-between align-items-center">
+                <h3 className="mb-0">Lista de Tipos de Servicio</h3>
                 <Button color="primary" onClick={toggle}>
                   Agregar Tipo de Servicio
                 </Button>
               </CardHeader>
               <CardBody>
-                <Table responsive>
-                  <thead>
+                <Table responsive hover className="align-items-center table-flush">
+                  <thead className="thead-light">
                     <tr>
                       <th>Descripción</th>
                       <th>Costo</th>
@@ -199,18 +192,18 @@ const TipoServicioMantenimiento = () => {
                           <td>
                             <Button
                               size="sm"
-                              color="warning"
+                              color="info"
                               className="me-2"
                               onClick={() => handleEditarClick(t)}
                             >
-                              Editar
+                              <FontAwesomeIcon icon={faEdit} className="mr-0" />
                             </Button>
                             <Button
                               size="sm"
                               color="danger"
                               onClick={() => solicitarBorrado(t)}
                             >
-                              Eliminar
+                              <FontAwesomeIcon icon={faTrashAlt} className="mr-0" />
                             </Button>
                           </td>
                         </tr>
@@ -228,7 +221,6 @@ const TipoServicioMantenimiento = () => {
             </Card>
           </Col>
         </Row>
-      </Container>
 
       {/* Modal Agregar / Editar Tipo de Servicio */}
       <Modal isOpen={modal} toggle={toggle}>

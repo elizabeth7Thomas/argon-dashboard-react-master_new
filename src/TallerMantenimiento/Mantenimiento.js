@@ -4,10 +4,8 @@ import ProductosMantenimiento from './ProductosMantenimiento';
 import Clientes from './Clientes';
 import VehiculosMantenimiento from './VehiculosMantenimiento/VehiculosMantenimiento';
 import CategoriasMantenimiento from './CategoriasMantenimiento';
-import TipoServicioMantenimiento from './TipoServicioMantenimiento';
 import ServiciosMantenimiento from './ServiciosMantenimiento';
 import Empleados from './Empleados';
-import PrecioHistorial from './PrecioHistorial';
 import Inventario from './InventariosLote';
 
 import {
@@ -18,7 +16,6 @@ import {
   CardHeader,
   CardBody,
   Button,
-  Badge
 } from "reactstrap";
 import {
   faUsers,
@@ -26,7 +23,6 @@ import {
   faTags,
   faBoxOpen,
   faUserTie,
-  faHistory,
   faWarehouse,
   faTools
 } from "@fortawesome/free-solid-svg-icons";
@@ -41,10 +37,8 @@ const Mantenimiento = () => {
     { id: 'categorias', label: 'Categorías', icon: faTags, color: 'primary' },
     { id: 'productos', label: 'Productos', icon: faBoxOpen, color: 'primary' },
     { id: 'vehiculos', label: 'Vehículos', icon: faCar, color: 'primary' },
-    { id: 'tipo_servicio', label: 'Tipo de Servicio', icon: faTools, color: 'primary'},
     { id: 'servicios', label: 'Servicios', icon: faTools, color: 'primary' },
     { id: 'Empleados', label: 'Empleados', icon: faUserTie, color: 'primary' },
-    { id: 'PrecioHistorial', label: 'Precio Historial', icon: faHistory, color: 'primary' },
     { id: 'inventario', label: 'Inventario', icon: faWarehouse, color: 'primary'},
   ];
 
@@ -58,7 +52,7 @@ const Mantenimiento = () => {
         <Col>
           <Card className="shadow">
             <CardBody>
-              <div className="d-flex flex-wrap gap-2">
+              <div className="d-flex flex-wrap gap-2 justify-content-center">
                 {secciones.map((s) => (
                   <Button
                     key={s.id}
@@ -68,9 +62,6 @@ const Mantenimiento = () => {
                   >
                     <FontAwesomeIcon icon={s.icon} className="mr-2" />
                     {s.label}
-                    {selectedSection === s.id && (
-                      <Badge color="light" className="ml-2">Activo</Badge>
-                    )}
                   </Button>
                 ))}
               </div>
@@ -95,14 +86,12 @@ const Mantenimiento = () => {
               {selectedSection === 'categorias' && <CategoriasMantenimiento/>}
               {selectedSection === 'productos' && <ProductosMantenimiento />}
               {selectedSection === 'vehiculos' && <VehiculosMantenimiento />}
-              {selectedSection === 'tipo_servicio' && <TipoServicioMantenimiento />}
               {selectedSection === 'servicios' && <ServiciosMantenimiento />}
               {selectedSection === 'Empleados' && <Empleados />}
-              {selectedSection === 'PrecioHistorial' && <PrecioHistorial />}
               {selectedSection === 'inventario' && <Inventario />}
               {!selectedSection && (
                 <div>
-                  <p>Seleccione una sección para gestionar.</p>
+                  <p>Selecciona una opción para comenzar.</p>
                 </div>
               )}
               

@@ -8,7 +8,6 @@ import {
   CardHeader,
   CardBody,
   Table,
-  Container,
   Row,
   Col,
   Modal,
@@ -151,19 +150,23 @@ const CategoriasMantenimiento = () => {
 
   return (
     <>
-      <Container className="mt-4" fluid>
+
         <Row>
           <Col>
-            <Card>
-              <CardHeader className="d-flex justify-content-between align-items-center">
-                <h3>Lista de Categorías</h3>
-                <Button color="primary" onClick={toggle}>
-                  Agregar Categoría
-                </Button>
+            <Card className="shadow">
+              <CardHeader className=" border-0 d-flex justify-content-between align-items-center">
+                <Col className="align-items-center">
+                  <h3 className="mb-0">Lista de Categorías</h3>
+                </Col>
+                <Col className="d-flex justify-content-end align-items-center">
+                   <Button color="primary" onClick={toggle}>
+                     Agregar Categoría
+                   </Button>
+                </Col>
               </CardHeader>
               <CardBody>
-                <Table responsive>
-                  <thead>
+                <Table className="align-items-center table-flush" responsive hover>
+                  <thead className="thead-light">
                     <tr>
                       <th>Nombre</th>
                       <th>Descripción</th>
@@ -208,7 +211,6 @@ const CategoriasMantenimiento = () => {
             </Card>
           </Col>
         </Row>
-      </Container>
 
       {/* Moda para agregar y editar c */}
       <Modal isOpen={modal} toggle={toggle}>

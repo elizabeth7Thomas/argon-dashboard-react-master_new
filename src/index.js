@@ -71,9 +71,10 @@ import Movimientos from "../src/Admin/Movimientos/Movimientos";
 
 
 /* IMPORTACION TALLER MANTENIMIENTO*/
-import VehiculosMantenimiento from "TallerMantenimiento/VehiculosMantenimiento/VehiculosMantenimiento";
-import InventarioMantenimiento from "TallerMantenimiento/InventarioMantenimiento/InventarioMantenimiento";
+import ProductosMantenimiento from "TallerMantenimiento/ProductosMantenimiento";
+import TipServiciosMantenimiento from "TallerMantenimiento/TipoServicioMantenimiento";
 import ClientesMantenimiento from "TallerMantenimiento/Clientes";
+import PrecioHistorialMantenimiento from "TallerMantenimiento/PrecioHistorial";
 
 /*IMPORTACIONES TIENDA CONVENIENCIA*/
 import ProveedoresTienda from "TiendaConveniencia/ProveedoresTienda/ProveedoresTienda";
@@ -127,9 +128,10 @@ root.render(
       <Route path="/admin/taller-pinturas" element={<Pinturas />} />
 
       {/* TALLER MANTENIMIENTO ROUTES*/}
-      <Route path="/admin/vehiculosMantenimiento" element={<VehiculosMantenimiento />} />
-      <Route path="/admin/inventarioMantenimiento" element={<InventarioMantenimiento />} />
-      <Route path="/admin/clientesMantenimiento" element = {<ClientesMantenimiento />} />
+      <Route path="/admin/mantenimiento/productos" element={<ProductosMantenimiento />} />
+      <Route path="/admin/mantenimiento/tiposServicios" element={<TipServiciosMantenimiento />} />
+      <Route path="/admin/mantenimiento/clientes" element = {<ClientesMantenimiento />} />
+      <Route path="/admin/mantenimiento/precioHistorial" element = {<PrecioHistorialMantenimiento />} />
 
       {/*TIENDA CONVENIENCIA ROUTES*/}
       <Route path = "/admin/inventario" element = {<Inventario />} />

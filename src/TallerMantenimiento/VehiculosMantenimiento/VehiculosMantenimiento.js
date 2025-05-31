@@ -8,7 +8,6 @@ import {
   CardHeader,
   CardBody,
   Table,
-  Container,
   Row,
   Col,
   Modal,
@@ -20,6 +19,8 @@ import {
   Label,
   Input,
 } from "reactstrap";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 
 const BASE_URL = "https://tallerrepuestos.vercel.app/tallerrepuestos";
 
@@ -212,19 +213,18 @@ const VehiculosMantenimiento = () => {
 
   return (
     <>
-      <Container className="mt-4" fluid>
         <Row>
           <Col>
-            <Card>
-              <CardHeader className="d-flex justify-content-between align-items-center">
-                <h3>Lista de Vehículos</h3>
+            <Card className="shadow">
+              <CardHeader className="border-0 d-flex justify-content-between align-items-center">
+                <h3 className="mb-0">Lista de Vehículos</h3>
                 <Button color="primary" onClick={toggle}>
                   Agregar Vehículo
                 </Button>
               </CardHeader>
               <CardBody>
-                <Table responsive>
-                  <thead>
+                <Table responsive hover className="align-items-center table-flush">
+                  <thead className="thead-light">
                     <tr>
                       <th>Placa</th>
                       <th>Marca</th>
@@ -254,18 +254,18 @@ const VehiculosMantenimiento = () => {
                             <td>
                               <Button
                                 size="sm"
-                                color="warning"
+                                color="info"
                                 className="me-2"
                                 onClick={() => handleEditarClick(vehiculo)}
                               >
-                                Editar
+                                <FontAwesomeIcon icon={faEdit} className="mr-0" />
                               </Button>
                               <Button
                                 size="sm"
                                 color="danger"
                                 onClick={() => solicitarBorrado(vehiculo)}
                               >
-                                Eliminar
+                                <FontAwesomeIcon icon={faTrashAlt} className="mr-0" />
                               </Button>
                             </td>
                           </tr>
@@ -284,7 +284,6 @@ const VehiculosMantenimiento = () => {
             </Card>
           </Col>
         </Row>
-      </Container>
 
       {/* agregar cliente o editar modal */}
       <Modal isOpen={modal} toggle={toggle}>

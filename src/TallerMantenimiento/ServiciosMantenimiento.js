@@ -6,7 +6,6 @@ import {
   CardHeader,
   CardBody,
   Table,
-  Container,
   Row,
   Col,
   Modal,
@@ -18,6 +17,8 @@ import {
   Input,
   Label,
 } from "reactstrap";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 
 // Ajusta esta URL según tu despliegue
 const BASE_URL = "https://tallerrepuestos.vercel.app/tallerrepuestos";
@@ -188,19 +189,18 @@ const ServiciosMantenimiento = () => {
 
   return (
     <>
-      <Container className="mt-4" fluid>
         <Row>
           <Col>
-            <Card>
-              <CardHeader className="d-flex justify-content-between align-items-center">
-                <h3>Lista de Servicios</h3>
+            <Card className="shadow">
+              <CardHeader className="border-0 d-flex justify-content-between align-items-center">
+                <h3 className="mb-0">Lista de Servicios</h3>
                 <Button color="primary" onClick={toggle}>
                   Agregar Servicio
                 </Button>
               </CardHeader>
               <CardBody>
-                <Table responsive>
-                  <thead>
+                <Table responsive hover className="align-items-center table-flush">
+                  <thead  className="thead-light">
                     <tr>
                       <th>Tipo Vehículo</th>
                       <th>Tipo de Servicio</th>
@@ -221,11 +221,11 @@ const ServiciosMantenimiento = () => {
                             <td>{empleado?.nombre || s.idempleado}</td>
                             <td>{s.status === 1 ? "Activo" : "Inactivo"}</td>
                             <td>
-                              <Button size="sm" color="warning" className="me-2" onClick={() => handleEditarClick(s)}>
-                                Editar
+                              <Button size="sm" color="info" className="me-2" onClick={() => handleEditarClick(s)}>
+                                <FontAwesomeIcon icon={faEdit} className="mr-0" />
                               </Button>
                               <Button size="sm" color="danger" onClick={() => solicitarBorrado(s)}>
-                                Eliminar
+                                <FontAwesomeIcon icon={faTrashAlt} className="mr-0" />
                               </Button>
                             </td>
                           </tr>
@@ -244,7 +244,6 @@ const ServiciosMantenimiento = () => {
             </Card>
           </Col>
         </Row>
-      </Container>
 
       {/* Modal Agregar / Editar Servicio */}
       <Modal isOpen={modal} toggle={toggle}>

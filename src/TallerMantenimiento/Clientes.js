@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
-  Container,
   Card,
   Row,
   Col,
@@ -169,7 +168,6 @@ const Clientes = () => {
 
   return (
     <>
-      <Container className="mt--0" fluid>
         {/* Modal para formulario de cliente */}
         <Modal isOpen={mostrarFormulario} toggle={() => setMostrarFormulario(false)}>
           <ModalHeader toggle={() => setMostrarFormulario(false)}>
@@ -285,7 +283,6 @@ const Clientes = () => {
             </Card>
           </Col>
         </Row>
-      </Container>
 
       {/* Modal de Confirmación de Borrado */}
       <Modal isOpen={showModal} toggle={cancelarBorrado}>
