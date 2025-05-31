@@ -75,8 +75,7 @@ const TablaTiposVehiculos = () => {
 
   return (
     <>
-      <HeaderTallerPintura />
-      <br></br> <br></br>
+     <br></br><br></br>
       <Container className="mt--7" fluid>
       
         <Card className="shadow p-4 mb-4">

@@ -6,7 +6,7 @@ import Dashboard from './Gasoline/Dashboard/Dashboard.js';
 import DashboardPagos from "Payment/pages/DashboardPagos.js"; 
 import Pinturas from "views/examples/TallerPinturas.js";
 import Alerts from "Gasoline/Alerts/Alerts.js";
-import Administracion from "views/examples/Administracion.js";
+import DashboardAdmin from "Admin/Pages/DashboardAdmin.js";
 import Reports from "views/examples/Reports.js";
 import Tienda from "TiendaConveniencia/Tienda.js";
 import Mantenimiento from "TallerMantenimiento/Mantenimiento.js";
@@ -70,7 +70,7 @@ const routes = [
     path: "/administracion",
     name: "Administración",
     icon: "ni ni-badge text-blue",
-    component: <Administracion />,
+    component: <DashboardAdmin />,
     layout: "/admin",
   },
 

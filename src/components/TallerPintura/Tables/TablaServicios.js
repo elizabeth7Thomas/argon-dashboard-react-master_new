@@ -82,7 +82,7 @@ useEffect(() => {
 
   return (
     <>
-      <HeaderTallerPintura />
+     
       <br></br><br></br>
       <Container className="mt--7" fluid>
         

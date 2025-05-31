@@ -51,14 +51,13 @@ export default function TransaccionesPage() {
 
   return (
     <>
-      <Header />
+      <br></br> <br></br>
+      <br></br><br></br>
       <Container className="mt--6" fluid>
         <Card>
           <CardBody>
             <div className="d-flex justify-content-end mb-3">
-              <Button color="primary" onClick={handleCreate}>
-                Nueva Transacción
-              </Button>
+              
             </div>
             <TransaccionList
               transacciones={transacciones}
@@ -84,6 +83,9 @@ export default function TransaccionesPage() {
         toggle={() => setDetailOpen(!detailOpen)}
         transaccion={selectedTransaccion}
       />
+      <Button color="primary" onClick={handleCreate}>
+                Nueva Transacción
+              </Button>
     </>
   );
 }

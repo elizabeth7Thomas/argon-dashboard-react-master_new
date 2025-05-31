@@ -44,6 +44,8 @@ import TallerPinturaLayout from "layouts/TallerPintura.js";
 import ClientesPage from "Payment/pages/ClientesPage";
 import MetodosPagoPage from "Payment/pages/MetodosPagoPage";
 import TransaccionesPage from "Payment/pages/TransaccionesPage";
+import BancosPage from "Payment/pages/BancosPage"
+import DevolucionesList from "Payment/Devoluciones/DevolucionList";
 
 /* IMPORTACION TALLER DE PINTURA*/
 import TablaServicios from "components/TallerPintura/Tables/TablaServicios";
@@ -117,6 +119,9 @@ root.render(
       <Route path="/admin/payment/clientes" element={<ClientesPage />} />
       <Route path="/admin/payment/metodos" element = {<MetodosPagoPage />} />
       <Route path="/admin/payment/transacciones" element = {<TransaccionesPage />} />
+      <Route path="/admin/payment/bancos" element = {<BancosPage />} />
+      <Route path="/admin/payment/devoluciones" element = {<DevolucionesList />} />
+      
 
       {/*TALLER ROUTES*/}
       <Route path="/admin/taller-pinturas" element={<Pinturas />} />

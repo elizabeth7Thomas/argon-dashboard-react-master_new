@@ -30,7 +30,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-export default function Administracion() {
+export default function DashboardAdmin() {
   const navigate = useNavigate();
 
   // Datos mockeados para visualización
@@ -70,7 +70,7 @@ export default function Administracion() {
                   Empleados
                 </Button>
                 <Button 
-                  color="danger" 
+                  color="primary" 
                   onClick={() => navigate('/admin/alertas')}
                   className="btn-icon"
                 >
@@ -78,7 +78,7 @@ export default function Administracion() {
                   Alertas
                 </Button>
                 <Button 
-                  color="success" 
+                  color="primary" 
                   onClick={() => navigate('/admin/areas')}
                   className="btn-icon"
                 >
@@ -86,7 +86,7 @@ export default function Administracion() {
                   Áreas
                 </Button>
                 <Button 
-                  color="warning" 
+                  color="primary" 
                   onClick={() => navigate('/admin/roles')}
                   className="btn-icon"
                 >
@@ -94,7 +94,7 @@ export default function Administracion() {
                   Roles
                 </Button>
                 <Button 
-                  color="info" 
+                  color="primary" 
                   onClick={() => navigate('/admin/proveedores')}
                   className="btn-icon"
                 >
@@ -102,7 +102,7 @@ export default function Administracion() {
                   Proveedores
                 </Button>
                 <Button 
-                  color="purple" 
+                  color="primary" 
                   onClick={() => navigate('/admin/services')}
                   className="btn-icon"
                 >
@@ -110,7 +110,7 @@ export default function Administracion() {
                   Servicios
                 </Button>
                 <Button 
-                  color="secondary" 
+                  color="primary" 
                   onClick={() => navigate('/admin/jornadas')}
                   className="btn-icon"
                 >
@@ -118,7 +118,7 @@ export default function Administracion() {
                   Jornadas
                 </Button>
                 <Button 
-                  color="dark" 
+                  color="primary" 
                   onClick={() => navigate('/admin/movimientos')}
                   className="btn-icon"
                 >
@@ -252,53 +252,7 @@ export default function Administracion() {
           </Col>
         </Row>
 
-        {/* Acciones rápidas */}
-        <Row>
-          <Col>
-            <Card className="shadow">
-              <CardHeader className="bg-transparent">
-                <CardTitle tag="h5" className="mb-0">
-                  <FontAwesomeIcon icon={faChartLine} className="mr-2" />
-                  Acciones Rápidas
-                </CardTitle>
-              </CardHeader>
-              <CardBody className="d-flex flex-wrap gap-3 justify-content-center">
-                <Button 
-                  color="primary" 
-                  onClick={() => navigate('/admin/empleados')}
-                  className="btn-icon"
-                >
-                  <FontAwesomeIcon icon={faUsers} className="mr-2" />
-                  Nuevo Empleado
-                </Button>
-                <Button 
-                  color="danger" 
-                  onClick={() => navigate('/admin/alertas/nueva')}
-                  className="btn-icon"
-                >
-                  <FontAwesomeIcon icon={faBell} className="mr-2" />
-                  Crear Alerta
-                </Button>
-                <Button 
-                  color="success" 
-                  onClick={() => navigate('/admin/areas/nueva')}
-                  className="btn-icon"
-                >
-                  <FontAwesomeIcon icon={faSitemap} className="mr-2" />
-                  Nueva Área
-                </Button>
-                <Button 
-                  color="info" 
-                  onClick={() => navigate('/admin/proveedores/nuevo')}
-                  className="btn-icon"
-                >
-                  <FontAwesomeIcon icon={faTruck} className="mr-2" />
-                  Nuevo Proveedor
-                </Button>
-              </CardBody>
-            </Card>
-          </Col>
-        </Row>
+     
       </Container>
     </>
   );

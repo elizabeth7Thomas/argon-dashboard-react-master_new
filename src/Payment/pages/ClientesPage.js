@@ -74,7 +74,7 @@ export default function Clientes() {
 
   return (
     <>
-      <HeaderPagos />
+      <br></br><br></br><br></br>
       <Container className="mt--6" fluid>
         <Card>
           <CardBody>
