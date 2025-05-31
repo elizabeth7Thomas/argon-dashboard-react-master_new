@@ -9,9 +9,6 @@ import {
   Table,
   Input,
   CardHeader,
-  FormGroup,
-  Label,
-  CardBody,
   Modal,
   ModalHeader,
   ModalBody,
@@ -26,9 +23,9 @@ import {
   faBriefcase,
   faDollarSign,
   faTrashAlt,
-  faUsers,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import NuevoEmpleadoForm from "./NuevoEmpleadoForm";
 
 const BASE_URL = "https://tallerrepuestos.vercel.app/tallerrepuestos";
 
@@ -48,6 +45,7 @@ const Empleados = () => {
 
   const [showModal, setShowModal] = useState(false);
   const [empleadoAEliminar, setEmpleadoAEliminar] = useState(null);
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
 
   // 1) Obtener empleados
   useEffect(() => {
@@ -112,6 +110,7 @@ const Empleados = () => {
       salario: e.salario.toString(),
     });
     setModoEditar(true);
+    setMostrarFormulario(true);
   };
 
   // 4) Actualizar
@@ -166,141 +165,33 @@ const Empleados = () => {
 
   return (
     <>
-      <div className="header bg-gradient-primary pb-8 pt-5 pt-md-8">
-        <Container fluid>
-          <Row className="align-items-center py-4">
-            <Col lg="6">
-              <h2 className="text-white mb-0">
-                <FontAwesomeIcon icon={faUsers} className="mr-2" /> Gestión de Empleados
-              </h2>
-              <p className="text-white mb-0">Administra los empleados del taller</p>
-            </Col>
-            <Col lg="6" className="text-right">
-              <Button
-                color="neutral"
-                onClick={() => { limpiarFormulario(); setModoEditar(false); }}
-              >
-                <FontAwesomeIcon icon={faUserPlus} className="mr-1" /> Nuevo Empleado
-              </Button>
-            </Col>
-          </Row>
-        </Container>
-      </div>
+      <Container className="mt--0" fluid>
+        {/* Modal para formulario de empleado */}
+        <Modal isOpen={mostrarFormulario} toggle={() => setMostrarFormulario(false)}>
+          <ModalHeader toggle={() => setMostrarFormulario(false)}>
+            {modoEditar ? "Editar Empleado" : "Registrar Nuevo Empleado"}
+          </ModalHeader>
+          <ModalBody>
+            <NuevoEmpleadoForm
+              form={form}
+              modoEditar={modoEditar}
+              handleChange={handleChange}
+              agregarEmpleado={async () => {
+                await agregarEmpleado();
+                setMostrarFormulario(false);
+              }}
+              actualizarEmpleado={async () => {
+                await actualizarEmpleado();
+                setMostrarFormulario(false);
+              }}
+              limpiarFormulario={limpiarFormulario}
+              setModoEditar={setModoEditar}
+              onClose={() => setMostrarFormulario(false)}
+            />
+          </ModalBody>
+        </Modal>
 
-      <Container className="mt--7" fluid>
-        {/* Formulario */}
-        <Row className="mb-4">
-          <Col>
-            <Card className="shadow">
-              <CardHeader className="border-0">
-                <Row className="align-items-center">
-                  <Col>
-                    <h3>{modoEditar ? "Editar Empleado" : "Registrar Nuevo Empleado"}</h3>
-                  </Col>
-                </Row>
-              </CardHeader>
-              <CardBody>
-                <Row>
-                  <Col md="6">
-                    <FormGroup>
-                      <Label for="idEmpleado">ID Empleado</Label>
-                      <Input
-                        id="idEmpleado"
-                        name="idEmpleado"
-                        value={form.idEmpleado}
-                        disabled
-                        className="mb-3"
-                      />
-                    </FormGroup>
-                    <FormGroup>
-                      <Label for="nombre">Nombre</Label>
-                      <Input
-                        id="nombre"
-                        name="nombre"
-                        value={form.nombre}
-                        onChange={handleChange}
-                        className="mb-3"
-                      />
-                    </FormGroup>
-                    <FormGroup>
-                      <Label for="telefono">Teléfono</Label>
-                      <Input
-                        id="telefono"
-                        name="telefono"
-                        value={form.telefono}
-                        onChange={handleChange}
-                        className="mb-3"
-                      />
-                    </FormGroup>
-                  </Col>
-                  <Col md="6">
-                    <FormGroup>
-                      <Label for="apellido">Apellido</Label>
-
-                      <Input
-                        id="apellido"
-                        name="apellido"
-                        value={form.apellido}
-                        onChange={handleChange}
-                        className="mb-3"
-                      />
-                    </FormGroup>
-                    <FormGroup>
-                      <Label for="email">Email</Label>
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        value={form.email}
-                        onChange={handleChange}
-                        className="mb-3"
-                      />
-                    </FormGroup>
-                    <FormGroup>
-                      <Label for="cargo">Cargo</Label>
-                      <Input
-                        id="cargo"
-                        name="cargo"
-                        value={form.cargo}
-                        onChange={handleChange}
-                        className="mb-3"
-                      />
-                    </FormGroup>
-                    <FormGroup>
-                      <Label for="salario">Salario</Label>
-                      <Input
-                        id="salario"
-                        name="salario"
-                        type="number"
-                        value={form.salario}
-                        onChange={handleChange}
-                        className="mb-3"
-                      />
-                    </FormGroup>
-                  </Col>
-                </Row>
-                <div className="text-right">
-                  {modoEditar ? (
-                    <>
-                      <Button color="warning" onClick={actualizarEmpleado} className="mr-2">
-                        <FontAwesomeIcon icon={faEdit} className="mr-1" /> Actualizar Empleado
-                      </Button>
-                      <Button color="secondary" onClick={() => { limpiarFormulario(); setModoEditar(false); }}>
-                        Cancelar
-                      </Button>
-                    </>
-                  ) : (
-                    <Button color="primary" onClick={agregarEmpleado}>
-                      <FontAwesomeIcon icon={faUserPlus} className="mr-1" /> Agregar Empleado
-                    </Button>
-                  )}
-                </div>
-              </CardBody>
-            </Card>
-          </Col>
-        </Row>
-
-        {/* Tabla */}
+        {/* Tabla de empleados */}
         <Row>
           <Col>
             <Card className="shadow">
@@ -309,14 +200,24 @@ const Empleados = () => {
                   <Col>
                     <h3>Listado de Empleados</h3>
                   </Col>
-                  <Col className="text-right">
+                  <Col className="d-flex justify-content-end align-items-center">
                     <Input
                       type="text"
                       placeholder="Buscar empleado..."
                       value={busqueda}
                       onChange={e => setBusqueda(e.target.value)}
-                      style={{ maxWidth: "300px" }}
+                      style={{ maxWidth: "300px", marginRight: "inline-block" }}
                     />
+                    <Button
+                      color="primary"
+                      onClick={() => {
+                        limpiarFormulario();
+                        setModoEditar(false);
+                        setMostrarFormulario(true);
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faUserPlus} className="mr-1" /> Nuevo Empleado
+                    </Button>
                   </Col>
                 </Row>
               </CardHeader>
@@ -346,10 +247,10 @@ const Empleados = () => {
                         <td>{emp.salario}</td>
                         <td>
                           <Button size="sm" color="info" onClick={() => editar(emp)} className="mr-2">
-                            <FontAwesomeIcon icon={faEdit} className="mr-1" /> Editar
+                            <FontAwesomeIcon icon={faEdit} className="mr-0" />
                           </Button>
                           <Button size="sm" color="danger" onClick={() => solicitarBorrado(emp)}>
-                            <FontAwesomeIcon icon={faTrashAlt} className="mr-1" /> Eliminar
+                            <FontAwesomeIcon icon={faTrashAlt} className="mr-0" />
                           </Button>
                         </td>
                       </tr>

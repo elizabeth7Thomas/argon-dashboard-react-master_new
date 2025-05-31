@@ -9,9 +9,6 @@ import {
   Table,
   Input,
   CardHeader,
-  FormGroup,
-  Label,
-  CardBody,
   Modal,
   ModalHeader,
   ModalBody,
@@ -20,13 +17,15 @@ import {
 import {
   faUserPlus,
   faEdit,
-  faUsers,
+
   faIdCard,
   faPhone,
   faEnvelope,
   faTrashAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
+import NuevoClienteForm from "./NuevoClienteForm";
 
 const BASE_URL = "https://tallerrepuestos.vercel.app/tallerrepuestos";
 
@@ -42,12 +41,12 @@ const Clientes = () => {
   });
   const [modoEditar, setModoEditar] = useState(false);
   const [busqueda, setBusqueda] = useState("");
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
 
   // Estados para el modal de confirmación de borrado
   const [showModal, setShowModal] = useState(false);
   const [clienteAEliminar, setClienteAEliminar] = useState(null);
 
-  // 1) Al montar el componente, obtenemos todos los clientes desde el backend:
   useEffect(() => {
     obtenerTodosLosClientes();
   }, []);
@@ -55,7 +54,6 @@ const Clientes = () => {
   const obtenerTodosLosClientes = async () => {
     try {
       const respuesta = await axios.get(`${BASE_URL}/clientes`);
-      // La API retorna objetos con campo `idcliente`. Mapeamos a nuestro estado:
       const clientesMapeados = respuesta.data.map((c) => ({
         idCliente: c.idcliente.toString(),
         nombre: c.nombre,
@@ -71,16 +69,12 @@ const Clientes = () => {
     }
   };
 
-  // Manejador para actualizar el formulario:
   const handleChange = (e) => {
     setForm({ ...form, [e.target.name]: e.target.value });
   };
 
-  // 2) Agregar Cliente → POST /clientes
   const agregarCliente = async () => {
-    // Validaciones mínimas:
     if (!form.nombre.trim() || !form.apellido.trim()) return;
-
     try {
       const nuevo = {
         nombre: form.nombre.trim(),
@@ -90,17 +84,15 @@ const Clientes = () => {
         email: form.email.trim(),
         status: 1,
       };
-
       await axios.post(`${BASE_URL}/clientes`, nuevo);
-      // Recargamos la lista completa
       await obtenerTodosLosClientes();
       limpiarFormulario();
+      setMostrarFormulario(false);
     } catch (error) {
       console.error("Error al crear cliente:", error);
     }
   };
 
-  // 3) Editar Cliente → carga el formulario en modo edición
   const editar = (cliente) => {
     setForm({
       idCliente: cliente.idCliente,
@@ -111,12 +103,11 @@ const Clientes = () => {
       email: cliente.email,
     });
     setModoEditar(true);
+    setMostrarFormulario(true);
   };
 
-  // 4) Actualizar Cliente → PUT /clientes/:id
   const actualizarCliente = async () => {
     if (!form.idCliente) return;
-
     try {
       const actualizado = {
         nombre: form.nombre.trim(),
@@ -124,32 +115,27 @@ const Clientes = () => {
         nit: form.nit.trim() ? form.nit.trim() : null,
         telefono: form.telefono.trim(),
         email: form.email.trim(),
-        status: 1, // Mantener activo
+        status: 1,
       };
-
       await axios.put(`${BASE_URL}/clientes/${form.idCliente}`, actualizado);
-      // Recargamos la lista completa
       await obtenerTodosLosClientes();
       limpiarFormulario();
       setModoEditar(false);
+      setMostrarFormulario(false);
     } catch (error) {
       console.error("Error al actualizar cliente:", error);
     }
   };
 
-  // 5A) Mostrar modal de confirmación antes de eliminar
   const solicitarBorrado = (cliente) => {
     setClienteAEliminar(cliente);
     setShowModal(true);
   };
 
-  // 5B) Confirmar y ejecutar borrado → DELETE /clientes/:id
   const confirmarBorrado = async () => {
     if (!clienteAEliminar) return;
-
     try {
       await axios.delete(`${BASE_URL}/clientes/${clienteAEliminar.idCliente}`);
-      // Recargamos la lista completa
       await obtenerTodosLosClientes();
       setShowModal(false);
       setClienteAEliminar(null);
@@ -174,7 +160,6 @@ const Clientes = () => {
     });
   };
 
-  // Filtrado en tiempo real:
   const clientesFiltrados = clientes.filter(
     (cliente) =>
       cliente.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
@@ -184,160 +169,33 @@ const Clientes = () => {
 
   return (
     <>
-      {/* Header personalizado para Clientes */}
-      <div className="header bg-gradient-primary pb-8 pt-5 pt-md-8">
-        <Container fluid>
-          <div className="header-body">
-            <Row className="align-items-center py-4">
-              <Col lg="6">
-                <h2 className="text-white mb-0">
-                  <FontAwesomeIcon icon={faUsers} className="mr-2" />
-                  Gestión de Clientes
-                </h2>
-                <p className="text-white mb-0">
-                  Administra los clientes del taller de mantenimiento
-                </p>
-              </Col>
-              <Col lg="6" className="text-right">
-                <Button
-                  color="neutral"
-                  onClick={() => {
-                    limpiarFormulario();
-                    setModoEditar(false);
-                  }}
-                >
-                  <FontAwesomeIcon icon={faUserPlus} className="mr-1" />
-                  Nuevo Cliente
-                </Button>
-              </Col>
-            </Row>
-          </div>
-        </Container>
-      </div>
+      <Container className="mt--0" fluid>
+        {/* Modal para formulario de cliente */}
+        <Modal isOpen={mostrarFormulario} toggle={() => setMostrarFormulario(false)}>
+          <ModalHeader toggle={() => setMostrarFormulario(false)}>
+            {modoEditar ? "Editar Cliente" : "Registrar Nuevo Cliente"}
+          </ModalHeader>
+          <ModalBody>
+            <NuevoClienteForm
+              form={form}
+              modoEditar={modoEditar}
+              handleChange={handleChange}
+              agregarCliente={async () => {
+                await agregarCliente();
+                setMostrarFormulario(false);
+              }}
+              actualizarCliente={async () => {
+                await actualizarCliente();
+                setMostrarFormulario(false);
+              }}
+              limpiarFormulario={limpiarFormulario}
+              setModoEditar={setModoEditar}
+              onClose={() => setMostrarFormulario(false)}
+            />
+          </ModalBody>
+        </Modal>
 
-      <Container className="mt--7" fluid>
-        {/* FORMULARIO */}
-        <Row className="mb-4">
-          <Col>
-            <Card className="shadow">
-              <CardHeader className="border-0">
-                <Row className="align-items-center">
-                  <Col>
-                    <h3 className="mb-0">
-                      {modoEditar ? "Editar Cliente" : "Registrar Nuevo Cliente"}
-                    </h3>
-                  </Col>
-                </Row>
-              </CardHeader>
-              <CardBody>
-                <Row>
-                  <Col md="6">
-                    {/* ID Cliente (solo lectura) */}
-                    <FormGroup>
-                      <Label for="idCliente">ID Cliente</Label>
-                      <Input
-                        id="idCliente"
-                        name="idCliente"
-                        placeholder="Se asigna automáticamente"
-                        value={form.idCliente}
-                        disabled
-                        className="mb-3"
-                      />
-                    </FormGroup>
-                    <FormGroup>
-                      <Label for="nombre">Nombre</Label>
-                      <Input
-                        id="nombre"
-                        name="nombre"
-                        placeholder="Nombre del cliente"
-                        value={form.nombre}
-                        onChange={handleChange}
-                        className="mb-3"
-                      />
-                    </FormGroup>
-                    <FormGroup>
-                      <Label for="nit">NIT</Label>
-                      <Input
-                        id="nit"
-                        name="nit"
-                        placeholder="Documento tributario (opcional)"
-                        value={form.nit}
-                        onChange={handleChange}
-                        className="mb-3"
-                      />
-                    </FormGroup>
-                  </Col>
-                  <Col md="6">
-                    <FormGroup>
-                      <Label for="apellido">Apellido</Label>
-                      <Input
-                        id="apellido"
-                        name="apellido"
-                        placeholder="Apellido del cliente"
-                        value={form.apellido}
-                        onChange={handleChange}
-                        className="mb-3"
-                      />
-                    </FormGroup>
-                    <FormGroup>
-                      <Label for="telefono">Teléfono</Label>
-                      <Input
-                        id="telefono"
-                        name="telefono"
-                        placeholder="Número de contacto"
-                        value={form.telefono}
-                        onChange={handleChange}
-                        className="mb-3"
-                      />
-                    </FormGroup>
-                    <FormGroup>
-                      <Label for="email">Email</Label>
-                      <Input
-                        id="email"
-                        name="email"
-                        type="email"
-                        placeholder="Correo electrónico"
-                        value={form.email}
-                        onChange={handleChange}
-                        className="mb-3"
-                      />
-                    </FormGroup>
-                  </Col>
-                </Row>
-                <div className="text-right">
-                  {modoEditar ? (
-                    <>
-                      <Button
-                        color="warning"
-                        onClick={actualizarCliente}
-                        className="mr-2"
-                      >
-                        <FontAwesomeIcon icon={faEdit} className="mr-1" />
-                        Actualizar Cliente
-                      </Button>
-                      <Button
-                        color="secondary"
-                        onClick={() => {
-                          limpiarFormulario();
-                          setModoEditar(false);
-                        }}
-                      >
-                        Cancelar
-                      </Button>
-                    </>
-                  ) : (
-                    <Button color="primary" onClick={agregarCliente}>
-                      <FontAwesomeIcon icon={faUserPlus} className="mr-1" />
-                      Agregar Cliente
-                    </Button>
-                  )}
-                </div>
-              </CardBody>
-            </Card>
-          </Col>
-        </Row>
-
-        {/* TABLA DE CLIENTES */}
+        {/* Tabla de clientes */}
         <Row>
           <Col>
             <Card className="shadow">
@@ -346,14 +204,25 @@ const Clientes = () => {
                   <Col>
                     <h3 className="mb-0">Listado de Clientes</h3>
                   </Col>
-                  <Col className="text-right">
+                  <Col className="d-flex justify-content-end align-items-center">
                     <Input
                       type="text"
                       placeholder="Buscar cliente..."
                       value={busqueda}
                       onChange={(e) => setBusqueda(e.target.value)}
-                      style={{ maxWidth: "300px" }}
+                      style={{ maxWidth: "300px", marginRight: "10px" }}
                     />
+                    <Button
+                      color="primary"
+                      onClick={() => {
+                        limpiarFormulario();
+                        setModoEditar(false);
+                        setMostrarFormulario(true);
+                      }}
+                    >
+                      <FontAwesomeIcon icon={faUserPlus} className="mr-1" />
+                      Nuevo Cliente
+                    </Button>
                   </Col>
                 </Row>
               </CardHeader>
@@ -392,16 +261,14 @@ const Clientes = () => {
                             onClick={() => editar(cli)}
                             className="mr-2"
                           >
-                            <FontAwesomeIcon icon={faEdit} className="mr-1" />
-                            Editar
+                            <FontAwesomeIcon icon={faEdit} className="mr-0" />
                           </Button>
                           <Button
                             size="sm"
                             color="danger"
                             onClick={() => solicitarBorrado(cli)}
                           >
-                            <FontAwesomeIcon icon={faTrashAlt} className="mr-1" />
-                            Eliminar
+                            <FontAwesomeIcon icon={faTrashAlt} className="mr-0" />
                           </Button>
                         </td>
                       </tr>

@@ -27,7 +27,7 @@ export default function Empleados() {
 
   const toggleModal = () => {
     setModalOpen(!modalOpen);
-    if (modalOpen) setEditingData(null); // limpiar datos al cerrar modal
+    if (modalOpen) setEditingData(null);
   };
 
   const handleEdit = (item) => {

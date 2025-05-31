@@ -22,9 +22,13 @@ import {
 } from "reactstrap";
 import {
   faUsers,
-  faCogs,
   faCar,
-  faFileInvoice
+  faTags,
+  faBoxOpen,
+  faUserTie,
+  faHistory,
+  faWarehouse,
+  faTools
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 //import Inventario from 'TiendaConveniencia/InventarioTienda/Inventario';
@@ -34,34 +38,32 @@ const Mantenimiento = () => {
 
   const secciones = [
     { id: 'clientes', label: 'Clientes', icon: faUsers, color: 'primary' },
-    { id: 'categorias', label: 'Categorías', icon: faCogs, color: 'info' },
-    { id: 'productos', label: 'Productos', icon: faCogs, color: 'success' },
-    { id: 'vehiculos', label: 'Vehículos', icon: faCar, color: 'warning' },
-    { id: 'ventas', label: 'Ventas', icon: faFileInvoice, color: 'danger' },
-    { id: 'tipo_servicio', label: 'tipo_servicio', icon: faFileInvoice, color: 'secondary' },
-    { id: 'servicios', label: 'Servicios', icon: faFileInvoice, color: 'dark' },
-    { id: 'Empleados', label: 'Empleados', icon: faFileInvoice, color: 'dark' },
-    { id: 'PrecioHistorial', label: 'PrecioHistorial', icon: faFileInvoice, color: 'dark' },
-    { id: 'inventario', label: 'Inventario', icon: faCogs, color: 'primary' },
-    { id: 'movimientos', label: 'Movimientos', icon: faCogs, color: 'primary' },
+    { id: 'categorias', label: 'Categorías', icon: faTags, color: 'primary' },
+    { id: 'productos', label: 'Productos', icon: faBoxOpen, color: 'primary' },
+    { id: 'vehiculos', label: 'Vehículos', icon: faCar, color: 'primary' },
+    { id: 'tipo_servicio', label: 'Tipo de Servicio', icon: faTools, color: 'primary'},
+    { id: 'servicios', label: 'Servicios', icon: faTools, color: 'primary' },
+    { id: 'Empleados', label: 'Empleados', icon: faUserTie, color: 'primary' },
+    { id: 'PrecioHistorial', label: 'Precio Historial', icon: faHistory, color: 'primary' },
+    { id: 'inventario', label: 'Inventario', icon: faWarehouse, color: 'primary'},
   ];
 
   return (
     <>
       <HeaderMantenimiento />
-      <Container className="mt--7" fluid>
-        <Row>
-          <Col md="4">
-            <Card className="shadow">
-              <CardHeader>
-                <h3 className="mb-0">Menú de Mantenimiento</h3>
-              </CardHeader>
-              <CardBody>
+      <br />
+      <Container className="mt--0" fluid>
+      {/* Card de botones en la parte superior */}
+      <Row className="mb-4">
+        <Col>
+          <Card className="shadow">
+            <CardBody>
+              <div className="d-flex flex-wrap gap-2">
                 {secciones.map((s) => (
                   <Button
                     key={s.id}
                     color={s.color}
-                    className="d-block w-100 mb-3 text-left"
+                    className="btn-icon mb-2"
                     onClick={() => setSelectedSection(s.id)}
                   >
                     <FontAwesomeIcon icon={s.icon} className="mr-2" />
@@ -71,40 +73,44 @@ const Mantenimiento = () => {
                     )}
                   </Button>
                 ))}
-              </CardBody>
-            </Card>
-          </Col>
+              </div>
+            </CardBody>
+          </Card>
+        </Col>
+      </Row>
 
-          <Col md="8">
-            <Card className="shadow">
-              <CardHeader>
-                <h3 className="mb-0">
-                  {selectedSection
-                    ? `Gestión de ${secciones.find(s => s.id === selectedSection)?.label}`
-                    : 'Seleccione una sección'}
-                </h3>
-              </CardHeader>
-              <CardBody>
-                {selectedSection === 'clientes' && <Clientes />}
-                {selectedSection === 'categorias' && <CategoriasMantenimiento/>}
-                {selectedSection === 'productos' && <ProductosMantenimiento />}
-                {selectedSection === 'vehiculos' && <VehiculosMantenimiento />}
-                {selectedSection === 'ventas' && (
-                  <p>🚧 Módulo de ventas en construcción...</p>
-                )}
-                {selectedSection === 'tipo_servicio' && <TipoServicioMantenimiento />}
-                {selectedSection === 'servicios' && <ServiciosMantenimiento />}
-                {selectedSection === 'Empleados' && <Empleados />}
-                {selectedSection === 'PrecioHistorial' && <PrecioHistorial />}
-                {selectedSection === 'inventario' && <Inventario />}
-                {selectedSection === 'movimientos' && (
-                  <p>🚧 Módulo de ventas en construcción...</p>
-                )}
-              </CardBody>
-            </Card>
-          </Col>
-        </Row>
-      </Container>
+      {/* Card de gestión debajo */}
+      <Row>
+        <Col>
+          <Card className="shadow">
+            <CardHeader>
+              <h3 className="mb-0">
+                {selectedSection
+                  ? `Gestión de ${secciones.find(s => s.id === selectedSection)?.label}`
+                  : 'Formulario'}
+              </h3>
+            </CardHeader>
+            <CardBody>
+              {selectedSection === 'clientes' && <Clientes />}
+              {selectedSection === 'categorias' && <CategoriasMantenimiento/>}
+              {selectedSection === 'productos' && <ProductosMantenimiento />}
+              {selectedSection === 'vehiculos' && <VehiculosMantenimiento />}
+              {selectedSection === 'tipo_servicio' && <TipoServicioMantenimiento />}
+              {selectedSection === 'servicios' && <ServiciosMantenimiento />}
+              {selectedSection === 'Empleados' && <Empleados />}
+              {selectedSection === 'PrecioHistorial' && <PrecioHistorial />}
+              {selectedSection === 'inventario' && <Inventario />}
+              {!selectedSection && (
+                <div>
+                  <p>Seleccione una sección para gestionar.</p>
+                </div>
+              )}
+              
+            </CardBody>
+          </Card>
+        </Col>
+      </Row>
+    </Container>
     </>
   );
 };

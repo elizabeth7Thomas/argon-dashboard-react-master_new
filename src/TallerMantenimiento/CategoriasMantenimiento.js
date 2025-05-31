@@ -20,6 +20,8 @@ import {
   Input,
   Label,
 } from "reactstrap";
+import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const BASE_URL = "https://tallerrepuestos.vercel.app/tallerrepuestos";
 
@@ -179,18 +181,16 @@ const CategoriasMantenimiento = () => {
                           <td>
                             <Button
                               size="sm"
-                              color="warning"
+                              color="info"
                               className="me-2"
-                              onClick={() => handleEditarClick(c)}
-                            >
-                              Editar
+                              onClick={() => handleEditarClick(c)}>
+                                <FontAwesomeIcon icon={faEdit} className="mr-0" />
                             </Button>
                             <Button
                               size="sm"
                               color="danger"
-                              onClick={() => solicitarBorrado(c)}
-                            >
-                              Eliminar
+                              onClick={() => solicitarBorrado(c)}>
+                              <FontAwesomeIcon icon={faTrashAlt} className="mr-0" />
                             </Button>
                           </td>
                         </tr>

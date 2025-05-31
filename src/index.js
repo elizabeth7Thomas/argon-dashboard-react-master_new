@@ -71,12 +71,12 @@ import Movimientos from "../src/Admin/Movimientos/Movimientos";
 /* IMPORTACION TALLER MANTENIMIENTO*/
 import VehiculosMantenimiento from "TallerMantenimiento/VehiculosMantenimiento/VehiculosMantenimiento";
 import InventarioMantenimiento from "TallerMantenimiento/InventarioMantenimiento/InventarioMantenimiento";
+import ClientesMantenimiento from "TallerMantenimiento/Clientes";
 
 /*IMPORTACIONES TIENDA CONVENIENCIA*/
 import ProveedoresTienda from "TiendaConveniencia/ProveedoresTienda/ProveedoresTienda";
 import ReportesTienda from "TiendaConveniencia/ReportesTienda/ReportesTienda";
 import Inventario from "TiendaConveniencia/InventarioTienda/Inventario.js";
-import Clientes from "TallerMantenimiento/Clientes";
 import Reports from "views/examples/Reports";
 import Devoluciones from "TiendaConveniencia/Devoluciones/Devoluciones";
 const root = ReactDOM.createRoot(document.getElementById("root"));
@@ -118,15 +118,15 @@ root.render(
       <Route path="/admin/payment/metodos" element = {<MetodosPagoPage />} />
       <Route path="/admin/payment/transacciones" element = {<TransaccionesPage />} />
 
-      {/*TALLER ROUTES*/}
+      {/*TALLER PINTURA ROUTES*/}
       <Route path="/admin/taller-pinturas" element={<Pinturas />} />
 
       {/* TALLER MANTENIMIENTO ROUTES*/}
       <Route path="/admin/vehiculosMantenimiento" element={<VehiculosMantenimiento />} />
       <Route path="/admin/inventarioMantenimiento" element={<InventarioMantenimiento />} />
+      <Route path="/admin/clientesMantenimiento" element = {<ClientesMantenimiento />} />
 
       {/*TIENDA CONVENIENCIA ROUTES*/}
-      <Route path = "/admin/clientesMantenimiento" element = {<Clientes />} />
       <Route path = "/admin/inventario" element = {<Inventario />} />
       <Route path = "/admin/proveedoresTienda" element = {<ProveedoresTienda />} />
       <Route path = "/admin/reportesTienda" element = {<ReportesTienda />} />
