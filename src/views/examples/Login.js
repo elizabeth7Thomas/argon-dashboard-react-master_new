@@ -44,21 +44,21 @@ const Login = () => {
         },
         {
           headers: {
-            "Content-Type": "application/json",
-            "Access-Control-Allow-Origin": "*"
+            "Content-Type": "application/json"
           }
         }
       );
 
       console.log("Respuesta de autenticación:", response.data);
 
-      const token = response.data._broker_session_token;
+      // Acceder al token correctamente
+      const token = response.data?.response?._broker_session_token;
 
       if (token) {
         localStorage.setItem("token", token); // Guarda el token
         setSuccess("Autenticación exitosa");
 
-        // Redirige al usuario 
+        // Redirige al usuario
         setTimeout(() => {
           window.location.href = "/dashboard";
         }, 1000);

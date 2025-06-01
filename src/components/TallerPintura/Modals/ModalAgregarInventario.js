@@ -13,17 +13,15 @@ import {
 
 const CrearInventarioModal = ({ isOpen, toggle }) => {
   const [formData, setFormData] = useState({
-    accion: "crear",
-    TipoInventario: "",
     NombreProducto: "",
+    CantidadDisponible: "",
     idTipoPintura: "",
+    TipoInventario: "",
     Lote: "",
     CodigoColor: "",
-    CantidadDisponible: "",
     FechaAdquisicion: "",
     FechaVencimiento: "",
-    EstadoInventario: true,
-    deleted: false,
+    EstadoInventario: true, // true = 1, false = 0
   });
 
   const handleChange = (e) => {
@@ -37,16 +35,28 @@ const CrearInventarioModal = ({ isOpen, toggle }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const payload = {
+      metadata: {
+        uri: "/pinturas/POST/inventarios",
+      },
+      request: {
+        NombreProducto: formData.NombreProducto,
+        CantidadDisponible: parseInt(formData.CantidadDisponible),
+        idTipoPintura: formData.idTipoPintura ? parseInt(formData.idTipoPintura) : null,
+        TipoInventario: parseInt(formData.TipoInventario),
+        Lote: formData.Lote,
+        CodigoColor: formData.CodigoColor,
+        FechaAdquisicion: formData.FechaAdquisicion,
+        FechaVencimiento: formData.FechaVencimiento,
+        EstadoInventario: formData.EstadoInventario ? 1 : 0,
+      },
+    };
+
     try {
-      const response = await fetch("http://127.0.0.1:8000/pintura/POST/inventarios", {
+      const response = await fetch("http://64.23.169.22:3761/broker/api/rest", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          ...formData,
-          TipoInventario: parseInt(formData.TipoInventario),
-          idTipoPintura: formData.idTipoPintura ? parseInt(formData.idTipoPintura) : null,
-          CantidadDisponible: parseInt(formData.CantidadDisponible),
-        }),
+        body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
@@ -70,9 +80,7 @@ const CrearInventarioModal = ({ isOpen, toggle }) => {
     <Modal isOpen={isOpen} toggle={toggle}>
       <ModalHeader toggle={toggle}>Crear Inventario</ModalHeader>
       <ModalBody>
-        <Form>
-          <Input type="hidden" name="accion" value="crear" />
-
+        <Form onSubmit={handleSubmit}>
           <FormGroup>
             <Label for="TipoInventario">Tipo de Inventario</Label>
             <Input
