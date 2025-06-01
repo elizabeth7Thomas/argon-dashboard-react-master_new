@@ -2,8 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import routes from '../routes';
-import ServicioList from './ServicioList';
-import HeaderAdministracion from 'components/Headers/HeaderAdministracion';
+import ServicioList from '../Servicios/ServicioList';
 
 export default function Servicios(){
     
@@ -24,7 +23,6 @@ export default function Servicios(){
 
     return (
         <>
-            <HeaderAdministracion title="Servicios" />
             <ServicioList 
             servicios={servicios} 
             />

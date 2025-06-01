@@ -2,10 +2,9 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import routes from '../routes';
-import EmpleadoList from './EmpleadoList';
-import EmpleadoForm from './EmpleadoForm';
+import EmpleadoList from '../Empleados/EmpleadoList';
+import EmpleadoForm from '../Empleados//EmpleadoForm';
 import { Modal, ModalHeader, ModalBody } from 'reactstrap';
-import HeaderAdministracion from 'components/Headers/HeaderAdministracion';
 
 export default function Empleados() {
   const [empleados, setEmpleados] = useState([]);
@@ -66,8 +65,7 @@ export default function Empleados() {
   return (
     
     <div>
-      <HeaderAdministracion title="Empleados" />
-      <button className="btn btn-primary mb-3" onClick={toggleModal}>Agregar Empleado</button>
+      <button className="btn btn-primary mb-2 align-items" onClick={toggleModal}>Agregar Empleado</button>
 
       <EmpleadoList 
         empleados={empleados} 

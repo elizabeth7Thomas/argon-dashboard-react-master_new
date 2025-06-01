@@ -2,8 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import routes from '../routes';
-import MovimientoList from './MovimientoList';
-import HeaderAdministracion from 'components/Headers/HeaderAdministracion';
+import MovimientoList from '../Movimientos/MovimientoList';
 
 export default function Movimientos(){
     const [movimientos, setMovimientos] = useState([]);
@@ -23,7 +22,6 @@ export default function Movimientos(){
 
     return (
         <>
-            <HeaderAdministracion title="Movimientos" />
             <MovimientoList 
                 movimientos={movimientos} 
             />

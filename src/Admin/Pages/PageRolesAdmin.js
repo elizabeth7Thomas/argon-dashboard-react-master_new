@@ -3,10 +3,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import routes from '../routes';
-import RolList from './RolList';
-import RolForm from './RolForm';
+import RolList from '../Roles/RolList';
+import RolForm from '../Roles/RolForm';
 import {Modal, ModalHeader, ModalBody } from 'reactstrap';
-import HeaderAdministracion from 'components/Headers/HeaderAdministracion';
 
 export default function Roles() {
   const [roles, setRoles] = useState([]);
@@ -62,8 +61,6 @@ export default function Roles() {
 
   return (
     <div>
-    <HeaderAdministracion title="Roles" />
-      <h2>Gestión de Roles</h2>
       <button className="btn btn-primary mb-3" onClick={toggleModal}>Agregar Rol</button>
       
       <RolList 

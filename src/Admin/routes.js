@@ -59,6 +59,17 @@ const REPORTES_API = {
   GET_ALL_A: `${API_BASE}/GET/movimientos/anuales`,
   
 };
+
+const ORDENES_API = {
+  GET_ALL: `${API_BASE}/GET/ordenes`,
+  GET_BY_ID: (id) => `${API_BASE}/GET/ordenes/${id}`,
+  CREATE: `${API_BASE}/POST/ordenes`,
+  UPDATE_ESTADO: (id) => `${API_BASE}/PUT/ordenes/modificar_estado/${id}`,
+  UPDATE_DETALLE: (id_detalle_orden) => `${API_BASE}/PUT/ordenes/detalle/${id_detalle_orden}`,
+  REABASTECER: (id_orden) => `${API_BASE}/POST/ordenes/reabastecer/${id_orden}`,
+  GET_ESTADOS_ORDENES: `${API_BASE}/GET/ordenes/estados_ordenes`,
+  GET_ESTADOS_ORDENES_DETALLES: `${API_BASE}/GET/ordenes/estados_ordenes_detalles`,
+};
 const routes = {
   Administracion: {
     Empleados: EMPLEADOS_API,
@@ -70,6 +81,7 @@ const routes = {
     Servicios: SERVICES_API,
     Movimientos: MOVIMIENTOS_API,
     Reportes: REPORTES_API,
+    Ordenes: ORDENES_API,
   }
 };
 

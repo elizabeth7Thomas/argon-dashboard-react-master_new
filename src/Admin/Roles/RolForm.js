@@ -33,22 +33,16 @@ export default function RolForm({ initialData, onSave, onCancel }) {
   const handleSubmit = (e) => {
     e.preventDefault();
     const data = {
-      id: parseInt(initialData?.id || 0),
-      id_rol_superior: parseInt(formData.id_rol_superior),
       nombre: formData.nombre,
       descripcion: formData.descripcion,
       salario: parseFloat(formData.salario),
-      
+      id_rol_superior: parseInt(formData.id_rol_superior),
     };
     onSave(data);
   };
 
   return (
     <Form onSubmit={handleSubmit}>
-      <FormGroup className="mb-3">
-        <Label>#</Label>
-        <Input name="id" type="number" value={initialData?.id || ''} readOnly />
-      </FormGroup>
       <FormGroup>
         <Label>Nombre</Label>
         <Input name="nombre" value={formData.nombre} onChange={handleChange} required />
@@ -65,7 +59,7 @@ export default function RolForm({ initialData, onSave, onCancel }) {
         <Label>ID Rol Superior</Label>
         <Input name="id_rol_superior" type="number" value={formData.id_rol_superior} onChange={handleChange} required />
       </FormGroup>
-      <Button color="success" type="submit">Guardar</Button>{' '}
+      <Button color="primary" type="submit">Guardar</Button>{''}
       <Button color="secondary" onClick={onCancel}>Cancelar</Button>
     </Form>
   );

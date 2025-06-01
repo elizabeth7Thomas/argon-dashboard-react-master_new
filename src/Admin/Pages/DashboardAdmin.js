@@ -1,7 +1,5 @@
 // src/Administracion/Dashboard.js
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import classnames from "classnames";
 import {
   Container,
   Row,
@@ -9,12 +7,7 @@ import {
   Card,
   CardHeader,
   CardBody,
-  CardTitle,
-  ListGroup,
-  ListGroupItem,
-  Badge,
   Button,
-  Progress
 } from 'reactstrap';
 import HeaderAdministracion from "components/Headers/HeaderAdministracion";
 import { 
@@ -26,233 +19,111 @@ import {
   faCogs,
   faBusinessTime,
   faExchangeAlt,
-  faChartLine
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
+// Importa tus componentes de tablas reales
+import EmpleadosPage from './PageEmpleadosAdmin';
+import AlertasPage from './PageAlertasAdmin';
+import AreasPage from './PageAreasAdmin';
+import RolesPage from './PageRolesAdmin';
+import ProveedoresPage from './PageProveedoresAdmin';
+import ServiciosPage from './PageServiciosAdmin';
+import JornadasPage from './PageJornadasAdmin';
+import MovimientosPage from './PageMovimientosAdmin';
+import Ordenes from './PageOrdenesAdmin';
+
 export default function DashboardAdmin() {
-  const navigate = useNavigate();
 
-  // Datos mockeados para visualización
-  const [employeeStats] = useState({
-    total: 42,
-    active: 38,
-    inactive: 4
-  });
+  // Estado para la sección seleccionada
+  const [selectedSection, setSelectedSection] = useState(null);
 
-  const [alerts] = useState([
-    { id: 1, message: "Nuevo empleado necesita capacitación", level: "medium", area: "RRHH" },
-    { id: 2, message: "Proveedor con retraso en entrega", level: "high", area: "Compras" },
-    { id: 3, message: "Actualización de roles pendiente", level: "low", area: "Administración" }
-  ]);
-
-  const [areas] = useState([
-    { name: "Gasolinera", employees: 15, status: "active" },
-    { name: "Tienda", employees: 8, status: "active" },
-    { name: "Taller", employees: 5, status: "maintenance" }
-  ]);
+  // Render dinámico del componente según la sección seleccionada
+  const renderSection = () => {
+    switch (selectedSection) {
+      case 'empleados':
+        return <EmpleadosPage />;
+      case 'alertas':
+        return <AlertasPage />;
+      case 'areas':
+        return <AreasPage />;
+      case 'roles':
+        return <RolesPage />;
+      case 'proveedores':
+        return <ProveedoresPage />;
+      case 'servicios':
+        return <ServiciosPage />;
+      case 'jornadas':
+        return <JornadasPage />;
+      case 'movimientos':
+        return <MovimientosPage />;
+      case 'ordenes':
+        return <Ordenes />;
+      default:
+        return <p className="text-muted">Selecciona una opción para comenzar.</p>;
+    }
+  };
 
   return (
     <>
       <HeaderAdministracion />
-      <Container className="mt-5" fluid>
+      <Container className="mt-4" fluid>
         {/* Navegación principal */}
         <Row className="mb-4">
           <Col>
             <Card className="shadow">
               <CardBody className="d-flex flex-wrap gap-2 justify-content-center">
-                <Button 
-                  color="primary" 
-                  onClick={() => navigate('/admin/empleados')}
-                  className="btn-icon"
-                >
+                <Button color="primary" onClick={() => setSelectedSection('empleados')} className="btn-icon">
                   <FontAwesomeIcon icon={faUsers} className="mr-2" />
                   Empleados
                 </Button>
-                <Button 
-                  color="primary" 
-                  onClick={() => navigate('/admin/alertas')}
-                  className="btn-icon"
-                >
+                <Button color="primary" onClick={() => setSelectedSection('alertas')} className="btn-icon">
                   <FontAwesomeIcon icon={faBell} className="mr-2" />
                   Alertas
                 </Button>
-                <Button 
-                  color="primary" 
-                  onClick={() => navigate('/admin/areas')}
-                  className="btn-icon"
-                >
+                <Button color="primary" onClick={() => setSelectedSection('areas')} className="btn-icon">
                   <FontAwesomeIcon icon={faSitemap} className="mr-2" />
                   Áreas
                 </Button>
-                <Button 
-                  color="primary" 
-                  onClick={() => navigate('/admin/roles')}
-                  className="btn-icon"
-                >
+                <Button color="primary" onClick={() => setSelectedSection('roles')} className="btn-icon">
                   <FontAwesomeIcon icon={faUserTag} className="mr-2" />
                   Roles
                 </Button>
-                <Button 
-                  color="primary" 
-                  onClick={() => navigate('/admin/proveedores')}
-                  className="btn-icon"
-                >
+                <Button color="primary" onClick={() => setSelectedSection('proveedores')} className="btn-icon">
                   <FontAwesomeIcon icon={faTruck} className="mr-2" />
                   Proveedores
                 </Button>
-                <Button 
-                  color="primary" 
-                  onClick={() => navigate('/admin/services')}
-                  className="btn-icon"
-                >
+                <Button color="primary" onClick={() => setSelectedSection('servicios')} className="btn-icon">
                   <FontAwesomeIcon icon={faCogs} className="mr-2" />
                   Servicios
                 </Button>
-                <Button 
-                  color="primary" 
-                  onClick={() => navigate('/admin/jornadas')}
-                  className="btn-icon"
-                >
+                <Button color="primary" onClick={() => setSelectedSection('jornadas')} className="btn-icon">
                   <FontAwesomeIcon icon={faBusinessTime} className="mr-2" />
                   Jornadas
                 </Button>
-                <Button 
-                  color="primary" 
-                  onClick={() => navigate('/admin/movimientos')}
-                  className="btn-icon"
-                >
+                <Button color="primary" onClick={() => setSelectedSection('movimientos')} className="btn-icon">
                   <FontAwesomeIcon icon={faExchangeAlt} className="mr-2" />
                   Movimientos
                 </Button>
+                {/* El botón de Órdenes ha sido removido de aquí */}
               </CardBody>
             </Card>
           </Col>
         </Row>
 
-        {/* Resumen rápido */}
+        {/* Contenedor del componente dinámico */}
         <Row>
-          {/* Estadísticas de empleados */}
-          <Col lg="4" className="mb-4">
+          <Col>
             <Card className="shadow">
               <CardHeader className="bg-transparent">
-                <CardTitle tag="h5" className="mb-0">
-                  <FontAwesomeIcon icon={faUsers} className="mr-2" />
-                  Estadísticas de Empleados
-                </CardTitle>
+                <h3 className="mb-0">Formulario</h3>
               </CardHeader>
               <CardBody>
-                <ListGroup flush>
-                  <ListGroupItem className="d-flex justify-content-between align-items-center py-3">
-                    Total 
-                    <Badge color="primary" pill className="px-3">
-                      {employeeStats.total}
-                    </Badge>
-                  </ListGroupItem>
-                  <ListGroupItem className="d-flex justify-content-between align-items-center py-3">
-                    Activos 
-                    <Badge color="success" pill className="px-3">
-                      {employeeStats.active}
-                    </Badge>
-                  </ListGroupItem>
-                  <ListGroupItem className="d-flex justify-content-between align-items-center py-3">
-                    Inactivos 
-                    <Badge color="secondary" pill className="px-3">
-                      {employeeStats.inactive}
-                    </Badge>
-                  </ListGroupItem>
-                </ListGroup>
-                <Button 
-                  color="primary" 
-                  outline 
-                  block 
-                  className="mt-3"
-                  onClick={() => navigate('/admin/empleados')}
-                >
-                  Ver todos los empleados
-                </Button>
-              </CardBody>
-            </Card>
-          </Col>
-
-          {/* Alertas recientes */}
-          <Col lg="4" className="mb-4">
-            <Card className="shadow">
-              <CardHeader className="bg-transparent">
-                <CardTitle tag="h5" className="mb-0">
-                  <FontAwesomeIcon icon={faBell} className="mr-2" />
-                  Alertas Recientes
-                </CardTitle>
-              </CardHeader>
-              <CardBody className="p-0">
-                <ListGroup flush>
-                  {alerts.map(alert => (
-                    <ListGroupItem
-                      key={alert.id}
-                      className={classnames("py-3 px-4", {
-                        "bg-danger text-white": alert.level === "high",
-                        "bg-warning": alert.level === "medium",
-                        "bg-info text-white": alert.level === "low"
-                      })}
-                    >
-                      <div className="d-flex justify-content-between align-items-center">
-                        <div>
-                          <Badge color="light" className="mr-2">
-                            {alert.area}
-                          </Badge>
-                          <span>{alert.message}</span>
-                        </div>
-                        <small>
-                          {alert.level === "high" && "CRÍTICA"}
-                          {alert.level === "medium" && "ADVERTENCIA"}
-                          {alert.level === "low" && "INFORMATIVA"}
-                        </small>
-                      </div>
-                    </ListGroupItem>
-                  ))}
-                </ListGroup>
-              </CardBody>
-            </Card>
-          </Col>
-
-          {/* Distribución por áreas */}
-          <Col lg="4" className="mb-4">
-            <Card className="shadow">
-              <CardHeader className="bg-transparent">
-                <CardTitle tag="h5" className="mb-0">
-                  <FontAwesomeIcon icon={faSitemap} className="mr-2" />
-                  Distribución por Áreas
-                </CardTitle>
-              </CardHeader>
-              <CardBody>
-                {areas.map((area, index) => (
-                  <div key={index} className="mb-3">
-                    <div className="d-flex justify-content-between mb-1">
-                      <span className="font-weight-bold">{area.name}</span>
-                      <small>{area.employees} empleados</small>
-                    </div>
-                    <Progress
-                      value={area.employees}
-                      max={employeeStats.active}
-                      color={area.status === "active" ? "success" : "warning"}
-                    />
-                  </div>
-                ))}
-                <Button 
-                  color="success" 
-                  outline 
-                  block 
-                  className="mt-3"
-                  onClick={() => navigate('/admin/areas')}
-                >
-                  Ver todas las áreas
-                </Button>
+                {renderSection()}
               </CardBody>
             </Card>
           </Col>
         </Row>
-
-     
       </Container>
     </>
   );

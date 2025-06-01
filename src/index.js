@@ -60,14 +60,14 @@ import TablaInventarioVehiculos from "components/TallerPintura/Tables/TablaInven
 
 /*IMPORTACION DE ADMINISTRACION */
 import Administracion from "layouts/Administracion.js";
-import Empleados from "../src/Admin/Empleados/Empleados";
-import Areas from "../src/Admin/Areas/Areas";
-import Alertas from "../src/Admin/Alertas/Alertas";
-import Roles from "../src/Admin/Roles/Roles";
-import Jornadas from "../src/Admin/Jornadas/Jornadas";
-import Proveedores from "../src/Admin/Proveedores/Proveedores";
-import Servicios from "../src/Admin/Servicios/Servicios";
-import Movimientos from "../src/Admin/Movimientos/Movimientos";
+import Empleados from "../src/Admin/Pages/PageEmpleadosAdmin";
+import Areas from "./Admin/Pages/PageAreasAdmin";
+import Alertas from "./Admin/Pages/PageAlertasAdmin";
+import Roles from "../src/Admin/Pages/PageRolesAdmin";
+import Jornadas from "../src/Admin/Pages/PageJornadasAdmin";
+import Proveedores from "./Admin/Pages/PageProveedoresAdmin";
+import Servicios from "../src/Admin/Pages/PageServiciosAdmin";
+import Movimientos from "../src/Admin/Pages/PageMovimientosAdmin";
 
 
 /* IMPORTACION TALLER MANTENIMIENTO*/

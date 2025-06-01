@@ -2,8 +2,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import routes from '../routes';
-import JornadaList from './JornadaList'; 
-import HeaderAdministracion from 'components/Headers/HeaderAdministracion';
+import JornadaList from '../Jornadas/JornadaList'; 
 
 export default function Jornadas(){
     const [jornadas, setJornadas] = useState([]);
@@ -22,7 +21,6 @@ export default function Jornadas(){
 
     return (
         <>
-            <HeaderAdministracion title="Jornadas" />
             <JornadaList jornadas={jornadas} />
         </>
     );
