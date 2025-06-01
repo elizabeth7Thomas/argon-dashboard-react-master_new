@@ -1,21 +1,6 @@
 import React, { useState } from "react";
 import axios from "axios";
-import {
-  Button,
-  Card,
-  CardHeader,
-  CardBody,
-  FormGroup,
-  Form,
-  Input,
-  InputGroupAddon,
-  InputGroupText,
-  InputGroup,
-  Row,
-  Col,
-  Alert,
-  Spinner
-} from "reactstrap";
+import { Button, Card,CardHeader, CardBody, FormGroup, Form, Input, InputGroupAddon, InputGroupText, InputGroup, Row, Col, Alert, Spinner} from "reactstrap";
 
 const Login = () => {
   const [username, setUsername] = useState("carlosgarcia.4490");

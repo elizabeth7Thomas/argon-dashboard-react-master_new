@@ -14,7 +14,7 @@ const HeaderGasolineType = () => {
             </Row>
 
             <Row>
-              <Col lg="4">
+              <Col xl="3" md="6">
                 <Card className="card-stats mb-4 mb-xl-0">
                   <CardBody>
                     <Row>
@@ -34,7 +34,7 @@ const HeaderGasolineType = () => {
                 </Card>
               </Col>
 
-              <Col lg="4">
+              <Col xl="3" md="6">
                 <Card className="card-stats mb-4 mb-xl-0">
                   <CardBody>
                     <Row>
@@ -54,7 +54,7 @@ const HeaderGasolineType = () => {
                 </Card>
               </Col>
 
-              <Col lg="4">
+              <Col xl="3" md="6">
                 <Card className="card-stats mb-4 mb-xl-0">
                   <CardBody>
                     <Row>

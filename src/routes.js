@@ -1,11 +1,9 @@
 import Index from "views/Index.js";
-
 import Login from "views/examples/Login.js";
-
 import Dashboard from './Gasoline/Dashboard/Dashboard.js';
 import DashboardPagos from "Payment/pages/DashboardPagos.js"; 
 import Pinturas from "views/examples/TallerPinturas.js";
-import Alerts from "Gasoline/Alerts/Alerts.js";
+import Alerts from "Gasoline/pages/PageAlertsGasoline.js";
 import DashboardAdmin from "Admin/Pages/DashboardAdmin.js";
 import Reports from "views/examples/Reports.js";
 import Tienda from "TiendaConveniencia/Tienda.js";
@@ -15,13 +13,6 @@ import Mantenimiento from "TallerMantenimiento/Mantenimiento.js";
 
 const routes = [
   // DASHBOARDS
-  {
-    path: "/reports",
-    name: "Sistema de Reportes",
-    icon: "ni ni-collection text-yellow",
-    component: <Reports />,
-    layout: "/admin",
-  },
   {
     path: "/index",
     name: "Dashboard Principal",
@@ -73,6 +64,13 @@ const routes = [
     component: <DashboardAdmin />,
     layout: "/admin",
   },
+  {
+    path: "/reports",
+    name: "Sistema de Reportes",
+    icon: "ni ni-collection text-yellow",
+    component: <Reports />,
+    layout: "/admin",
+  },
 
   // ALERTAS
   {
@@ -83,6 +81,7 @@ const routes = [
     layout: "/admin",
     hidden: true, // visible solo desde otras partes
   },
+  
 
   // AUTENTICACIÓN
   {

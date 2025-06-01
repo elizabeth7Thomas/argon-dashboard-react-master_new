@@ -7,8 +7,8 @@ import {
 import Header from "components/Headers/Header_deposit";
 import { faPlus, faDatabase } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import DepositForm from './DepositForm';
-import DepositList from './DepositList';
+import DepositForm from '../Deposits/DepositForm';
+import DepositList from '../Deposits/DepositList';
 
 export default function Deposits() {
   const [deposits, setDeposits] = useState([

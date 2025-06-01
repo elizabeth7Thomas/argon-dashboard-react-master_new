@@ -4,8 +4,8 @@ import {
   Container, Row, Col, Card, CardHeader, CardBody, Badge
 } from 'reactstrap';
 import HeaderCart from 'components/Headers/HeaderCart';
-import CartItem from './cartForm';
-import CartForm from './cartForm';
+import CartItem from '../SalesCart/cartForm';
+import CartForm from '../SalesCart/cartForm';
 
 export default function SalesCart() {
   const [cart, setCart] = useState([

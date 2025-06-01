@@ -70,26 +70,20 @@ export default function PumpStatusList({ onEdit }) {
         </tr>
       </thead>
       <tbody>
-        {bombs.length > 0 ? (
-          bombs.map((pump, i) => (
-            <tr key={pump.bombId}>
-              <th scope="row">{i + 1}</th>
-              <td>{pump.bombNumber}</td>
-              <td>{pump.servedQuantity} gal</td>
-              <td>{pump.employeeInCharge?.employeeName || "Desconocido"}</td>
-              <td>{pump.status === 1 ? "Activo" : "Inactivo"}</td>
-              <td>
-                <Button size="sm" color="warning" onClick={() => onEdit(pump)}>
-                  Editar
-                </Button>
-              </td>
-            </tr>
-          ))
-        ) : (
-          <tr>
-            <td colSpan="6" className="text-center">No hay bombas registradas</td>
+        {mockBombs.map((pump, i) => (
+          <tr key={pump.bombId}>
+            <th scope="row">{i + 1}</th>
+            <td>{pump.bombNumber}</td>
+            <td>{pump.servedQuantity} gal</td>
+            <td>{pump.employeeInCharge.employeeName}</td>
+            <td>{pump.status === 1 ? 'Activo' : 'Inactivo'}</td>
+            <td>
+              <Button size="sm" color="warning" onClick={() => onEdit(pump)}>
+                Editar
+              </Button>
+            </td>
           </tr>
-        )}
+        ))}
       </tbody>
     </Table>
   );

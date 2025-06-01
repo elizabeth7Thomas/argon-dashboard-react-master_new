@@ -1,14 +1,7 @@
 // src/components/Headers/HeaderAdministracion.js
 import React from 'react';
 import { Card, CardBody, CardTitle, Container, Row, Col } from "reactstrap";
-import { 
-  faUsers, 
-  faBell, 
-  faSitemap, 
-   
-  faTruck, 
-  
-} from "@fortawesome/free-solid-svg-icons";
+import { faUsers, faBell, faSitemap, faTruck, } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 const HeaderAdministracion = () => {
@@ -42,7 +35,6 @@ const HeaderAdministracion = () => {
                       </div>
                     </Col>
                   </Row>
-                  
                 </CardBody>
               </Card>
             </Col>

@@ -27,7 +27,7 @@ export default function SaleList({ sales, onEdit, onDelete }) {
             </td>
             <td>
               <Button
-                color="warning"
+                color="info"
                 size="sm"
                 onClick={() => onEdit(sale)}
                 className="mr-2"
