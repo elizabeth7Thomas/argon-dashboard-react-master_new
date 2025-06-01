@@ -20,7 +20,7 @@ const Header = () => {
 
             {/* Estadísticas simplificadas */}
             <Row>
-              <Col lg="3">
+              <Col xl="3" md="6">
                 <Card className="card-stats mb-4 mb-xl-0">
                   <CardBody>
                     <Row>
@@ -39,7 +39,7 @@ const Header = () => {
                   </CardBody>
                 </Card>
               </Col>
-              <Col lg="3">
+              <Col xl="3" md="6">
                 <Card className="card-stats mb-4 mb-xl-0">
                   <CardBody>
                     <Row>
@@ -58,7 +58,7 @@ const Header = () => {
                   </CardBody>
                 </Card>
               </Col>
-              <Col lg="3">
+              <Col xl="3" md="6">
                 <Card className="card-stats mb-4 mb-xl-0">
                   <CardBody>
                     <Row>
@@ -77,7 +77,7 @@ const Header = () => {
                   </CardBody>
                 </Card>
               </Col>
-              <Col lg="3">
+              <Col xl="3" md="6">
                 <Card className="card-stats mb-4 mb-xl-0">
                   <CardBody>
                     <Row>

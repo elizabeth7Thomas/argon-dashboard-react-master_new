@@ -9,9 +9,7 @@ import {
 } from "reactstrap";
 import {
   faCar,
-  faCalendarAlt,
   faClipboardList,
-  faChartLine,
   faPaintRoller,
   faCogs,
   faTruck,
@@ -46,7 +44,7 @@ const TallerPinturas = () => {
     <>
       <HeaderTallerPintura />
 
-      <Container className="mt-5" fluid>
+      <Container className="mt-4" fluid>
         {/* Botones de navegación */}
         <Row className="mb-4">
           <Col>

@@ -1,25 +1,8 @@
 import React, { useEffect, useState } from 'react';
-import {
-  Button,
-  Card,
-  CardBody,
-  Col,
-  Container,
-  Row,
-} from 'reactstrap';
-import {
-  faUser,
-  faCreditCard,
-  faExchangeAlt,
-  faUndoAlt,
-  faUniversity,
-  faReceipt,
-  faCashRegister,
-  faWallet,
-} from '@fortawesome/free-solid-svg-icons';
+import { Button,Card, CardBody,Col, Container, Row,} from 'reactstrap';
+import { faUser, faCreditCard, faExchangeAlt, faUndoAlt, faUniversity,faReceipt,faCashRegister,} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-import Header from "components/Headers/Header.js";
 
 // Importar componentes reales
 import ClientesPage from './ClientesPage'
@@ -69,7 +52,7 @@ export default function DashboardPagos() {
   return (
     <>
       <HeaderPagos />
-      <Container className="mt-5" fluid>
+      <Container className="mt-4" fluid>
         <Row className="mb-4">
           <Col>
             <Card className="shadow">

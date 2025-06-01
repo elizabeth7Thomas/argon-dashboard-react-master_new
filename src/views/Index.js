@@ -49,12 +49,12 @@ const Index = () => {
       <Header />
       
       {/* Page content */}
-      <Container className="mt--7" fluid>
+      <Container className="mt-4" fluid>
         {/* Accesos rápidos */}
         <Row className="mb-4">
           <Col>
             <Card className="shadow">
-              <CardBody className="d-flex flex-wrap gap-3 justify-content-center">
+              <CardBody className="d-flex flex-wrap gap-2 justify-content-center">
                 <Button 
                   color="primary" 
                   onClick={() => navigate('/admin/dashboard')}
@@ -64,7 +64,7 @@ const Index = () => {
                   Combustibles
                 </Button>
                 <Button 
-                  color="warning" 
+                  color="primary" 
                   onClick={() => navigate('/admin/taller-pintura')}
                   className="btn-icon"
                 >
@@ -72,7 +72,7 @@ const Index = () => {
                   Taller Pintura
                 </Button>
                 <Button 
-                  color="purple" 
+                  color="primary" 
                   onClick={() => navigate('/admin/mantenimiento')}
                   className="btn-icon"
                 >
@@ -80,7 +80,7 @@ const Index = () => {
                   Mantenimiento
                 </Button>
                 <Button 
-                  color="info" 
+                  color="primary" 
                   onClick={() => navigate('/admin/tienda')}
                   className="btn-icon"
                 >
@@ -88,7 +88,7 @@ const Index = () => {
                   Tienda
                 </Button>
                 <Button 
-                  color="success" 
+                  color="primary" 
                   onClick={() => navigate('/admin/dashboard-pagos')}
                   className="btn-icon"
                 >
@@ -96,7 +96,7 @@ const Index = () => {
                   Pagos
                 </Button>
                 <Button 
-                  color="danger" 
+                  color="primary" 
                   onClick={() => navigate('/admin/alerts')}
                   className="btn-icon"
                 >

@@ -1,30 +1,6 @@
 import React, { useState } from "react";
-import {
-  Container,
-  Card,
-  Row,
-  Col,
-  Button,
-  Table,
-  FormGroup,
-  Label,
-  Input,
-  Dropdown,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem,
-  CardHeader,
-  CardBody
-} from "reactstrap";
-import { 
-  faFilePdf,
-  faFileExcel,
-  faFileCsv,
-  faPrint,
-
-  faDownload,
-
-} from "@fortawesome/free-solid-svg-icons";
+import { Container, Card, Row, Col,Button, Table, FormGroup, Label, Input, Dropdown, DropdownToggle, DropdownMenu, DropdownItem, CardHeader,CardBody} from "reactstrap";
+import {  faFilePdf, faFileExcel, faFileCsv, faPrint, faDownload,} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import HeaderReports from "components/Headers/HeaderReports";
 
@@ -112,7 +88,7 @@ const Reports = () => {
     <>
       <HeaderReports />
       
-      <Container className="mt--7" fluid>
+      <Container className="mt-4" fluid>
         {/* Filtros y generación de reportes */}
         <Row className="mb-4">
           <Col>

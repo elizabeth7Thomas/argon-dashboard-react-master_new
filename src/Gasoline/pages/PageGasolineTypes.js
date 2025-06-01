@@ -7,8 +7,8 @@ import HeaderGasolineType from 'components/Headers/Header_fuel';
 import { faGasPump, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import GasolineTypeForm from './GasolineTypeForm';
-import GasolineTypeList from './GasolineTypeList';
+import GasolineTypeForm from '../GasolineTypes/GasolineTypeForm';
+import GasolineTypeList from '../GasolineTypes/GasolineTypeList';
 
 export default function GasolineTypes() {
   const [modalForm, setModalForm] = useState(false);

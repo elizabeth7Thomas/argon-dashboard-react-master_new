@@ -19,12 +19,12 @@ import React from "react";
 import ReactDOM from "react-dom/client";
 import { BrowserRouter, Route, Routes, Navigate } from "react-router-dom";
 /*IMPORTACIONES GASOLINA*/
-import Alerts from "Gasoline/Alerts/Alerts";
-import Deposits from "Gasoline/Deposits/Deposits";
-import GasolineType from "Gasoline/GasolineTypes/GasolineTypes";
-import PumpStatus from "Gasoline/PumpStatus/PumpStatus";
-import Sales from "Gasoline/Sales/Sales";
-import SalesCart from "Gasoline/SalesCart/SalesCart";
+import Alerts from "./Gasoline/pages/PageAlertsGasoline";
+import Deposits from "Gasoline/pages/PageDepositsGasoline";
+import GasolineType from "Gasoline/pages/PageGasolineTypes";
+import PumpStatus from "Gasoline/pages/PagePumpStatusGasoline";
+import Sales from "Gasoline/pages/PageSalesGasoline";
+import SalesCart from "Gasoline/pages/PageSalesCartGasoline";
 import Pinturas from "views/examples/TallerPinturas";
 /*IMPORTACIONES PAGOS */
 import DashboardPagos from "Payment/pages/DashboardPagos";
@@ -93,7 +93,7 @@ root.render(
       <Route path="/administracion/*" element={<Administracion />} />
 
 
-      <Route path="*" element={<Navigate to="/admin/index" replace />} />
+      <Route path="*" element={<Navigate to="/auth/login" replace />} />
 
       {/*TALLER PINTURAS ROUTS*/}
       <Route path="/admin/servicios" element={<TablaServicios />} />
