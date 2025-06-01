@@ -70,7 +70,7 @@ export default function PumpStatusList({ onEdit }) {
         </tr>
       </thead>
       <tbody>
-        {mockBombs.map((pump, i) => (
+        {bombs.map((pump, i) => (
           <tr key={pump.bombId}>
             <th scope="row">{i + 1}</th>
             <td>{pump.bombNumber}</td>
