@@ -2,15 +2,22 @@ import React, { useState, useEffect } from "react";
 import {
   Modal,
   ModalHeader,
-  ModalBody, 
-  ModalFooter, 
-  Button, 
-  Form, 
-  FormGroup, 
-  Label, 
-  Input, } from "reactstrap";
+  ModalBody,
+  ModalFooter,
+  Button,
+  Form,
+  FormGroup,
+  Label,
+  Input,
+} from "reactstrap";
 
-const ModalAgregarTipoPintura = ({ isOpen, toggle, onSubmit, modoEdicion = false, tipoEditar = null }) => {
+const ModalAgregarTipoPintura = ({
+  isOpen,
+  toggle,
+  onSubmit,
+  modoEdicion = false,
+  tipoEditar = null,
+}) => {
   const [form, setForm] = useState({ NombreTipoPintura: "" });
 
   useEffect(() => {
@@ -26,31 +33,45 @@ const ModalAgregarTipoPintura = ({ isOpen, toggle, onSubmit, modoEdicion = false
   };
 
   const handleSubmit = async () => {
-   const nuevoTipoPintura = {
-    NombreTipoPintura: form.NombreTipoPintura
-   };
+    const token = localStorage.getItem("token");
 
-   try{
-    const response = await fetch("http://127.0.0.1:8000/pintura/POST/tipopinturas", {
-      method: "POST",
-      headers:{
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(nuevoTipoPintura),
-    });
-
-    if (response.ok){
-      const data = await response.json();
-      console.log("Tipo de pintura agregado", data);
-      toggle();
-      setForm({TipoPintura: ""});
-    }else{
-         const errorData = await response.json();
-        console.error("Error al agregar tipo de pintura:", errorData);
+    if (!token) {
+      console.error("Token no encontrado. El usuario no está autenticado.");
+      return;
     }
-   } catch(error){
-    console.error("Error de red:", error);
-   }
+
+    const payload = {
+      metadata: {
+        uri: "/pintura/POST/tipopinturas",
+      },
+      request: {
+        NombreTipoPintura: form.NombreTipoPintura,
+      },
+    };
+
+    try {
+      const response = await fetch("http://64.23.169.22:3761/broker/api/rest", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`, // ← Token en encabezado
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Tipo de pintura agregado", data);
+        toggle();
+        setForm({ NombreTipoPintura: "" });
+        if (onSubmit) onSubmit(); // si se desea refrescar la lista después
+      } else {
+        const errorData = await response.json();
+        console.error("Error al agregar tipo de pintura:", errorData);
+      }
+    } catch (error) {
+      console.error("Error de red:", error);
+    }
   };
 
   return (
