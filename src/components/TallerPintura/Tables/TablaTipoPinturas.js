@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
+import axios from 'axios';
 import {Table,Card,Button,DropdownItem,DropdownMenu,DropdownToggle,UncontrolledDropdown,Container,} from "reactstrap";
 import ModalAgregarTipoPintura from "../Modals/ModalAgregarTipoPintura";
-import HeaderTallerPintura from "components/Headers/HeaderTallerPintura";
+
 
 const TablaTipoPinturas = () => {
   const [tiposPintura, setTiposPintura] = useState([]);
@@ -9,6 +10,8 @@ const TablaTipoPinturas = () => {
   const [modoEdicion, setModoEdicion] = useState(false);
   const [tipoEditar, setTipoEditar] = useState(null);
   const [nextId, setNextId] = useState(1);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const toggleModal = () => {
     setModal(!modal);
@@ -19,6 +22,14 @@ const TablaTipoPinturas = () => {
   };
 
   const obtenerTiposPinturas = async () =>{
+    const token = localStorage.getItem("token");
+
+    if(!token){
+      setError("No se encontro un token de autenticación");
+      setLoading(false);
+      return
+    }
+
     try{
       const res = await fetch("http://localhost:8000/pintura/GET/tipopinturas");
       const data = await res.json();
