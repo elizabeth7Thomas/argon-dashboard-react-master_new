@@ -36,33 +36,41 @@ const ModalAgregarServicio = ({ isOpen, toggle, modoEdicion = false, tipoEditar 
   };
 
   const handleSubmit = async () => {
-    const nuevoServicio = {
-      NombreServicio: form.NombreServicio,
-      DescripcionServicio: form.DescripcionServicio,
-    };
+  const token = localStorage.getItem("token");
 
-    try {
-      const response = await fetch("http://127.0.0.1:8000/pintura/POST/servicios", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
+  try {
+    const response = await fetch("http://64.23.169.22:3761/broker/api/rest", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${token}`,
+        "Access-Control-Allow-Origin": "*"
+      },
+      body: JSON.stringify({
+        metadata: {
+          uri: "/pintura/POST/servicios"
         },
-        body: JSON.stringify(nuevoServicio),
-      });
+        request: {
+          NombreServicio: form.NombreServicio,
+          DescripcionServicio: form.DescripcionServicio
+        }
+      })
+    });
 
-      if (response.ok) {
-        const data = await response.json();
-        console.log("Servicio creado:", data);
-        toggle(); // Cierra el modal
-        setForm({ NombreServicio: "", DescripcionServicio: "" }); // Limpiar formulario
-      } else {
-        const errorData = await response.json();
-        console.error("Error al crear servicio:", errorData);
-      }
-    } catch (error) {
-      console.error("Error de red:", error);
+    if (response.ok) {
+      const data = await response.json();
+      console.log("Servicio creado:", data);
+      toggle(); // Cierra el modal
+      setForm({ NombreServicio: "", DescripcionServicio: "" }); // Limpiar formulario
+    } else {
+      const errorData = await response.json();
+      console.error("Error al crear servicio:", errorData);
     }
-  };
+  } catch (error) {
+    console.error("Error de red:", error);
+  }
+};
+
 
    return (
     <Modal isOpen={isOpen} toggle={toggle}>

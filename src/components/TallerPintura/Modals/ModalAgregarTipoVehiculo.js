@@ -27,30 +27,38 @@ const ModalAgregarTipoVehiculo = ({ isOpen, toggle, onSubmit, modoEdicion = fals
   };
 
   const handleSubmit = async () => {
-   const nuevoVehiculo = {
-    NombreTipoVehiculo: form.NombreTipoVehiculo
-   };
+    const token = localStorage.getItem("token");
 
-   try{
-    const response = await fetch("http://127.0.0.1:8000/pintura/POST/tipovehiculos",{
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
+    const payload = {
+      metadata: {
+        uri: "/pintura/POST/tipovehiculos",
       },
-      body: JSON.stringify(nuevoVehiculo),
-    });
+      request: {
+        NombreTipoVehiculo: form.NombreTipoVehiculo,
+      },
+    };
 
-    if(response.ok){
-      const data = await response.json();
-      console.log("Nuevo tipo de vehiculo agregado", data);
-      toggle();
-      setForm({NombreTipoVehiculo: ""});
+    try {
+      const response = await fetch("http://64.23.169.22:3761/broker/api/rest", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
 
-    }else{
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Nuevo tipo de vehículo agregado:", data);
+        toggle();
+        setForm({ NombreTipoVehiculo: "" });
+      } else {
         const errorData = await response.json();
         console.error("Error al crear:", errorData);
-    }
-   }catch (error) {
+      }
+    } catch (error) {
       console.error("Error de red:", error);
     }
   };

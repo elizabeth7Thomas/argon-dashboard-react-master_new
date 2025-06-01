@@ -2,14 +2,13 @@ import React, { useState, useEffect } from "react";
 import {
   Modal,
   ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Button,
-  Form,
-  FormGroup,
-  Label,
-  Input,
-} from "reactstrap";
+  ModalBody, 
+  ModalFooter, 
+  Button, 
+  Form, 
+  FormGroup, 
+  Label, 
+  Input, } from "reactstrap";
 
 const ModalAgregarTipoPintura = ({
   isOpen,
@@ -33,40 +32,26 @@ const ModalAgregarTipoPintura = ({
   };
 
   const handleSubmit = async () => {
-    const token = localStorage.getItem("token");
+   const nuevoTipoPintura = {
+    NombreTipoPintura: form.NombreTipoPintura
+   };
 
-    if (!token) {
-      console.error("Token no encontrado. El usuario no está autenticado.");
-      return;
-    }
-
-    const payload = {
-      metadata: {
-        uri: "/pintura/POST/tipopinturas",
+   try{
+    const response = await fetch("http://127.0.0.1:8000/pintura/POST/tipopinturas", {
+      method: "POST",
+      headers:{
+        "Content-Type": "application/json",
       },
-      request: {
-        NombreTipoPintura: form.NombreTipoPintura,
-      },
-    };
+      body: JSON.stringify(nuevoTipoPintura),
+    });
 
-    try {
-      const response = await fetch("http://64.23.169.22:3761/broker/api/rest", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`, // ← Token en encabezado
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (response.ok) {
-        const data = await response.json();
-        console.log("Tipo de pintura agregado", data);
-        toggle();
-        setForm({ NombreTipoPintura: "" });
-        if (onSubmit) onSubmit(); // si se desea refrescar la lista después
-      } else {
-        const errorData = await response.json();
+    if (response.ok){
+      const data = await response.json();
+      console.log("Tipo de pintura agregado", data);
+      toggle();
+      setForm({TipoPintura: ""});
+    }else{
+         const errorData = await response.json();
         console.error("Error al agregar tipo de pintura:", errorData);
       }
     } catch (error) {
@@ -96,7 +81,9 @@ const ModalAgregarTipoPintura = ({
         <Button color="primary" onClick={handleSubmit}>
           {modoEdicion ? "Guardar Cambios" : "Agregar"}
         </Button>
-        <Button color="secondary" onClick={toggle}>Cancelar</Button>
+        <Button color="secondary" onClick={toggle}>
+          Cancelar
+        </Button>
       </ModalFooter>
     </Modal>
   );

@@ -18,23 +18,53 @@ const TablaServicios = () => {
     }
   }
 
-  const obtenerServicios = async () => {
-    try {
-      const res = await fetch("http://localhost:8000/pintura/GET/servicios");
-      const data = await res.json();
-      const serviciosArray = Array.isArray(data) ? data : [data];
-      setServicios(serviciosArray);
+const obtenerServicios = async () => {
+  try {
+    const token = localStorage.getItem("token"); // Asegúrate que esté guardado así
 
-      // Si hay servicios, establecer el próximo ID como el último + 1
-      if (serviciosArray.length > 0) {
-        const maxId = Math.max(...serviciosArray.map(s => s.idServicio));
-        setNextId(maxId + 1);
-      }
-    } catch (error) {
-      console.error("Error al obtener servicios:", error);
+    const res = await fetch("http://64.23.169.22:3761/broker/api/rest", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "Access-Control-Allow-Origin": "*",
+        Authorization: `Bearer ${token}` // Token incluido aquí
+      },
+      body: JSON.stringify({
+        metadata: {
+          uri: "/pintura/GET/servicios" // URI de tu servicio
+        },
+        request: null
+      })
+    });
+
+    if (!res.ok) {
+      console.error("Respuesta del servidor no fue OK:", res.status);
       setServicios([]);
+      return;
     }
-  };
+
+    const data = await res.json();
+
+    // Validar que la respuesta sea un arreglo
+    const serviciosArray = Array.isArray(data) ? data : [data];
+
+    setServicios(serviciosArray);
+
+    // Establecer el próximo ID
+    if (serviciosArray.length > 0) {
+      const maxId = Math.max(...serviciosArray.map(s => s.idServicio || 0));
+      setNextId(maxId + 1);
+    } else {
+      setNextId(1);
+    }
+
+  } catch (error) {
+    console.error("Error al obtener servicios:", error);
+    setServicios([]);
+  }
+};
+
+
 
 const agregarServicio = async (nuevoServicio) => {
   try {

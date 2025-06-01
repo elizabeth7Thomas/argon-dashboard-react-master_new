@@ -23,9 +23,44 @@ const ModalAgregarDevolucion = ({ isOpen, toggle, onSubmit }) => {
     setForm({ ...form, [name]: value });
   };
 
-  const handleSubmit = () => {
-    onSubmit(form);
-    setForm({ FechaDevolucion: "", Motivo: "", idDetalleVenta: "" });
+  const handleSubmit = async () => {
+    const token = localStorage.getItem("token");
+
+    const payload = {
+      metadata: {
+        uri: "/pinturas/POST/devolucion",
+      },
+      request: {
+        FechaDevolucion: form.FechaDevolucion,
+        Motivo: form.Motivo,
+        idDetalleVenta: parseInt(form.idDetalleVenta, 10),
+      },
+    };
+
+    try {
+      const response = await fetch("http://64.23.169.22:3761/broker/api/rest", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Access-Control-Allow-Origin": "*",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        console.log("Devolución registrada:", data);
+        onSubmit(data); // Notifica al componente padre
+        toggle(); // Cierra el modal
+        setForm({ FechaDevolucion: "", Motivo: "", idDetalleVenta: "" });
+      } else {
+        const errorData = await response.json();
+        console.error("Error al registrar devolución:", errorData);
+      }
+    } catch (error) {
+      console.error("Error de red:", error);
+    }
   };
 
   return (
