@@ -45,7 +45,7 @@ const Login = () => {
 
         // Redirige al usuario
         setTimeout(() => {
-          window.location.href = "/dashboard";
+          window.location.href = "/admin/index";
         }, 1000);
       } else {
         setError("No se recibió token en la respuesta");
