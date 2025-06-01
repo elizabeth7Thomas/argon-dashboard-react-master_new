@@ -1,4 +1,3 @@
-// src/gasoline/GasolineTypes/GasolineTypeList.js
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { Card, CardBody, Table, Button, Spinner } from "reactstrap";
@@ -21,22 +20,26 @@ export default function GasolineTypeList({ onEdit, onDelete }) {
       }
 
       try {
-        const config = {
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json",
+        const response = await axios.post(
+          "http://64.23.169.22:3761/broker/api/rest",
+          {
+            metadata: { uri: "fuelType/list" },
+            request: {},
           },
-        };
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-        const response = await axios.post("http://64.23.169.22:3761/broker/api/rest", {
-          metadata: { uri: "fuelType/list" },
-          request: {}
-        }, config);
+        const brokerData = response.data?.response?.data;
 
-        if (response.data?.response?.data?.fuelTypes) {
-          setFuels(response.data.response.data.fuelTypes);
+        if (Array.isArray(brokerData)) {
+          setFuels(brokerData);
         } else {
-          setError("La respuesta del broker no tiene datos válidos");
+          setError("La respuesta del broker no contiene una lista válida");
         }
       } catch (err) {
         console.error("Error al obtener tipos de gasolina:", err);
@@ -48,14 +51,10 @@ export default function GasolineTypeList({ onEdit, onDelete }) {
 
     fetchFuels();
   }, []);
+  
 
-  if (loading) {
-    return <Spinner />;
-  }
-
-  if (error) {
-    return <p className="text-danger">{error}</p>;
-  }
+  if (loading) return <Spinner />;
+  if (error) return <p className="text-danger">{error}</p>;
 
   return (
     <Card className="shadow">
@@ -73,7 +72,7 @@ export default function GasolineTypeList({ onEdit, onDelete }) {
           </thead>
           <tbody>
             {fuels.length > 0 ? (
-              fuels.map(fuel => (
+              fuels.map((fuel) => (
                 <tr key={fuel.fuelId}>
                   <td>{fuel.fuelName}</td>
                   <td>${fuel.costPriceGalon}</td>
@@ -81,10 +80,19 @@ export default function GasolineTypeList({ onEdit, onDelete }) {
                   <td>{fuel.createdBy?.employeeName || "Desconocido"}</td>
                   <td>{fuel.status ? "Activo" : "Inactivo"}</td>
                   <td>
-                    <Button color="info" size="sm" onClick={() => onEdit(fuel)} className="mr-2">
+                    <Button
+                      color="info"
+                      size="sm"
+                      onClick={() => onEdit(fuel)}
+                      className="mr-2"
+                    >
                       <FontAwesomeIcon icon={faEdit} />
                     </Button>
-                    <Button color="danger" size="sm" onClick={() => onDelete(fuel.fuelId)}>
+                    <Button
+                      color="danger"
+                      size="sm"
+                      onClick={() => onDelete(fuel.fuelId)}
+                    >
                       <FontAwesomeIcon icon={faTrash} />
                     </Button>
                   </td>
@@ -92,7 +100,9 @@ export default function GasolineTypeList({ onEdit, onDelete }) {
               ))
             ) : (
               <tr>
-                <td colSpan="6" className="text-center">No hay registros de gasolina</td>
+                <td colSpan="6" className="text-center">
+                  No hay registros de gasolina
+                </td>
               </tr>
             )}
           </tbody>
