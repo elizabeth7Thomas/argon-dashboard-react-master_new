@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import { Container, Card, CardBody, Button } from "reactstrap";
-import HeaderPagos from "components/Headers/HeaderPagos";
+
 import TransaccionList from "../Transacciones/TransaccionList";
 import TransaccionForm from "../Transacciones/TransaccionForm";
 import TransaccionDetail from "../Transacciones/TransaccionDetail";
 
 export default function TransaccionesPage() {
-  const [transacciones, setTransacciones] = useState([]);
+  const [transacciones] = useState([]);
   const [modalOpen, setModalOpen] = useState(false);
   const [detailOpen, setDetailOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
