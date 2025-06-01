@@ -6,7 +6,6 @@ import ProveedorForm from "../Proveedores/ProveedorForm";
 import { Button } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faExchangeAlt } from "@fortawesome/free-solid-svg-icons";
-// Importa tu tabla de órdenes
 import Ordenes from "./PageOrdenesAdmin";
 
 export default function PageProveedoresAdmin() {
@@ -14,11 +13,9 @@ export default function PageProveedoresAdmin() {
   const [modalOpen, setModalOpen] = useState(false);
   const [proveedorEditar, setProveedorEditar] = useState(null);
 
-  // Modal de confirmación de borrado
   const [showModal, setShowModal] = useState(false);
   const [proveedorAEliminar, setProveedorAEliminar] = useState(null);
 
-  // Estado para mostrar u ocultar la tabla de órdenes
   const [showOrdenes, setShowOrdenes] = useState(false);
 
   const fetchProveedores = async () => {
@@ -89,7 +86,6 @@ export default function PageProveedoresAdmin() {
         >
           Nuevo Proveedor
         </Button>
-        {/* Botón de Órdenes */}
         <Button
           color="primary"
           onClick={() => setShowOrdenes((prev) => !prev)}
@@ -110,7 +106,6 @@ export default function PageProveedoresAdmin() {
         onGuardar={handleGuardar}
         proveedorEditar={proveedorEditar}
       />
-      {/* Modal de confirmación de borrado */}
       {showModal && (
         <div className="modal-backdrop show">
           <div className="modal d-block" tabIndex="-1">
@@ -145,7 +140,6 @@ export default function PageProveedoresAdmin() {
           </div>
         </div>
       )}
-      {/* Tabla dinámica de Órdenes */}
       {showOrdenes && (
         <div className="mt-4">
           <Ordenes />

@@ -8,10 +8,10 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 
-import SaleForm from './SaleForm';
-import SaleList from './SaleList';
+import SaleForm from '../Sales/SaleForm';
+import SaleList from '../Sales/SaleList';
 import HeaderSale from 'components/Headers/HeaderSale';
-import CartItem from './SalesCart/CartItem';
+import CartItem from '../Sales/SalesCart/CartItem';
 
 // Datos mock movidos a constantes separadas
 const PAYMENT_METHODS = [

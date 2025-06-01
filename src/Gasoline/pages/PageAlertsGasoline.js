@@ -5,7 +5,7 @@ import {
 } from 'reactstrap';
 import { faExclamationTriangle, faPlus, faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import AlertForm from './AlertForm';
+import AlertForm from '../Alerts/AlertForm';
 import Header from "components/Headers/Header_alerta";
 
 export default function Alerts() {
@@ -116,7 +116,7 @@ export default function Alerts() {
                             </Badge>
                           </td>
                           <td>
-                            <Button color="warning" size="sm" onClick={() => handleEdit(alerta)} className="mr-2">
+                            <Button color="info" size="sm" onClick={() => handleEdit(alerta)} className="mr-2">
                               <FontAwesomeIcon icon={faEdit} />
                             </Button>
                             <Button color="danger" size="sm" onClick={() => handleDelete(alerta.id)}>

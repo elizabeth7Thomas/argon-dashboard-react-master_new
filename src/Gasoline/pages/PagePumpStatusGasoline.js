@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Card, CardBody, Button } from 'reactstrap';
 import HeaderPumpStatus from 'components/Headers/HeaderPumpStatus';
-import PumpStatusList from './PumpStatusList';
-import PumpStatusForm from './PumpStatusForm';
+import PumpStatusList from '../PumpStatus/PumpStatusList';
+import PumpStatusForm from '../PumpStatus/PumpStatusForm';
 
 export default function PumpStatus() {
   const [modalOpen, setModalOpen] = useState(false);

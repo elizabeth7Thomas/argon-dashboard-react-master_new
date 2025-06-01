@@ -1,5 +1,7 @@
 import React from 'react';
 import { Table, Button } from 'reactstrap';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEdit } from '@fortawesome/free-solid-svg-icons';
 
 const mockBombs = [
   {
@@ -40,8 +42,8 @@ export default function PumpStatusList({ onEdit }) {
             <td>{pump.employeeInCharge.employeeName}</td>
             <td>{pump.status === 1 ? 'Activo' : 'Inactivo'}</td>
             <td>
-              <Button size="sm" color="warning" onClick={() => onEdit(pump)}>
-                Editar
+              <Button size="sm" color="info" onClick={() => onEdit(pump)}>
+                <FontAwesomeIcon icon={faEdit} />
               </Button>
             </td>
           </tr>

@@ -25,7 +25,7 @@ export default function DepositList({ deposits, onEdit, onDelete, onClose }) {
                 <td>{d.maxCapacity}</td>
                 <td>{d.actualQuantity}</td>
                 <td>
-                  <Button size="sm" color="warning" onClick={() => onEdit(d)} className="mr-2">
+                  <Button size="sm" color="info" onClick={() => onEdit(d)} className="mr-2">
                     <FontAwesomeIcon icon={faEdit} />
                   </Button>
                   <Button size="sm" color="danger" onClick={() => onDelete(d.generalDepositId)}>

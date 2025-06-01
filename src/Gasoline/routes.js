@@ -4,12 +4,12 @@ import { Routes, Route } from 'react-router-dom';
 
 import Home from './pages/Home';
 import NotFound from './pages/NotFound';
-import GasolineTypes from './GasolineTypes/GasolineTypes';
-import SalesCart from './Sales/SalesCart/SalesCart';
-import Sales from './Sales/Sales';
-import Deposits from './Deposits/Deposits';
-import PumpStatus from './PumpStatus/PumpStatus';
-import Alerts from './Alerts/Alerts';
+import GasolineTypes from './page/PageGasolineTypes';
+import SalesCart from './pages/PageSalesCartGasoline';
+import Sales from './page/PageSalesGasoline';
+import Deposits from './pages/PageDepositsGasoline';
+import PumpStatus from './pages/PagePumpStatusGasoline';
+import Alerts from './pages/PageAlertsGasoline';
 import Dashboard from './Dashboard/Dashboard';
 
 const App = () => {

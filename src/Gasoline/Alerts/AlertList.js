@@ -43,7 +43,7 @@ export default function AlertList({
                   </Badge>
                 </td>
                 <td>
-                  <Button color="warning" size="sm" onClick={() => onEdit(alerta)} className="mr-2">
+                  <Button color="info" size="sm" onClick={() => onEdit(alerta)} className="mr-2">
                     <FontAwesomeIcon icon={faEdit} />
                   </Button>
                   <Button color="danger" size="sm" onClick={() => onDelete(alerta)}>
