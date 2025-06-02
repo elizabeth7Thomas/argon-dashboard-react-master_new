@@ -1,117 +1,214 @@
-// src/gasoline/Deposits/Deposits.js
-import React, { useState } from 'react';
+// src/gasoline/pages/PageDepositsGasoline.js
+import React, { useState, useEffect } from 'react';
 import {
-  Container, Row, Col, Card, CardHeader, CardBody, Button, Badge, Modal
+  Container, Row, Col, Card, CardHeader, CardBody, Button, Table, Spinner, Badge
 } from 'reactstrap';
-
-import Header from "components/Headers/Header_deposit";
-import { faPlus, faDatabase } from "@fortawesome/free-solid-svg-icons";
+import { faGasPump, faPlus, faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import axios from 'axios';
 import DepositForm from '../Deposits/DepositForm';
-import DepositList from '../Deposits/DepositList';
+import Header from "components/Headers/Header_fuel";
 
 export default function Deposits() {
-  const [deposits, setDeposits] = useState([
-    {
-      generalDepositId: '1',
-      maxCapacity: 10000,
-      actualQuantity: 5000,
-      fuel: { fuelId: 'f1', fuelName: 'Gasolina 95' }
-    },
-    {
-      generalDepositId: '2',
-      maxCapacity: 15000,
-      actualQuantity: 10000,
-      fuel: { fuelId: 'f2', fuelName: 'Diesel' }
+  const [modalForm, setModalForm] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({});
+  const [deposits, setDeposits] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  const toggleForm = () => {
+    setModalForm(!modalForm);
+    if (!modalForm) {
+      setFormData({});
+      setIsEditing(false);
     }
-  ]);
-
-  const [modalNew, setModalNew] = useState(false);
-  const [editingData, setEditingData] = useState(null);
-
-  const toggleNew = () => {
-    setModalNew(!modalNew);
-    if (!modalNew) setEditingData(null);
   };
 
-  const handleSave = (deposit) => {
-    if (editingData) {
-      setDeposits(deposits.map(d => d.generalDepositId === deposit.generalDepositId ? deposit : d));
-    } else {
-      deposit.generalDepositId = crypto.randomUUID();
-      setDeposits([...deposits, deposit]);
+  const fetchDeposits = async () => {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      setError("No se encontró un token de autenticación");
+      setLoading(false);
+      return;
     }
-    toggleNew();
+
+    try {
+      const response = await axios.post(
+        "http://64.23.169.22:3761/broker/api/rest",
+        {
+          metadata: { uri: "generalDeposit/list" },
+          request: {}
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+
+      const depositsData = response.data?.response?.data || [];
+      setDeposits(depositsData);
+    } catch (err) {
+      console.error("Error al obtener depósitos:", err);
+      setError("Error al conectar con el broker");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDeposits();
+  }, []);
+
+  const handleSubmit = async (formData) => {
+    const token = localStorage.getItem("token");
+
+    try {
+      const response = await axios.post(
+        "http://64.23.169.22:3761/broker/api/rest",
+        {
+          metadata: { uri: "generalDeposit/create" },
+          request: {
+            maxCapacity: formData.maxCapacity,
+            currentCapacity: formData.currentCapacity,
+            fuel: {
+              fuelId: formData.fuel?.fuelId,
+              fuelName: formData.fuel?.fuelName
+            }
+          }
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+
+      fetchDeposits();
+      toggleForm();
+    } catch (err) {
+      console.error("Error al crear depósito:", err);
+    }
   };
 
   const handleEdit = (deposit) => {
-    setEditingData(deposit);
-    setModalNew(true);
+    setFormData(deposit);
+    setIsEditing(true);
+    setModalForm(true);
   };
 
-  const handleDelete = (id) => {
-    if (window.confirm("¿Deseas eliminar este depósito?")) {
-      setDeposits(deposits.filter(d => d.generalDepositId !== id));
+  const handleDelete = async (generalDepositId) => {
+    if (!window.confirm("¿Estás seguro de eliminar este depósito?")) return;
+
+    const token = localStorage.getItem("token");
+
+    try {
+      await axios.post(
+        "http://64.23.169.22:3761/broker/api/rest",
+        {
+          metadata: {
+            uri: `generalDeposit/delete/${generalDepositId}`
+          },
+          request: {}
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
+        }
+      );
+
+      fetchDeposits();
+    } catch (err) {
+      console.error("Error al eliminar depósito:", err);
     }
   };
 
   return (
     <>
       <Header />
-      <Container className="mt-5" fluid>
-        {/* Encabezado */}
+      <Container className="py-4" fluid>
         <Row className="mb-4">
           <Col>
             <Card className="shadow">
-              <CardHeader>
+              <CardHeader className="border-0">
                 <Row className="align-items-center">
                   <Col>
-                    <h3>
-                      <FontAwesomeIcon icon={faDatabase} className="mr-2" />
-                      Gestión de Depósitos
+                    <h3 className="mb-0">
+                      <FontAwesomeIcon icon={faGasPump} className="mr-2" />
+                      Gestión de Depósitos de Combustible
                     </h3>
                   </Col>
                   <Col className="text-right">
-                    <Badge color="primary" pill>Beta</Badge>
+                    <Button color="success" onClick={toggleForm}>
+                      <FontAwesomeIcon icon={faPlus} className="mr-2" />
+                      Nuevo Depósito
+                    </Button>
                   </Col>
                 </Row>
               </CardHeader>
-            </Card>
-          </Col>
-        </Row>
-
-        {/* Botón Nueva Bomba */}
-        <Row>
-          <Col>
-            <Card className="shadow">
               <CardBody>
-                <div className="d-flex justify-content-between align-items-center mb-3">
-                  <h4 className="mb-0">Listado de Depósitos</h4>
-                  <Button color="success" onClick={toggleNew}>
-                    <FontAwesomeIcon icon={faPlus} className="mr-2" />
-                    Nuevo Depósito
-                  </Button>
-                </div>
-                <DepositList
-                  deposits={deposits}
-                  onEdit={handleEdit}
-                  onDelete={handleDelete}
-                />
+                {loading ? (
+                  <Spinner color="primary" />
+                ) : error ? (
+                  <p className="text-danger">{error}</p>
+                ) : (
+                  <Table responsive bordered hover>
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Combustible</th>
+                        <th>Capacidad Máxima</th>
+                        <th>Cantidad Actual</th>
+                        <th>Creado Por</th>
+                        <th>Estado</th>
+                        <th>Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {deposits.map((dep, idx) => (
+                        <tr key={dep.generalDepositId}>
+                          <td>{idx + 1}</td>
+                          <td>{dep.fuel?.fuelName || 'Desconocido'}</td>
+                          <td>{dep.maxCapacity} gal</td>
+                          <td>{dep.currentCapacity} gal</td>
+                          <td>{dep.createdBy?.employeeName || 'N/D'}</td>
+                          <td>
+                            <Badge color={dep.status ? 'success' : 'secondary'}>
+                              {dep.status ? 'Activo' : 'Inactivo'}
+                            </Badge>
+                          </td>
+                          <td>
+                            <Button color="info" size="sm" onClick={() => handleEdit(dep)} className="mr-2">
+                              <FontAwesomeIcon icon={faEdit} />
+                            </Button>
+                            <Button color="danger" size="sm" onClick={() => handleDelete(dep.generalDepositId)}>
+                              <FontAwesomeIcon icon={faTrash} />
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                )}
               </CardBody>
             </Card>
           </Col>
         </Row>
-
-{/* Modal Formulario */}
-<Modal isOpen={modalNew} toggle={toggleNew}>
-  <DepositForm
-    onSave={handleSave}
-    onCancel={toggleNew}
-    initialData={editingData}
-  />
-</Modal>
-
       </Container>
+
+      <DepositForm
+  initialData={formData}
+  onSave={handleSubmit} // nombre esperado por DepositForm
+  onCancel={toggleForm}
+  // props innecesarias eliminadas
+  // isOpen / toggle no eran usadas en DepositForm
+    />
     </>
   );
 }

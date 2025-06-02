@@ -8,13 +8,20 @@ import {
 export default function DepositForm({ onSave, onCancel, initialData }) {
   const [formData, setFormData] = useState({
     maxCapacity: '',
-    actualQuantity: '',
+    currentCapacity: '',
     fuel: { fuelId: '', fuelName: '' }
   });
 
   useEffect(() => {
     if (initialData) {
-      setFormData(initialData);
+      setFormData({
+        maxCapacity: initialData.maxCapacity || '',
+        currentCapacity: initialData.currentCapacity || '',
+        fuel: {
+          fuelId: initialData.fuel?.fuelId || '',
+          fuelName: initialData.fuel?.fuelName || ''
+        }
+      });
     }
   }, [initialData]);
 
@@ -34,47 +41,7 @@ export default function DepositForm({ onSave, onCancel, initialData }) {
 
   return (
     <>
-      <ModalHeader toggle={onCancel}>
-        {initialData ? "Editar Depósito" : "Nuevo Depósito"}
-      </ModalHeader>
-      <ModalBody>
-        <Form onSubmit={handleSubmit}>
-          <FormGroup>
-            <Label>Capacidad Máxima</Label>
-            <Input
-              type="number"
-              name="maxCapacity"
-              value={formData.maxCapacity}
-              onChange={handleChange}
-              required
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label>Cantidad Actual</Label>
-            <Input
-              type="number"
-              name="actualQuantity"
-              value={formData.actualQuantity}
-              onChange={handleChange}
-              required
-            />
-          </FormGroup>
-          <FormGroup>
-            <Label>Nombre del Combustible</Label>
-            <Input
-              type="text"
-              name="fuelName"
-              value={formData.fuel.fuelName}
-              onChange={handleChange}
-              required
-            />
-          </FormGroup>
-          <ModalFooter>
-            <Button color="secondary" onClick={onCancel}>Cancelar</Button>
-            <Button color="success" type="submit">Guardar</Button>
-          </ModalFooter>
-        </Form>
-      </ModalBody>
+ 
     </>
   );
 }

@@ -135,12 +135,7 @@ export default function Alerts() {
         </Row>
 
         <Row className="mb-4">
-          <Col>
-            <Button color="success" onClick={toggleForm} className="btn-icon float-right">
-              <span className="btn-inner--icon"><FontAwesomeIcon icon={faPlus} /></span>
-              <span className="btn-inner--text">Nueva Alerta</span>
-            </Button>
-          </Col>
+
         </Row>
 
         <Row>
