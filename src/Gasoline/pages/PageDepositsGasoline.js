@@ -201,14 +201,12 @@ export default function Deposits() {
           </Col>
         </Row>
       </Container>
-
       <DepositForm
-  initialData={formData}
-  onSave={handleSubmit} // nombre esperado por DepositForm
-  onCancel={toggleForm}
-  // props innecesarias eliminadas
-  // isOpen / toggle no eran usadas en DepositForm
-    />
+        isOpen={modalForm}
+        initialData={formData}
+        onSave={handleSubmit}
+        onCancel={toggleForm}
+      />
     </>
   );
 }

@@ -1,89 +1,145 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
-import { Table, Button, Spinner } from "reactstrap";
+import React, { useState, useEffect } from "react";
+import { 
+  Table, Button, Spinner, ButtonGroup, Badge, Alert 
+} from "reactstrap";
+import { fetchPumps, deletePump } from "./PumpService";
+import PumpStatusForm from "./PumpStatusForm";
 
-export default function PumpStatusList({ onEdit }) {
+export default function PumpStatusList() {
   const [bombs, setBombs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const [filter, setFilter] = useState("all");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [selectedPump, setSelectedPump] = useState(null);
+
+  const loadPumps = async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await fetchPumps(filter);
+      setBombs(Array.isArray(data) ? data : []);
+    } catch (err) {
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchBombs = async () => {
-      const token = localStorage.getItem("token");
+    loadPumps();
+  }, [filter]);
 
-      if (!token) {
-        setError("No se encontró un token de autenticación");
-        setLoading(false);
-        return;
-      }
- 
-      try {
+  const handleEdit = (pump) => {
+    setSelectedPump(pump);
+    setModalOpen(true);
+  };
 
-        const response = await axios.post("http://64.23.169.22:3761/broker/api/rest", {
-          metadata: 
-          { uri: "bomb/list"
+  const handleCreate = () => {
+    setSelectedPump(null);
+    setModalOpen(true);
+  };
 
-          },
-          request: {},
-        }, {
-          headers: {
-            "Authorization": `Bearer ${token}`,
-            "Content-Type": "application/json",
-          }
-        });
+  const handleDelete = async (bombId) => {
+    if (!window.confirm("¿Está seguro de eliminar esta bomba?")) return;
+    
+    setLoading(true);
+    try {
+      await deletePump(bombId);
+      setSuccess("Bomba eliminada correctamente");
+      loadPumps();
+    } catch (err) {
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-        if (response.data && response.data.response && response.data.response.data) {
-          setBombs(response.data.response.data);
-        } else {
-          setError("La respuesta del broker no tiene datos válidos");
-        }
-      } catch (err) {
-        console.error("Error al obtener bombas:", err);
-        setError("Error al conectar con el broker");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchBombs();
-  }, []);
-
-  if (loading) {
-    return <Spinner />;
-  }
-
-  if (error) {
-    return <p className="text-danger">{error}</p>;
-  }
+  const getStatusBadge = (status) => {
+    switch (status) {
+      case 1: return <Badge color="success">Activo</Badge>;
+      case 0: return <Badge color="danger">Inactivo</Badge>;
+      case 2: return <Badge color="warning">Mantenimiento</Badge>;
+      default: return <Badge color="secondary">Desconocido</Badge>;
+    }
+  };
 
   return (
-    <Table bordered responsive>
-      <thead>
-        <tr>
-          <th>#</th>
-          <th>Bomba</th>
-          <th>Cantidad Servida</th>
-          <th>Encargado</th>
-          <th>Estado</th>
-          <th>Acciones</th>
-        </tr>
-      </thead>
-      <tbody>
-        {bombs.map((pump, i) => (
-          <tr key={pump.bombId}>
-            <th scope="row">{i + 1}</th>
-            <td>{pump.bombNumber}</td>
-            <td>{pump.servedQuantity} gal</td>
-            <td>{pump.employeeInCharge.employeeName}</td>
-            <td>{pump.status === 1 ? 'Activo' : 'Inactivo'}</td>
-            <td>
-              <Button size="sm" color="warning" onClick={() => onEdit(pump)}>
-                Editar
-              </Button>
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </Table>
+    <div>
+      <h2>Administración de Bombas</h2>
+      
+      {error && <Alert color="danger">{error.toString()}</Alert>}
+      {success && <Alert color="success">{success}</Alert>}
+
+      <div className="mb-3 d-flex justify-content-between">
+        <ButtonGroup>
+          <Button color={filter === "all" ? "primary" : "secondary"} onClick={() => setFilter("all")}>
+            Todas
+          </Button>
+          <Button color={filter === "active" ? "primary" : "secondary"} onClick={() => setFilter("active")}>
+            Activas
+          </Button>
+          <Button color={filter === "inactive" ? "primary" : "secondary"} onClick={() => setFilter("inactive")}>
+            Inactivas
+          </Button>
+          <Button color={filter === "maintenance" ? "primary" : "secondary"} onClick={() => setFilter("maintenance")}>
+            Mantenimiento
+          </Button>
+        </ButtonGroup>
+        
+        <Button color="success" onClick={handleCreate}>
+          Nueva Bomba
+        </Button>
+      </div>
+
+      {loading ? (
+        <div className="text-center">
+          <Spinner color="primary" />
+          <p>Cargando bombas...</p>
+        </div>
+      ) : (
+        <Table striped responsive>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Número</th>
+              <th>Cantidad (gal)</th>
+              <th>Encargado</th>
+              <th>Estado</th>
+              <th>Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {bombs.map((pump, index) => (
+              <tr key={pump.bombId || index}>
+                <td>{index + 1}</td>
+                <td>{pump.bombNumber}</td>
+                <td>{pump.servedQuantity}</td>
+                <td>{pump.employeeInCharge?.employeeName || "N/A"}</td>
+                <td>{getStatusBadge(pump.status)}</td>
+                <td>
+                  <ButtonGroup size="sm">
+                    <Button color="warning" onClick={() => handleEdit(pump)}>
+                      Editar
+                    </Button>
+                    <Button color="danger" onClick={() => handleDelete(pump.bombId)}>
+                      Eliminar
+                    </Button>
+                  </ButtonGroup>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      )}
+
+      <PumpStatusForm
+        isOpen={modalOpen}
+        toggle={() => setModalOpen(false)}
+        initialData={selectedPump}
+        refreshList={loadPumps}
+      />
+    </div>
   );
 }
