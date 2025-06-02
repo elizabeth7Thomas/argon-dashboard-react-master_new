@@ -10,55 +10,145 @@ import {
   CardBody,
   FormGroup,
   Label,
+  Spinner,
 } from "reactstrap";
 import { faIdCard } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from "axios";
-import routes from "../routes";
 
 const filtros = [
-  { label: "Diario", value: "GET_ALL_D" },
-  { label: "Mensual", value: "GET_ALL_M" },
-  { label: "Trimestral", value: "GET_ALL_T" },
-  { label: "Semestral", value: "GET_ALL_S" },
-  { label: "Anual", value: "GET_ALL_A" },
+  { label: "Todos", value: "GET_ALL" },
+  { label: "Diario", value: "GET_DIARIO" },
+  { label: "Mensual", value: "GET_MENSUAL" },
+  { label: "Trimestral", value: "GET_TRIMESTRAL" },
+  { label: "Semestral", value: "GET_SEMESTRAL" },
+  { label: "Anual", value: "GET_ANUAL" },
 ];
+
+const uris = {
+  GET_ALL: "administracion/GET/movimientos",
+  GET_DIARIO: "administracion/GET/movimientos/diarios",
+  GET_MENSUAL: "administracion/GET/movimientos/mensuales",
+  GET_TRIMESTRAL: "administracion/GET/movimientos/trimestrales",
+  GET_SEMESTRAL: "administracion/GET/movimientos/semestrales",
+  GET_ANUAL: "administracion/GET/movimientos/anuales",
+};
 
 export default function MovimientoList() {
   const [busqueda, setBusqueda] = useState("");
-  const [filtro, setFiltro] = useState("GET_ALL_D");
-  const [movimientosPorCategoria, setMovimientosPorCategoria] = useState({});
+  const [filtro, setFiltro] = useState("GET_ALL");
+  const [movimientos, setMovimientos] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  // Parámetros de filtrado
+  const [fechaDia, setFechaDia] = useState("");
+  const [fechaMes, setFechaMes] = useState("");
+  const [anio, setAnio] = useState("");
+  const [numeroTrimestre, setNumeroTrimestre] = useState("");
+  const [numeroSemestre, setNumeroSemestre] = useState("");
   const [servicioId, setServicioId] = useState("");
 
   useEffect(() => {
     const fetchMovimientos = async () => {
+      setLoading(true);
+      setError(null);
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("No se encontró un token de autenticación");
+        setLoading(false);
+        return;
+      }
       try {
-        const url = routes.REPORTES_API[filtro];
-        const res = await axios.get(url);
-        setMovimientosPorCategoria(res.data || {});
-      } catch (error) {
-        setMovimientosPorCategoria({});
+        let metadata = { uri: uris[filtro] };
+        let request = {};
+
+        // Parámetros según filtro
+        if (filtro === "GET_DIARIO") {
+          if (fechaDia) request.fecha_dia = fechaDia;
+          if (servicioId) request.id_servicio = servicioId;
+        } else if (filtro === "GET_MENSUAL") {
+          if (fechaMes) request.fecha_mes = fechaMes;
+          if (anio) request.año = anio;
+          if (servicioId) request.id_servicio = servicioId;
+        } else if (filtro === "GET_TRIMESTRAL") {
+          if (numeroTrimestre) request.numero_trimestre = numeroTrimestre;
+          if (anio) request.año = anio;
+          if (servicioId) request.id_servicio = servicioId;
+        } else if (filtro === "GET_SEMESTRAL") {
+          if (numeroSemestre) request.numero_semestre = numeroSemestre;
+          if (anio) request.año = anio;
+          if (servicioId) request.id_servicio = servicioId;
+        } else if (filtro === "GET_ANUAL") {
+          if (anio) request.año = anio;
+          if (servicioId) request.id_servicio = servicioId;
+        }
+
+        const response = await axios.post(
+          "http://64.23.169.22:3761/broker/api/rest",
+          { metadata, request },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        // Imprime toda la respuesta para depuración
+        console.log("Respuesta completa del broker (movimientos):", response.data);
+
+        // Ajuste para la estructura esperada
+        if (
+          response.data?.response?.data?.data &&
+          Array.isArray(response.data.response.data.data)
+        ) {
+          console.log("Movimientos extraídos (data):", response.data.response.data.data);
+          setMovimientos(response.data.response.data.data);
+        } else if (
+          response.data?.response?.data?.movimientos &&
+          Array.isArray(response.data.response.data.movimientos)
+        ) {
+          console.log("Movimientos extraídos (movimientos):", response.data.response.data.movimientos);
+          setMovimientos(response.data.response.data.movimientos);
+        } else if (
+          response.data?.response?.data &&
+          Array.isArray(response.data.response.data)
+        ) {
+          console.log("Movimientos extraídos (array directo):", response.data.response.data);
+          setMovimientos(response.data.response.data);
+        } else {
+          console.log("Contenido de response.data.response.data:", response.data?.response?.data);
+          setError("La respuesta del broker no tiene datos válidos");
+        }
+      } catch (err) {
+        let errorMsg = "Error al conectar con el broker";
+        if (err.response) {
+          errorMsg = `Error ${err.response.status}: ${err.response.statusText}`;
+          if (err.response.data) {
+            errorMsg += `\nMensaje backend: ${JSON.stringify(err.response.data)}`;
+          }
+        } else if (err.request) {
+          errorMsg = "No hubo respuesta del servidor. Revisa la conexión o la URL.";
+        } else if (err.message) {
+          errorMsg = err.message;
+        }
+        setError(errorMsg);
+      } finally {
+        setLoading(false);
       }
     };
     fetchMovimientos();
-  }, [filtro]);
-
-  // Unifica todos los movimientos en un array plano con categoría
-  const movimientosUnificados = [];
-  Object.entries(movimientosPorCategoria).forEach(([categoria, data]) => {
-    (data.movimientos || []).forEach((mov) => {
-      movimientosUnificados.push({ ...mov, categoria });
-    });
-  });
+    // eslint-disable-next-line
+  }, [filtro, fechaDia, fechaMes, anio, numeroTrimestre, numeroSemestre, servicioId]);
 
   // Filtrado por cualquier campo
-  const movimientosFiltrados = movimientosUnificados.filter((m) => {
+  const movimientosFiltrados = movimientos.filter((m) => {
     const matchBusqueda = Object.values(m)
       .join(" ")
       .toLowerCase()
       .includes(busqueda.toLowerCase());
-    const matchServicio = servicioId ? String(m.id_servicio) === String(servicioId) : true;
-    return matchBusqueda && matchServicio;
+    return matchBusqueda;
   });
 
   return (
@@ -67,10 +157,10 @@ export default function MovimientoList() {
         <Card className="shadow">
           <CardHeader className="border-0">
             <Row className="align-items-center">
-              <Col md={4}>
+              <Col md={3}>
                 <h3 className="mb-0">Listado de Movimientos</h3>
               </Col>
-              <Col md={4}>
+              <Col md={2}>
                 <FormGroup>
                   <Label for="filtro">Filtrar por:</Label>
                   <Input
@@ -87,7 +177,121 @@ export default function MovimientoList() {
                   </Input>
                 </FormGroup>
               </Col>
-              <Col md={3}>
+              {filtro === "GET_DIARIO" && (
+                <Col md={2}>
+                  <FormGroup>
+                    <Label for="fechaDia">Fecha:</Label>
+                    <Input
+                      type="date"
+                      id="fechaDia"
+                      value={fechaDia}
+                      onChange={e => setFechaDia(e.target.value)}
+                    />
+                  </FormGroup>
+                </Col>
+              )}
+              {filtro === "GET_MENSUAL" && (
+                <>
+                  <Col md={2}>
+                    <FormGroup>
+                      <Label for="fechaMes">Mes:</Label>
+                      <Input
+                        type="month"
+                        id="fechaMes"
+                        value={fechaMes}
+                        onChange={e => setFechaMes(e.target.value)}
+                      />
+                    </FormGroup>
+                  </Col>
+                  <Col md={2}>
+                    <FormGroup>
+                      <Label for="anio">Año:</Label>
+                      <Input
+                        type="number"
+                        id="anio"
+                        value={anio}
+                        onChange={e => setAnio(e.target.value)}
+                        placeholder="Ej: 2025"
+                      />
+                    </FormGroup>
+                  </Col>
+                </>
+              )}
+              {filtro === "GET_TRIMESTRAL" && (
+                <>
+                  <Col md={2}>
+                    <FormGroup>
+                      <Label for="numeroTrimestre">Trimestre:</Label>
+                      <Input
+                        type="number"
+                        id="numeroTrimestre"
+                        value={numeroTrimestre}
+                        onChange={e => setNumeroTrimestre(e.target.value)}
+                        min={1}
+                        max={4}
+                        placeholder="1-4"
+                      />
+                    </FormGroup>
+                  </Col>
+                  <Col md={2}>
+                    <FormGroup>
+                      <Label for="anio">Año:</Label>
+                      <Input
+                        type="number"
+                        id="anio"
+                        value={anio}
+                        onChange={e => setAnio(e.target.value)}
+                        placeholder="Ej: 2025"
+                      />
+                    </FormGroup>
+                  </Col>
+                </>
+              )}
+              {filtro === "GET_SEMESTRAL" && (
+                <>
+                  <Col md={2}>
+                    <FormGroup>
+                      <Label for="numeroSemestre">Semestre:</Label>
+                      <Input
+                        type="number"
+                        id="numeroSemestre"
+                        value={numeroSemestre}
+                        onChange={e => setNumeroSemestre(e.target.value)}
+                        min={1}
+                        max={2}
+                        placeholder="1-2"
+                      />
+                    </FormGroup>
+                  </Col>
+                  <Col md={2}>
+                    <FormGroup>
+                      <Label for="anio">Año:</Label>
+                      <Input
+                        type="number"
+                        id="anio"
+                        value={anio}
+                        onChange={e => setAnio(e.target.value)}
+                        placeholder="Ej: 2025"
+                      />
+                    </FormGroup>
+                  </Col>
+                </>
+              )}
+              {filtro === "GET_ANUAL" && (
+                <Col md={2}>
+                  <FormGroup>
+                    <Label for="anio">Año:</Label>
+                    <Input
+                      type="number"
+                      id="anio"
+                      value={anio}
+                      onChange={e => setAnio(e.target.value)}
+                      placeholder="Ej: 2025"
+                    />
+                  </FormGroup>
+                </Col>
+              )}
+              <Col md={2}>
                 <FormGroup>
                   <Label for="servicioId">ID Servicio:</Label>
                   <Input
@@ -111,46 +315,55 @@ export default function MovimientoList() {
             </Row>
           </CardHeader>
           <CardBody>
-            <Table className="align-items-center table-flush" responsive hover>
-              <thead className="thead-light">
-                <tr>
-                  <th>
-                    <FontAwesomeIcon icon={faIdCard} className="mr-1" /> #
-                  </th>
-                  <th>Categoría</th>
-                  <th>Concepto</th>
-                  <th>Cantidad</th>
-                  <th>Fecha</th>
-                  <th>Servicio</th>
-                  <th>Empleado</th>
-                  <th>Producto</th>
-                  <th>Nota Crédito</th>
-                </tr>
-              </thead>
-              <tbody>
-                {movimientosFiltrados.length > 0 ? (
-                  movimientosFiltrados.map((item, index) => (
-                    <tr key={item.id || index}>
-                      <td>{index + 1}</td>
-                      <td>{item.categoria}</td>
-                      <td>{item.concepto}</td>
-                      <td>{item.cantidad}</td>
-                      <td>{item.fecha_movimiento}</td>
-                      <td>{item.id_servicio || ""}</td>
-                      <td>{item.nombre_empleado || ""}</td>
-                      <td>{item.producto || ""}</td>
-                      <td>{item.notaCredito || ""}</td>
-                    </tr>
-                  ))
-                ) : (
+            {loading ? (
+              <div className="text-center py-5">
+                <Spinner color="primary" />
+              </div>
+            ) : error ? (
+              <div className="alert alert-danger" role="alert">
+                <strong>Error:</strong>
+                <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-all" }}>{error}</pre>
+              </div>
+            ) : (
+              <Table className="align-items-center table-flush" responsive hover>
+                <thead className="thead-light">
                   <tr>
-                    <td colSpan="9" className="text-center text-muted py-4">
-                      No se encontraron movimientos
-                    </td>
+                    <th>
+                      <FontAwesomeIcon icon={faIdCard} className="mr-1" /> #
+                    </th>
+                    <th>Concepto</th>
+                    <th>Cantidad</th>
+                    <th>Fecha</th>
+                    <th>Servicio</th>
+                    <th>Empleado</th>
+                    <th>Producto</th>
+                    <th>Nota Crédito</th>
                   </tr>
-                )}
-              </tbody>
-            </Table>
+                </thead>
+                <tbody>
+                  {movimientosFiltrados.length > 0 ? (
+                    movimientosFiltrados.map((item, index) => (
+                      <tr key={item.id || index}>
+                        <td>{index + 1}</td>
+                        <td>{item.concepto}</td>
+                        <td>{item.cantidad}</td>
+                        <td>{item.fecha_movimiento}</td>
+                        <td>{item.id_servicio || ""}</td>
+                        <td>{item.nombre_empleado || ""}</td>
+                        <td>{item.producto || ""}</td>
+                        <td>{item.notaCredito || ""}</td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="8" className="text-center text-muted py-4">
+                        No se encontraron movimientos
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </Table>
+            )}
           </CardBody>
         </Card>
       </Col>
