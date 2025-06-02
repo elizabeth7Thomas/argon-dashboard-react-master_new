@@ -92,15 +92,7 @@ export default function PageAlertasAdmin() {
   return (
     <>
       <div className="mb-3 d-flex justify-content-end">
-        <Button
-          color="primary"
-          onClick={() => {
-            setAlertaEditar(null);
-            setModalOpen(true);
-          }}
-        >
-          Nueva Alerta
-        </Button>
+ 
       </div>
       <AlertaList
         alertas={alertas}
