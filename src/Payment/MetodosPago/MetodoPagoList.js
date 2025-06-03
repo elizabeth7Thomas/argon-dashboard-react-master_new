@@ -21,11 +21,16 @@ function MetodosList({ metodos, onView }) {
           </tr>
         ) : (
           metodos.map((metodo) => (
-            <tr key={metodo._id}>
-              <td>{metodo._id}</td>
-              <td>{metodo.metodo}</td>
+            <tr key={metodo.idMetodo}>
+              <td>{metodo.idMetodo}</td>
+              <td>{metodo.Metodo}</td>
               <td>
-                <Button size="sm" color="info" className="me-2" onClick={() => onView(metodo)}>
+                <Button
+                  size="sm"
+                  color="info"
+                  className="me-2"
+                  onClick={() => onView(metodo)}
+                >
                   <FontAwesomeIcon icon={faEye} />
                 </Button>
               </td>
@@ -42,20 +47,31 @@ export default function MetodosForm() {
 
   useEffect(() => {
     const fetchMetodos = async () => {
+      const token = localStorage.getItem("token");
+
       try {
-        const response = await axios.get("http://localhost:3001/pagos/metodos/obtener", {
-          headers: {
-            "Cache-Control": "no-cache"
+        const response = await axios.post(
+          "http://64.23.169.22:3761/broker/api/rest",
+          {
+            metadata: { uri: "pagos/metodos/obtener" }, // sin slash inicial
+            request: {
+              
+            },
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
           }
-        });
+        );
 
-        console.log("Respuesta del servidor", response);
-        console.log("Métodos recibidos", response.data.Metodos); // corregido a 'Metodos'
+        const data = response.data?.response?.data;
 
-        if (response.status === 200 && response.data && Array.isArray(response.data.Metodos)) {
-          setMetodos(response.data.Metodos); // corregido a 'Metodos'
+        if (Array.isArray(data)) {
+          setMetodos(data);
         } else {
-          console.warn("La respuesta del servidor no contiene la lista esperada de métodos.");
+          console.warn("La respuesta del servidor no contiene una lista válida de métodos.");
           setMetodos([]);
         }
       } catch (error) {
@@ -68,16 +84,13 @@ export default function MetodosForm() {
   }, []);
 
   const handleView = (metodo) => {
-    alert(`Viendo método: ${metodo.metodo}`);
+    alert(`Viendo método: ${metodo.Metodo}`);
   };
 
   return (
     <div className="container mt-4">
       <h2>Lista de métodos</h2>
-      <MetodosList
-        metodos={metodos}
-        onView={handleView}
-      />
+      <MetodosList metodos={metodos} onView={handleView} />
     </div>
   );
 }
