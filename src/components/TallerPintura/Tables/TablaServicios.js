@@ -1,103 +1,106 @@
-// TablaServicios.js
 import React, { useEffect, useState } from "react";
-import { Table, Button, DropdownItem, DropdownMenu, DropdownToggle, UncontrolledDropdown, Container, Card } from "reactstrap";
+import axios from "axios";
+import {
+  Table,
+  Button,
+  Spinner,
+  DropdownItem,
+  DropdownMenu,
+  DropdownToggle,
+  UncontrolledDropdown,
+  Container,
+  Card
+} from "reactstrap";
 import ModalAgregarServicio from "../Modals/ModalAgregarServicio";
 import HeaderTallerPintura from "components/Headers/HeaderTallerPintura";
 
 const TablaServicios = () => {
   const [servicios, setServicios] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   const [modal, setModal] = useState(false);
-  const [nextId, setNextId] = useState(1);
   const [modoEdicion, setModoEdicion] = useState(false);
   const [tipoEditar, setTipoEditar] = useState(null);
 
-  const toggleModal = () => {setModal(!modal);
+  const toggleModal = () => {
+    setModal(!modal);
     if (modal) {
       setModoEdicion(false);
       setTipoEditar(null);
     }
-  }
+  };
 
-const obtenerServicios = async () => {
-  try {
-    const token = localStorage.getItem("token"); // Asegúrate que esté guardado así
+  const obtenerServicios = async () => {
+    const token = localStorage.getItem("token");
 
-    const res = await fetch("http://64.23.169.22:3761/broker/api/rest", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-        Authorization: `Bearer ${token}` // Token incluido aquí
-      },
-      body: JSON.stringify({
-        metadata: {
-          uri: "/pintura/GET/servicios" // URI de tu servicio
-        },
-        request: null
-      })
-    });
-
-    if (!res.ok) {
-      console.error("Respuesta del servidor no fue OK:", res.status);
-      setServicios([]);
+    if (!token) {
+      setError("No se encontró un token de autenticación");
+      setLoading(false);
       return;
     }
 
-    const data = await res.json();
+    try {
+      const response = await axios.post(
+        "http://64.23.169.22:3761/broker/api/rest",
+        {
+          metadata: { uri: "/pintura/GET/servicios" },
+          request: {}
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json"
+          }
+        }
+      );
 
-    // Validar que la respuesta sea un arreglo
-    const serviciosArray = Array.isArray(data) ? data : [data];
+      const data = response.data;
 
-    setServicios(serviciosArray);
-
-    // Establecer el próximo ID
-    if (serviciosArray.length > 0) {
-      const maxId = Math.max(...serviciosArray.map(s => s.idServicio || 0));
-      setNextId(maxId + 1);
-    } else {
-      setNextId(1);
-    }
-
-  } catch (error) {
-    console.error("Error al obtener servicios:", error);
-    setServicios([]);
-  }
-};
-
-
-
-const agregarServicio = async (nuevoServicio) => {
-  try {
-    if (modoEdicion && tipoEditar) {
-      // Aquí se haría PUT (editar) en el futuro
-      console.warn("Modo edición aún no implementado con backend");
-    } else {
-      const res = await fetch("http://localhost:8000/pintura/POST/servicios", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(nuevoServicio)
-      });
-
-      if (res.ok) {
-        const servicioCreado = await res.json();
-        setServicios((prev) => [...prev, servicioCreado]);
-        setNextId((prev) => prev + 1);
+      if (data && data.response && data.response.data) {
+        const serviciosArray = Array.isArray(data.response.data)
+          ? data.response.data
+          : [data.response.data];
+        setServicios(serviciosArray);
       } else {
-        console.error("Error al agregar servicio:", await res.text());
+        setError("La respuesta del broker no tiene datos válidos");
       }
+    } catch (err) {
+      console.error("Error al obtener servicios:", err);
+      setError("Error al conectar con el broker");
+    } finally {
+      setLoading(false);
     }
-  } catch (error) {
-    console.error("Error al conectar con backend:", error);
-  }
+  };
 
-  toggleModal();
-};
+  const agregarServicio = async (nuevoServicio) => {
+    try {
+      if (modoEdicion && tipoEditar) {
+        // PUT futuro aquí
+        console.warn("Modo edición aún no implementado con backend");
+      } else {
+        const res = await axios.post("http://localhost:8000/pintura/POST/servicios", nuevoServicio, {
+          headers: { "Content-Type": "application/json" }
+        });
 
+        if (res.status === 200 || res.status === 201) {
+          setServicios((prev) => [...prev, res.data]);
+        } else {
+          console.error("Error al agregar servicio:", res);
+        }
+      }
+    } catch (error) {
+      console.error("Error al conectar con backend:", error);
+    }
+
+    toggleModal();
+  };
 
   const eliminarServicio = (id) => {
-    const confirmacion = window.confirm("Estás seguro de eliminar este dato?");
-    if (confirmacion){const nuevosServicios = servicios.filter((servicio) => servicio.idServicio !== id);
-    setServicios(nuevosServicios);}
+    const confirmacion = window.confirm("¿Estás seguro de eliminar este dato?");
+    if (confirmacion) {
+      const nuevosServicios = servicios.filter((servicio) => servicio.idServicio !== id);
+      setServicios(nuevosServicios);
+    }
   };
 
   const iniciarEdicion = (servicio) => {
@@ -106,16 +109,16 @@ const agregarServicio = async (nuevoServicio) => {
     setModal(true);
   };
 
-useEffect(() => {
-  obtenerServicios();
-}, []);
+  useEffect(() => {
+    obtenerServicios();
+  }, []);
+
+  if (loading) return <Spinner />;
+  if (error) return <p className="text-danger">{error}</p>;
 
   return (
     <>
-     
-      <br></br><br></br>
       <Container className="mt--7" fluid>
-        
         <Card className="shadow p-4 mb-4">
           <Table className="align-items-center table-flush" responsive>
             <thead className="thead-light">
@@ -129,7 +132,7 @@ useEffect(() => {
             <tbody>
               {servicios.length === 0 ? (
                 <tr>
-                  <td colSpan="3" className="text-center">No hay servicios disponibles</td>
+                  <td colSpan="4" className="text-center">No hay servicios disponibles</td>
                 </tr>
               ) : (
                 servicios.map((s) => (
@@ -153,7 +156,13 @@ useEffect(() => {
               )}
             </tbody>
           </Table>
-          <ModalAgregarServicio isOpen={modal} toggle={toggleModal} onSubmit={agregarServicio} />
+          <ModalAgregarServicio
+            isOpen={modal}
+            toggle={toggleModal}
+            onSubmit={agregarServicio}
+            modoEdicion={modoEdicion}
+            servicioEditar={tipoEditar}
+          />
         </Card>
         <Button color="primary" onClick={toggleModal}>Agregar Servicio</Button>
       </Container>

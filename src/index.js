@@ -79,7 +79,7 @@ import PrecioHistorialMantenimiento from "TallerMantenimiento/PrecioHistorial";
 /*IMPORTACIONES TIENDA CONVENIENCIA*/
 import ProveedoresTienda from "TiendaConveniencia/ProveedoresTienda/ProveedoresTienda";
 import ReportesTienda from "TiendaConveniencia/ReportesTienda/ReportesTienda";
-import Inventario from "TiendaConveniencia/InventarioTienda/Inventario.js";
+import Inventario from "TiendaConveniencia/InventarioTienda/List/Inventario";
 import Reports from "views/examples/Reports";
 import Devoluciones from "TiendaConveniencia/Devoluciones/Devoluciones";
 const root = ReactDOM.createRoot(document.getElementById("root"));
