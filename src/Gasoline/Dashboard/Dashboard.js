@@ -1,13 +1,11 @@
 // src/Gasoline/Dashboard/Dashboard.js
 import React, { useState } from 'react';
-//import { useNavigate } from 'react-router-dom';
-//import classnames from "classnames";
-import {Container,Row,Col,Card,CardHeader,CardBody,/*CardTitle,ListGroup,ListGroupItem,Badge,*/ Button} from 'reactstrap';
+import { Container, Row, Col, Card, CardHeader, CardBody, Button } from 'reactstrap';
 import Header from "components/Headers/Header_basic";
 import { faGasPump, faExclamationTriangle, faDollarSign } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-// Importa tus componentes de páginas reales aquí
+// Importa tus páginas reales aquí
 import AlertsPage from '../pages/PageAlertsGasoline';
 import DepositsPage from '../pages/PageDepositsGasoline';
 import SalesPage from '../pages/PageSalesGasoline';
@@ -16,31 +14,8 @@ import PumpStatusPage from '../pages/PagePumpStatusGasoline';
 import GasolineTypesPage from '../pages/PageGasolineTypes';
 
 export default function Dashboard() {
-// Estado para la sección seleccionada
   const [selectedSection, setSelectedSection] = useState(null);
-/* 
-  // Datos mockeados para tarjetas informativas
-  const [pumpStatus] = useState({ 
-    active: 4, 
-    inactive: 1, 
-    maintenance: 1 
-  });
-  const [tankStats] = useState([
-    { name: "Regular", current: 3500, capacity: 5000, percentage: 70 },
-    { name: "Premium", current: 2200, capacity: 5000, percentage: 44 },
-    { name: "Diesel", current: 4800, capacity: 8000, percentage: 60 }
-  ]);
-  const [sales] = useState({ 
-    volume: 1250, 
-    total: 4875 
-  });
-  const [recentAlerts] = useState([
-    { id: 1, message: "Bomba #3 requiere mantenimiento", level: "high" },
-    { id: 2, message: "Depósito Premium bajo al 44%", level: "medium" },
-    { id: 3, message: "Promoción activa en gasolina Regular", level: "low" }
-  ]);
-*/
-  // Render dinámico del componente según la sección seleccionada
+
   const renderSection = () => {
     switch (selectedSection) {
       case 'alerts':
@@ -68,55 +43,39 @@ export default function Dashboard() {
         <Row className="mb-4">
           <Col>
             <Card className="shadow">
-              <CardBody className="d-flex flex-wrap gap-2 justify-content-center">
-                <Button 
-                  color="primary" 
-                  onClick={() => setSelectedSection('alerts')}
-                  className="btn-icon"
-                >
-                  <FontAwesomeIcon icon={faExclamationTriangle} className="mr-2" />
-                  Alertas
-                </Button>
-                <Button 
-                  color="primary" 
-                  onClick={() => setSelectedSection('deposits')}
-                  className="btn-icon"
-                >
-                  <i className="ni ni-collection mr-2" />
-                  Depósitos
-                </Button>
-                <Button 
-                  color="primary" 
-                  onClick={() => setSelectedSection('sales')}
-                  className="btn-icon"
-                >
-                  <FontAwesomeIcon icon={faDollarSign} className="mr-2" />
-                  Ventas
-                </Button>
-                <Button 
-                  color="primary" 
-                  onClick={() => setSelectedSection('sales-cart')}
-                  className="btn-icon"
-                >
-                  <i className="ni ni-cart mr-2" />
-                  Carrito
-                </Button>
-                <Button 
-                  color="primary" 
-                  onClick={() => setSelectedSection('pump-status')}
-                  className="btn-icon"
-                >
-                  <FontAwesomeIcon icon={faGasPump} className="mr-2" />
-                  Bombas
-                </Button>
-                <Button 
-                  color="primary" 
-                  onClick={() => setSelectedSection('gasoline-types')}
-                  className="btn-icon"
-                >
-                  <i className="ni ni-archive-2 mr-2" />
-                  Tipos
-                </Button>
+              <CardBody>
+                <Row className="w-100">
+                  <Col xs="auto" className="flex-grow-1 text-center">
+                    <Button color="primary" onClick={() => setSelectedSection('alerts')} className="btn-icon w-100">
+                      <FontAwesomeIcon icon={faExclamationTriangle} className="mr-2" />
+                      Alertas
+                    </Button>
+                  </Col>
+                  <Col xs="auto" className="flex-grow-1 text-center">
+                    <Button color="primary" onClick={() => setSelectedSection('deposits')} className="btn-icon w-100">
+                      <i className="ni ni-collection mr-2" />
+                      Depósitos
+                    </Button>
+                  </Col>
+                  <Col xs="auto" className="flex-grow-1 text-center">
+                    <Button color="primary" onClick={() => setSelectedSection('sales')} className="btn-icon w-100">
+                      <FontAwesomeIcon icon={faDollarSign} className="mr-2" />
+                      Ventas
+                    </Button>
+                  </Col>
+                  <Col xs="auto" className="flex-grow-1 text-center">
+                    <Button color="primary" onClick={() => setSelectedSection('pump-status')} className="btn-icon w-100">
+                      <FontAwesomeIcon icon={faGasPump} className="mr-2" />
+                      Bombas
+                    </Button>
+                  </Col>
+                  <Col xs="auto" className="flex-grow-1 text-center">
+                    <Button color="primary" onClick={() => setSelectedSection('gasoline-types')} className="btn-icon w-100">
+                      <i className="ni ni-archive-2 mr-2" />
+                      Tipos
+                    </Button>
+                  </Col>
+                </Row>
               </CardBody>
             </Card>
           </Col>
