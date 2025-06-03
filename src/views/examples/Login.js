@@ -5,6 +5,8 @@ import { Button, Card,CardHeader, CardBody, FormGroup, Form, Input, InputGroupAd
 const Login = () => {
   const [username, setUsername] = useState("carlosgarcia.4490");
   const [password, setPassword] = useState("9/e/yISPBW");
+  const [username, setUsername] = useState("emiliochamorro.7656");
+  const [password, setPassword] = useState("2Fv7dO96vN");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
