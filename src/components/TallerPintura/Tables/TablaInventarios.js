@@ -162,7 +162,12 @@ const TablaInventario = () => {
               )}
             </tbody>
           </Table>
-          <ModalAgregarInventario isOpen={modal} toggle={toggleModal} onSubmit={agregarInventario}/>
+          <ModalAgregarInventario
+            isOpen={modal}
+            toggle={toggleModal}
+            onSubmit={agregarInventario}
+            onInventarioCreado={obtenerInventarios}
+          />
         </Card>
          <Button color="primary" onClick={toggleModal}>
           Agregar Inventario
