@@ -20,7 +20,12 @@ import HeaderTallerPintura from "components/Headers/HeaderTallerPintura";
 import TablaServicios from "components/TallerPintura/Tables/TablaServicios";
 import TablaTipoPinturas from "components/TallerPintura/Tables/TablaTipoPinturas";
 import TablaTiposServicios from "components/TallerPintura/Tables/TablaTiposServicios";
+import TablaInventarios from "components/TallerPintura/Tables/TablaInventarios";
+import TablaInventarioVehiculos from "components/TallerPintura/Tables/TablaInventarioVehiculos";
+import TablaDevoluciones from "components/TallerPintura/Tables/TablaDevoluciones";
+import TablaVentas from "components/TallerPintura/Tables/TablaVentas";
 import TablaTiposVehiculos from "components/TallerPintura/Tables/TablaTiposVehiculos";
+import TablaPrecioServicio from "components/TallerPintura/Tables/TablaPrecioServicio";
 
 const TallerPinturas = () => {
   const [activeComponent, setActiveComponent] = useState(null);
@@ -35,6 +40,16 @@ const TallerPinturas = () => {
         return <TablaTiposServicios />;
       case "tiposVehiculos":
         return <TablaTiposVehiculos />;
+      case "inventarios":
+        return <TablaInventarios />;
+      case "vehiculoinventarios":
+        return <TablaInventarioVehiculos />;
+      case "devoluciones":
+        return <TablaDevoluciones />; 
+      case "ventas":
+        return <TablaVentas />;
+      case "precioservicio":
+        return <TablaPrecioServicio />;       
       default:
         return <p className="text-muted">Selecciona una opción para comenzar.</p>;
     }
@@ -76,6 +91,51 @@ const TallerPinturas = () => {
                 >
                   <FontAwesomeIcon icon={faCogs} className="mr-2" />
                   Tipos de Servicios
+                </Button>
+
+                <Button
+                  color="primary"
+                  onClick={() => setActiveComponent("inventarios")}
+                  className="btn-icon"
+                >
+                  <FontAwesomeIcon icon={faCogs} className="mr-2" />
+                  Inventarios
+                </Button>
+
+                <Button
+                  color="primary"
+                  onClick={() => setActiveComponent("vehiculoinventarios")}
+                  className="btn-icon"
+                >
+                  <FontAwesomeIcon icon={faCogs} className="mr-2" />
+                  Vehiculo Inventarios
+                </Button>
+
+                <Button
+                  color="primary"
+                  onClick={() => setActiveComponent("devoluciones")}
+                  className="btn-icon"
+                >
+                  <FontAwesomeIcon icon={faCogs} className="mr-2" />
+                  Devoluciones
+                </Button>
+
+                <Button
+                  color="primary"
+                  onClick={() => setActiveComponent("ventas")}
+                  className="btn-icon"
+                >
+                  <FontAwesomeIcon icon={faCogs} className="mr-2" />
+                  Venta
+                </Button>
+
+                <Button
+                  color="primary"
+                  onClick={() => setActiveComponent("precioservicio")}
+                  className="btn-icon"
+                >
+                  <FontAwesomeIcon icon={faCogs} className="mr-2" />
+                  Precio Servicio
                 </Button>
 
                 <Button

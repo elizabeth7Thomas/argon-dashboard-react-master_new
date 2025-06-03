@@ -19,21 +19,52 @@ const TablaInventario = () => {
   }
 
   const obtenerInventarios = async () => {
-    try {
-      const res = await fetch("http://localhost:8000/pintura/GET/inventarios");
-      const data = await res.json();
-      const inventariosArray = Array.isArray(data) ? data : [data];
-      setInventarios(inventariosArray);
+  try {
+    const token = localStorage.getItem("token");
 
-      if (inventariosArray.length > 0) {
-        const maxId = Math.max(...inventariosArray.map(i => i.idInventario));
-        setNextId(maxId + 1);
-      }
-    } catch (error) {
-      console.error("Error al obtener inventario:", error);
+    if (!token) {
+      console.error("No se encontró un token de autenticación");
       setInventarios([]);
+      return;
     }
-  };
+
+    const res = await fetch("http://64.23.169.22:3761/broker/api/rest", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token
+      },
+      body: JSON.stringify({
+        metadata: {
+          uri: "/pintura/GET/inventarios"
+        },
+        request: {}
+      })
+    });
+
+    if (!res.ok) {
+      console.error("Respuesta del servidor no fue OK:", res.status);
+      setInventarios([]);
+      return;
+    }
+
+    const data = await res.json();
+    const inventariosArray = Array.isArray(data.response?.data) ? data.response.data : [];
+
+    setInventarios(inventariosArray);
+
+    if (inventariosArray.length > 0) {
+      const maxId = Math.max(...inventariosArray.map(i => i.idInventario || 0));
+      setNextId(maxId + 1);
+    } else {
+      setNextId(1);
+    }
+
+  } catch (error) {
+    console.error("Error al obtener inventario:", error);
+    setInventarios([]);
+  }
+};
 
   const agregarInventario = (nuevoInventario) => {
     if (modoEdicion && tipoEditar){

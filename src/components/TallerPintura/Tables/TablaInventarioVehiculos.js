@@ -10,20 +10,48 @@ const TablaInventarioVehiculos = (onVerClick,onEditarClick) => {
   const toggleModal = () => setModal(!modal);
 
   const obtenerInventarioVehiculos = async () => {
-    try {
-      const res = await fetch("http://localhost:8000/pintura/GET/vehiculoinventarios");
-      const data = await res.json();
-      const vehiculoInventarioArray = Array.isArray(data) ? data : [data];
-      setVehiculosInventario(vehiculoInventarioArray);
-    } catch (error) {
-      console.error("Error al obtener inventarios de vehículos:", error);
+  try {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      console.error("No se encontró un token de autenticación");
       setVehiculosInventario([]);
+      return;
     }
-    
-  };
+
+    const res = await fetch("http://64.23.169.22:3761/broker/api/rest", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token
+      },
+      body: JSON.stringify({
+        metadata: {
+          uri: "/pintura/GET/vehiculoinventarios"
+        },
+        request: {}
+      })
+    });
+
+    if (!res.ok) {
+      console.error("Respuesta del servidor no fue OK:", res.status);
+      setVehiculosInventario([]);
+      return;
+    }
+
+    const data = await res.json();
+    const vehiculoInventarioArray = Array.isArray(data.response?.data) ? data.response.data : [];
+
+    setVehiculosInventario(vehiculoInventarioArray);
+
+  } catch (error) {
+    console.error("Error al obtener inventarios de vehículos:", error);
+    setVehiculosInventario([]);
+  }
+};
 
   const agregarInventarioVehiculo = async (nuevoItem) => {
-    await fetch("http://localhost:8000/pintura/POST/vehiculoinventarios", {
+    await fetch("http://64.23.169.22:8000/pintura/POST/vehiculoinventarios", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(nuevoItem),

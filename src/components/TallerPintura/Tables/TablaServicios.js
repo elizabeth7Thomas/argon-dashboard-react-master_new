@@ -26,14 +26,14 @@ const obtenerServicios = async () => {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "Access-Control-Allow-Origin": "*",
-        Authorization: `Bearer ${token}` // Token incluido aquí
+        //"Access-Control-Allow-Origin": "*",
+        Authorization: token // Token incluido aquí
       },
       body: JSON.stringify({
         metadata: {
           uri: "/pintura/GET/servicios" // URI de tu servicio
         },
-        request: null
+        request: {}
       })
     });
 
@@ -46,7 +46,7 @@ const obtenerServicios = async () => {
     const data = await res.json();
 
     // Validar que la respuesta sea un arreglo
-    const serviciosArray = Array.isArray(data) ? data : [data];
+    const serviciosArray = Array.isArray(data.response?.data) ? data.response.data : [];
 
     setServicios(serviciosArray);
 
@@ -72,7 +72,7 @@ const agregarServicio = async (nuevoServicio) => {
       // Aquí se haría PUT (editar) en el futuro
       console.warn("Modo edición aún no implementado con backend");
     } else {
-      const res = await fetch("http://localhost:8000/pintura/POST/servicios", {
+      const res = await fetch("http://64.23.169.22:8000/pintura/POST/servicios", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(nuevoServicio)
