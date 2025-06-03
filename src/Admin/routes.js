@@ -1,76 +1,73 @@
 // src/Admin/routes.js
 
-const API_BASE = "http://localhost:3000/administracion";
+const API_BASE = "http://64.23.169.22:3761/broker/api/rest";
 
 const EMPLEADOS_API = {
-  GET_ALL: `${API_BASE}/GET/empleados`,
-  CREATE: `${API_BASE}/POST/empleados`,
-  UPDATE: (id) => `${API_BASE}/PUT/empleados/${id}`,
-  DELETE: (id) => `${API_BASE}/PATCH/empleados/${id}`,
+  GET_ALL: "administracion/GET/empleados",
+  CREATE: "administracion/POST/empleados",
+  UPDATE: (id) => `administracion/PUT/empleados/${id}`,
+  DELETE: (id) => `administracion/PATCH/empleados/${id}`,
 };
 
 const ROLES_API = {
-  GET_ALL: `${API_BASE}/GET/roles`,
-  CREATE: `${API_BASE}/POST/roles`,
-  UPDATE: (id) => `${API_BASE}/PUT/roles/${id}`,
-  DELETE: (id) => `${API_BASE}/PATCH/roles/${id}`,
+  GET_ALL: "administracion/GET/roles",
+  CREATE: "administracion/POST/roles",
+  UPDATE: (id) => `administracion/PUT/roles/${id}`,
+  DELETE: (id) => `administracion/PATCH/roles/${id}`,
 };
 
 const ALERTAS_API = {
-  GET_ALL: `${API_BASE}/GET/alertas`,
-  CREATE_TIENDA: `${API_BASE}/POST/alertas/tienda_de_conveniencia`,
-  CREATE_GAS: `${API_BASE}/POST/alertas/gasolinera`,
-  CREATE_REPUESTOS: `${API_BASE}/POST/alertas/repuestos`,
-  CREATE_PINTURA: `${API_BASE}/POST/alertas/pintura`,
-  DELETE: (id) => `${API_BASE}/PATCH/alertas/${id}`, 
+  GET_ALL: "administracion/GET/alertas",
+  CREATE_TIENDA: "administracion/POST/alertas/tienda_de_conveniencia",
+  CREATE_GAS: "administracion/POST/alertas/gasolinera",
+  CREATE_REPUESTOS: "administracion/POST/alertas/repuestos",
+  CREATE_PINTURA: "administracion/POST/alertas/pintura",
+  DELETE: (id) => `administracion/PATCH/alertas/${id}`,
 };
 
 const AREAS_API = {
-  GET_ALL: `${API_BASE}/GET/areas`,
-  CREATE: `${API_BASE}/POST/areas`,
-  DELETE: (id) => `${API_BASE}/PATCH/areas/${id}`,
-}
+  GET_ALL: "administracion/GET/areas",
+  CREATE: "administracion/POST/areas",
+  DELETE: (id) => `administracion/PATCH/areas/${id}`,
+};
 
 const JORNADAS_API = {
-  GET_ALL: `${API_BASE}/GET/jornadas`,
+  GET_ALL: "administracion/GET/jornadas",
 };
 
 const PROVEEDORES_API = {
-  GET_ALL: `${API_BASE}/GET/proveedores`,
-  CREATE: `${API_BASE}/POST/proveedores`,
-  UPDATE: (id) => `${API_BASE}/PUT/proveedores/${id}`,
-  DELETE: (id) => `${API_BASE}/PATCH/proveedores/${id}`,
+  GET_ALL: "administracion/GET/proveedores",
+  CREATE: "administracion/POST/proveedores",
+  UPDATE: (id) => `administracion/PUT/proveedores/${id}`,
+  DELETE: (id) => `administracion/PATCH/proveedores/${id}`,
 };
 
-const SERVICES_API = {
-  GET_ALL: `${API_BASE}/GET/servicios`,
+const SERVICIOS_API = {
+  GET_ALL: "administracion/GET/servicios",
 };
 
 const MOVIMIENTOS_API = {
-  GET_ALL_TYPE: `${API_BASE}/GET/tipo_movimientos`,
-}
-
-const REPORTES_API = {
-  GET_ALL: `${API_BASE}/GET/movimientos`,
-  GET_ALL_D: `${API_BASE}/GET/movimientos/diarios`,
-  GET_ALL_M: `${API_BASE}/GET/movimientos/mensuales`,
-  GET_ALL_T: `${API_BASE}/GET/movimientos/trimestrales`,
-  GET_ALL_S: `${API_BASE}/GET/movimientos/semanales`,
-  GET_ALL_A: `${API_BASE}/GET/movimientos/anuales`,
-  
+  GET_ALL: "administracion/GET/movimientos",
+  GET_DIARIO: "administracion/GET/movimientos/diarios",
+  GET_MENSUAL: "administracion/GET/movimientos/mensuales",
+  GET_TRIMESTRAL: "administracion/GET/movimientos/trimestrales",
+  GET_SEMESTRAL: "administracion/GET/movimientos/semestrales",
+  GET_ANUAL: "administracion/GET/movimientos/anuales",
 };
 
 const ORDENES_API = {
-  GET_ALL: `${API_BASE}/GET/ordenes`,
-  GET_BY_ID: (id) => `${API_BASE}/GET/ordenes/${id}`,
-  CREATE: `${API_BASE}/POST/ordenes`,
-  UPDATE_ESTADO: (id) => `${API_BASE}/PUT/ordenes/modificar_estado/${id}`,
-  UPDATE_DETALLE: (id_detalle_orden) => `${API_BASE}/PUT/ordenes/detalle/${id_detalle_orden}`,
-  REABASTECER: (id_orden) => `${API_BASE}/POST/ordenes/reabastecer/${id_orden}`,
-  GET_ESTADOS_ORDENES: `${API_BASE}/GET/ordenes/estados_ordenes`,
-  GET_ESTADOS_ORDENES_DETALLES: `${API_BASE}/GET/ordenes/estados_ordenes_detalles`,
+  GET_ALL: "administracion/GET/ordenes",
+  GET_BY_ID: (id) => `administracion/GET/ordenes/${id}`,
+  CREATE: "administracion/POST/ordenes",
+  UPDATE_ESTADO: (id) => `administracion/PUT/ordenes/modificar_estado/${id}`,
+  UPDATE_DETALLE: (id_detalle_orden) => `administracion/PUT/ordenes/detalle/${id_detalle_orden}`,
+  REABASTECER: (id_orden) => `administracion/POST/ordenes/reabastecer/${id_orden}`,
+  GET_ESTADOS_ORDENES: "administracion/GET/ordenes/estados_ordenes",
+  GET_ESTADOS_ORDENES_DETALLES: "administracion/GET/ordenes/estados_ordenes_detalles",
 };
+
 const routes = {
+  API_BASE,
   Administracion: {
     Empleados: EMPLEADOS_API,
     Roles: ROLES_API,
@@ -78,9 +75,8 @@ const routes = {
     Areas: AREAS_API,
     Jornadas: JORNADAS_API,
     Proveedores: PROVEEDORES_API,
-    Servicios: SERVICES_API,
+    Servicios: SERVICIOS_API,
     Movimientos: MOVIMIENTOS_API,
-    Reportes: REPORTES_API,
     Ordenes: ORDENES_API,
   }
 };

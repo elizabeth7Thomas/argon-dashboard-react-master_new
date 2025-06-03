@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   Card,
@@ -8,12 +8,80 @@ import {
   Button,
   Input,
   CardBody,
+  Spinner,
 } from "reactstrap";
 import { faEdit, faTrashAlt, faIdCard } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import axios from "axios";
 
-export default function AlertaList({ alertas = [], onEditar, onEliminar }) {
+export default function AlertaList({ onEditar, onEliminar }) {
+  const [alertas, setAlertas] = useState([]);
   const [busqueda, setBusqueda] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchAlertas = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("No se encontró un token de autenticación");
+        setLoading(false);
+        return;
+      }
+      try {
+        const response = await axios.post(
+          "http://64.23.169.22:3761/broker/api/rest",
+          {
+            metadata: { uri: "administracion/GET/alertas" },
+            request: {},
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        // Imprime toda la respuesta para depuración
+        console.log("Respuesta completa del broker (alertas):", response.data);
+
+        // Imprime el posible array de alertas para ver la estructura real
+        if (
+          response.data?.response?.data?.alertas &&
+          Array.isArray(response.data.response.data.alertas)
+        ) {
+          console.log("Alertas extraídas:", response.data.response.data.alertas);
+          setAlertas(response.data.response.data.alertas);
+        } else if (
+          response.data?.response?.data?.data &&
+          Array.isArray(response.data.response.data.data)
+        ) {
+          console.log("Alertas extraídas:", response.data.response.data.data);
+          setAlertas(response.data.response.data.data);
+        } else {
+          console.log("Contenido de response.data.response.data:", response.data?.response?.data);
+          setError("La respuesta del broker no tiene datos válidos");
+        }
+      } catch (err) {
+        let errorMsg = "Error al conectar con el broker";
+        if (err.response) {
+          errorMsg = `Error ${err.response.status}: ${err.response.statusText}`;
+          if (err.response.data) {
+            errorMsg += `\nMensaje backend: ${JSON.stringify(err.response.data)}`;
+          }
+        } else if (err.request) {
+          errorMsg = "No hubo respuesta del servidor. Revisa la conexión o la URL.";
+        } else if (err.message) {
+          errorMsg = err.message;
+        }
+        setError(errorMsg);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchAlertas();
+  }, []);
 
   const alertasFiltradas = alertas.filter(
     (a) =>
@@ -21,6 +89,15 @@ export default function AlertaList({ alertas = [], onEditar, onEliminar }) {
       (a.mensaje && a.mensaje.toLowerCase().includes(busqueda.toLowerCase())) ||
       (a.id && a.id.toString().includes(busqueda))
   );
+
+  if (loading) return <Spinner />;
+  if (error)
+    return (
+      <div className="alert alert-danger" role="alert">
+        <strong>Error:</strong>
+        <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-all" }}>{error}</pre>
+      </div>
+    );
 
   return (
     <Row>

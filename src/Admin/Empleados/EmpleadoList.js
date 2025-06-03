@@ -1,28 +1,89 @@
-// src/Admin/Empleados/EmpleadoList.js
-import React from 'react';
-import {
-  Card,
-  CardHeader,
-  CardBody,
-  Row,
-  Col,
-  Table,
-  Button,
-  Input
-} from 'reactstrap';
+import React, { useEffect, useState } from 'react';
+import { Card, CardHeader, CardBody, Row, Col, Table, Button, Input, Spinner } from 'reactstrap';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrash, faIdCard, faPhone, faEnvelope, faUser, faClock } from "@fortawesome/free-solid-svg-icons";
-
+import axios from 'axios';
 export default function EmpleadoList({
-  empleados,
   onEdit,
   onDelete,
-  busqueda,
-  setBusqueda,
   jornadas = [],
   areas = [],
   roles = []
 }) {
+  const [empleados, setEmpleados] = useState([]);
+  const [busqueda, setBusqueda] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchEmpleados = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("No se encontró un token de autenticación");
+        setLoading(false);
+        return;
+      }
+      try {
+        const response = await axios.post(
+          "http://64.23.169.22:3761/broker/api/rest",
+          {
+            metadata: {
+              uri: "administracion/GET/empleados"
+            },
+            request: {}
+          },
+          {
+            headers: {
+              "Authorization": `Bearer ${token}`,
+              "Content-Type": "application/json",
+            }
+          }
+        );
+
+        // Imprime toda la respuesta para depuración
+        console.log("Respuesta completa del broker:", response.data);
+
+        // Imprime el posible array de empleados para ver la estructura real
+        if (
+          response.data?.response?.data &&
+          Array.isArray(response.data.response.data.empleados)
+        ) {
+          console.log("Empleados extraídos:", response.data.response.data.empleados);
+          setEmpleados(response.data.response.data.empleados);
+        } else {
+          // Imprime el contenido de data para ver qué trae realmente
+          console.log("Contenido de response.data.response.data:", response.data?.response?.data);
+          setError("La respuesta del broker no tiene datos válidos");
+        }
+      } catch (err) {
+        console.error("Error al obtener empleados:", err);
+        let errorMsg = "Error al conectar con el broker";
+        if (err.response) {
+          errorMsg = `Error ${err.response.status}: ${err.response.statusText}`;
+          if (err.response.data) {
+            errorMsg += `\nMensaje backend: ${JSON.stringify(err.response.data)}`;
+          }
+          if (
+            err.response &&
+            err.response.data &&
+            err.response.data._broker_status === 401
+          ) {
+            setError("Sesión expirada o token inválido. Por favor, inicia sesión nuevamente.");
+            // Opcional: redirige al login
+            // window.location.href = "/auth/login";
+          }
+        } else if (err.request) {
+          errorMsg = "No hubo respuesta del servidor. Revisa la conexión o la URL.";
+        } else if (err.message) {
+          errorMsg = err.message;
+        }
+        setError(errorMsg);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchEmpleados();
+  }, []);
 
   const getJornadaNombre = (id) => {
     const jornada = jornadas.find(j => j.id === id);
@@ -44,6 +105,19 @@ export default function EmpleadoList({
     (item.empleado.usuario || "" ).toLowerCase().includes((busqueda || "").toLowerCase()) ||
     (item.empleado.id ? item.empleado.id.toString() : "").includes(busqueda || "")
   );
+
+  if (loading) {
+    return <Spinner />;
+  }
+
+  if (error) {
+    return (
+      <div className="alert alert-danger" role="alert">
+        <strong>Error:</strong>
+        <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-all" }}>{error}</pre>
+      </div>
+    );
+  }
 
   return (
     <Row>
@@ -79,7 +153,6 @@ export default function EmpleadoList({
                   <th><FontAwesomeIcon icon={faClock} className="mr-1" /> Jornada</th>
                   <th>Área</th>
                   <th>Rol</th>
-                  <th>Estado</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
@@ -95,14 +168,19 @@ export default function EmpleadoList({
                       <td>{item.empleado.email}</td>
                       <td>{item.empleado.usuario}</td>
                       <td>{getJornadaNombre(item.empleado.id_jornada)}</td>
-                      <td>{getAreaNombre(item.asignacion.id_area) || item.asignacion.area}</td>
-                      <td>{getRolNombre(item.asignacion.id_rol) || item.asignacion.rol}</td>
                       <td>
-                        {item.empleado.estado === true
-                          ? <span className="text-success font-weight-bold">Activo</span>
-                          : <span className="text-danger font-weight-bold">Inactivo</span>
+                        {item.asignacion
+                          ? (getAreaNombre(item.asignacion.id_area) || item.asignacion.area)
+                          : <span className="text-muted">Sin asignación</span>
                         }
                       </td>
+                      <td>
+                        {item.asignacion
+                          ? (getRolNombre(item.asignacion.id_rol) || item.asignacion.rol)
+                          : <span className="text-muted">Sin asignación</span>
+                        }
+                      </td>
+
                       <td>
                         <Button size="sm" color="info" onClick={() => onEdit(item)} className="mr-2">
                           <FontAwesomeIcon icon={faEdit} />

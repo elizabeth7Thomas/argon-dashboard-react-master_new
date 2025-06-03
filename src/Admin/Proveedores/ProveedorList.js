@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   Table,
   Card,
@@ -8,12 +8,72 @@ import {
   Button,
   Input,
   CardBody,
+  Spinner,
 } from "reactstrap";
 import { faEdit, faTrashAlt, faIdCard } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import axios from "axios";
 
-export default function ProveedorList({ proveedores = [], onEditar, onEliminar }) {
+export default function ProveedorList({ onEditar, onEliminar }) {
+  const [proveedores, setProveedores] = useState([]);
   const [busqueda, setBusqueda] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+
+  useEffect(() => {
+    const fetchProveedores = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("No se encontró un token de autenticación");
+        setLoading(false);
+        return;
+      }
+      try {
+        const response = await axios.post(
+          "http://64.23.169.22:3761/broker/api/rest",
+          {
+            metadata: { uri: "administracion/GET/proveedores" },
+            request: {},
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+        if (
+          response.data?.response?.data?.proveedores &&
+          Array.isArray(response.data.response.data.proveedores)
+        ) {
+          setProveedores(response.data.response.data.proveedores);
+        } else if (
+          response.data?.response?.data &&
+          Array.isArray(response.data.response.data)
+        ) {
+          setProveedores(response.data.response.data);
+        } else {
+          setError("La respuesta del broker no tiene datos válidos");
+        }
+      } catch (err) {
+        let errorMsg = "Error al conectar con el broker";
+        if (err.response) {
+          errorMsg = `Error ${err.response.status}: ${err.response.statusText}`;
+          if (err.response.data) {
+            errorMsg += `\nMensaje backend: ${JSON.stringify(err.response.data)}`;
+          }
+        } else if (err.request) {
+          errorMsg = "No hubo respuesta del servidor. Revisa la conexión o la URL.";
+        } else if (err.message) {
+          errorMsg = err.message;
+        }
+        setError(errorMsg);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchProveedores();
+  }, []);
 
   const proveedoresFiltrados = proveedores.filter(
     (p) =>
@@ -22,6 +82,15 @@ export default function ProveedorList({ proveedores = [], onEditar, onEliminar }
       (p.nit && p.nit.toString().includes(busqueda)) ||
       (p.id && p.id.toString().includes(busqueda))
   );
+
+  if (loading) return <Spinner />;
+  if (error)
+    return (
+      <div className="alert alert-danger" role="alert">
+        <strong>Error:</strong>
+        <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-all" }}>{error}</pre>
+      </div>
+    );
 
   return (
     <Row>
