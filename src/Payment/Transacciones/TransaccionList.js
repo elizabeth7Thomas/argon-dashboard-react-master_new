@@ -1,45 +1,37 @@
 import React from "react";
 import { Table, Button } from "reactstrap";
 
-export default function TransaccionList({ transacciones, onEdit, onDelete, onView }) {
+export default function TransaccionList({ transacciones }) {
   return (
-    <Table striped bordered responsive>
+    <Table responsive hover>
       <thead>
         <tr>
-          <th>#</th>
-          <th>Cliente</th>
-          <th>Método de Pago</th>
-          <th>Monto</th>
+          <th>No. Transacción</th>
+          <th>No. Autorización</th>
           <th>Fecha</th>
-          <th>Acciones</th>
+          <th>No. Factura</th>
+          <th>Total</th>
+          <th>ID Cliente</th>
+          <th>ID Caja</th>
+          <th>Estado</th>
         </tr>
       </thead>
       <tbody>
-        {transacciones.length === 0 ? (
+        {transacciones?.length === 0 ? (
           <tr>
-            <td colSpan="6" className="text-center">
-              No hay transacciones registradas.
-            </td>
+            <td colSpan="8" className="text-center">No se encontraron transacciones.</td>
           </tr>
         ) : (
-          transacciones.map((trans, index) => (
-            <tr key={index}>
-              <td>{index + 1}</td>
-              <td>{trans.Cliente}</td>
-              <td>{trans.MetodoPago}</td>
-              <td>{trans.Monto}</td>
-              <td>{trans.Fecha}</td>
-              <td>
-                <Button color="info" size="sm" onClick={() => onView(trans)}>
-                  Ver
-                </Button>{" "}
-                <Button color="warning" size="sm" onClick={() => onEdit(trans)}>
-                  Editar
-                </Button>{" "}
-                <Button color="danger" size="sm" onClick={() => onDelete(trans)}>
-                  Eliminar
-                </Button>
-              </td>
+          transacciones.map((tx) => (
+            <tr key={tx.idTransaccion}>
+              <td>{tx.NoTransaccion}</td>
+              <td>{tx.NoAutorizacion || "—"}</td>
+              <td>{tx.Fecha ? new Date(tx.Fecha).toLocaleString() : "—"}</td>
+              <td>{tx.NoFactura || "—"}</td>
+              <td>{tx.Total}</td>
+              <td>{tx.IdCliente || "—"}</td>
+              <td>{tx.IdCaja || "—"}</td>
+              <td>{tx.Estado}</td>
             </tr>
           ))
         )}
@@ -47,4 +39,3 @@ export default function TransaccionList({ transacciones, onEdit, onDelete, onVie
     </Table>
   );
 }
-
