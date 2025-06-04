@@ -13,8 +13,10 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import GasolineTypeForm from "../GasolineTypes/GasolineTypeForm";
 import GasolineTypeList from "../GasolineTypes/GasolineTypeList";
 import apiClient from "Gasoline/utils/apiClient";
+import { set } from "date-fns";
 
 export default function GasolineTypes() {
+  const [loading, setLoading] = useState(true)
   const [modalForm, setModalForm] = useState(false);
   const [editingFuel, setEditingFuel] = useState(null);
   const [fuels, setFuels] = useState([]);
@@ -84,11 +86,23 @@ export default function GasolineTypes() {
     setModalForm(true);
   };
 
-  const handleDelete = (fuelId) => {
-    if (window.confirm("¿Estás seguro de eliminar este tipo de combustible?")) {
-      setFuels(fuels.filter((f) => f.fuelId !== fuelId));
-    }
-  };
+  const handleDelete = async (fuelId) => {
+  if (!window.confirm("¿Estás seguro de eliminar este tipo de combustible?")) return;
+
+  setLoading(true);
+  try {
+    await apiClient.post("", {
+      metadata: { uri: `fuelType/delete/${fuelId}` },
+      request: {},
+    });
+    await fetchFuels(); 
+  } catch (err) {
+    console.error("Error al eliminar:", err);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   return (
     <>
