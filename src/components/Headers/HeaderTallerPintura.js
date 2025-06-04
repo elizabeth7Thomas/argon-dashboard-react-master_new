@@ -25,7 +25,6 @@ const HeaderTallerPintura = () => {
           <Row className="align-items-center py-4">
             <Col lg="6">
               <h2 className="text-white mb-0">Taller de Pinturas</h2>
-              
             </Col>
           </Row>
           
@@ -44,7 +43,6 @@ const HeaderTallerPintura = () => {
                         Devoluciones
                       </CardTitle>
                       <span className="h2 font-weight-bold mb-0">{stats.devoluciones.value}</span>
-                    
                     </div>
                     <Col className="col-auto">
                       <div className="icon icon-shape bg-gradient-orange text-white rounded-circle shadow">
@@ -69,7 +67,6 @@ const HeaderTallerPintura = () => {
                         Nivel de Inventario
                       </CardTitle>
                       <span className="h2 font-weight-bold mb-0">{stats.inventario.value}</span>
-                     
                     </div>
                     <Col className="col-auto">
                       <div className="icon icon-shape bg-gradient-gray text-white rounded-circle shadow">
@@ -94,7 +91,6 @@ const HeaderTallerPintura = () => {
                         Ventas
                       </CardTitle>
                       <span className="h2 font-weight-bold mb-0">{stats.ventas.value}</span>
-                    
                     </div>
                     <Col className="col-auto">
                       <div className="icon icon-shape bg-gradient-green text-white rounded-circle shadow">
@@ -119,7 +115,6 @@ const HeaderTallerPintura = () => {
                         Inventario Vehiculos
                       </CardTitle>
                       <span className="h2 font-weight-bold mb-0">{stats.agenda.value}</span>
-                     
                     </div>
                     <Col className="col-auto">
                       <div className="icon icon-shape bg-gradient-red text-white rounded-circle shadow">
@@ -134,7 +129,7 @@ const HeaderTallerPintura = () => {
         </div>
       </Container>
       
-      <style jsx>{`
+      <style>{`
         .hover-scale {
           transition: transform 0.2s ease, box-shadow 0.2s ease;
         }

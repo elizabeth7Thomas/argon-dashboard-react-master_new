@@ -23,53 +23,52 @@ const TablaTiposServicios = () => {
   };
 
   const obtenerTiposServicios = async () => {
-  try {
-    const token = localStorage.getItem("token");
+    try {
+      const token = localStorage.getItem("token");
 
-    if (!token) {
-      console.error("No se encontró un token de autenticación");
-      setTiposServicios([]);
-      return;
-    }
+      if (!token) {
+        console.error("No se encontró un token de autenticación");
+        setTiposServicios([]);
+        return;
+      }
 
-    const res = await fetch("http://64.23.169.22:3761/broker/api/rest", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: token
-      },
-      body: JSON.stringify({
-        metadata: {
-          uri: "/pintura/GET/tiposervicios"
+      const res = await fetch("http://64.23.169.22:3761/broker/api/rest", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
         },
-        request: {}
-      })
-    });
+        body: JSON.stringify({
+          metadata: {
+            uri: "/pintura/GET/tiposervicios",
+          },
+          request: {},
+        }),
+      });
 
-    if (!res.ok) {
-      console.error("Respuesta del servidor no fue OK:", res.status);
+      if (!res.ok) {
+        console.error("Respuesta del servidor no fue OK:", res.status);
+        setTiposServicios([]);
+        return;
+      }
+
+      const data = await res.json();
+      const tiposArray = Array.isArray(data.response?.data) ? data.response.data : [];
+      setTiposServicios(tiposArray);
+    } catch (error) {
+      console.error("Error cargando tipos de servicios:", error.message);
       setTiposServicios([]);
-      return;
     }
+  };
 
-    const data = await res.json();
-    const tiposArray = Array.isArray(data.response?.data) ? data.response.data : [];
+  useEffect(() => {
+    obtenerTiposServicios();
+  }, []);
 
-    setTiposServicios(tiposArray);
-
-  } catch (error) {
-    console.error("Error cargando tipos de servicios:", error.message);
-    setTiposServicios([]);
-  }
-};
-
-useEffect(() => {
-  obtenerTiposServicios();
-}, []);
-
-const handleSuccess = () => {
-  obtenerTiposServicios(); // Recargar la tabla después de agregar o editar
-};
+  const handleSuccess = () => {
+    obtenerTiposServicios(); // Recargar la tabla después de agregar o editar
+    toggleModal(); // Cerrar modal
+  };
 
   const eliminarTipoServicio = async (id) => {
     try {
@@ -85,63 +84,67 @@ const handleSuccess = () => {
 
   return (
     <>
-     
-      <br></br><br></br>
-      <Container className="mt--7" fluid>
-        
-        <Card className="shadow p-4 mb-4">
-          <Table className="align-items-center table-flush" responsive>
-            <thead className="thead-light">
-              <tr>
-                <th>ID</th>
-                <th>Nombre del Tipo</th>
-                <th>ID Servicio</th>
-                <th>Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tiposServicios.length === 0 ? (
+      <Container className="mt-4" fluid>
+        <Card className="shadow mb-3 p-3">
+          <div className="d-flex justify-content-between align-items-center mb-3 px-2">
+            <h3 className="mb-0">Listado de Tipos de Servicios</h3>
+            <Button color="primary" onClick={toggleModal}>
+              Agregar
+            </Button>
+          </div>
+
+          <div style={{ maxHeight: "400px", overflowY: "auto" }}>
+            <Table className="table-bordered table-hover table-striped mb-0" responsive>
+              <thead className="thead-light">
                 <tr>
-                  <td colSpan="4" className="text-center">
-                    No hay tipos de servicio disponibles
-                  </td>
+                  <th>ID</th>
+                  <th>Nombre del Tipo</th>
+                  <th>ID Servicio</th>
+                  <th className="text-right">Acciones</th>
                 </tr>
-              ) : (
-                tiposServicios.map((tipo) => (
-                  <tr key={tipo.idTipoServicio}>
-                    <td>{tipo.idTipoServicio}</td>
-                    <td>{tipo.NombreTipo}</td>
-                    <td>{tipo.idServicio}</td>
-                    <td>
-                      <UncontrolledDropdown>
-                        <DropdownToggle className="btn-icon-only text-light" size="sm">
-                          <i className="fas fa-ellipsis-v" />
-                        </DropdownToggle>
-                        <DropdownMenu right>
-                          <DropdownItem onClick={() => setEditarTipo(tipo)}>Editar</DropdownItem>
-                          <DropdownItem onClick={() => eliminarTipoServicio(tipo.idTipoServicio)}>
-                            Eliminar
-                          </DropdownItem>
-                        </DropdownMenu>
-                      </UncontrolledDropdown>
+              </thead>
+              <tbody>
+                {tiposServicios.length === 0 ? (
+                  <tr>
+                    <td colSpan="4" className="text-center">
+                      No hay tipos de servicio disponibles
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </Table>
+                ) : (
+                  tiposServicios.map((tipo) => (
+                    <tr key={tipo.idTipoServicio}>
+                      <td>{tipo.idTipoServicio}</td>
+                      <td>{tipo.NombreTipo}</td>
+                      <td>{tipo.idServicio}</td>
+                      <td className="text-right">
+                        <UncontrolledDropdown>
+                          <DropdownToggle className="btn-icon-only text-light" size="sm">
+                            <i className="fas fa-ellipsis-v" />
+                          </DropdownToggle>
+                          <DropdownMenu right>
+                            <DropdownItem onClick={() => setEditarTipo(tipo)}>Editar</DropdownItem>
+                            <DropdownItem onClick={() => eliminarTipoServicio(tipo.idTipoServicio)}>
+                              Eliminar
+                            </DropdownItem>
+                          </DropdownMenu>
+                        </UncontrolledDropdown>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </Table>
+          </div>
         </Card>
-      </Container>
-      <Button color="primary" onClick={toggleModal}>
-          Agregar Tipo de Servicio
-        </Button>
 
-      <ModalAgregarTipoServicio
-        isOpen={modal || editarTipo !== null}
-        toggle={toggleModal}
-        tipoServicio={editarTipo}
-        onSuccess={handleSuccess}
-      />
+        <ModalAgregarTipoServicio
+          isOpen={modal || editarTipo !== null}
+          toggle={toggleModal}
+          tipoServicio={editarTipo}
+          modoEdicion={editarTipo !== null}
+          onSuccess={handleSuccess}
+        />
+      </Container>
     </>
   );
 };

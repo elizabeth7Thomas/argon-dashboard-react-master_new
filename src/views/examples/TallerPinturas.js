@@ -26,6 +26,7 @@ import TablaDevoluciones from "components/TallerPintura/Tables/TablaDevoluciones
 import TablaVentas from "components/TallerPintura/Tables/TablaVentas";
 import TablaTiposVehiculos from "components/TallerPintura/Tables/TablaTiposVehiculos";
 import TablaPrecioServicio from "components/TallerPintura/Tables/TablaPrecioServicio";
+import TablaMovimientos from "components/TallerPintura/Tables/TablaMovimientos";
 
 const TallerPinturas = () => {
   const [activeComponent, setActiveComponent] = useState(null);
@@ -49,7 +50,10 @@ const TallerPinturas = () => {
       case "ventas":
         return <TablaVentas />;
       case "precioservicio":
-        return <TablaPrecioServicio />;       
+        return <TablaPrecioServicio />;
+      case "movimientos":
+        return <TablaMovimientos />;
+    
       default:
         return <p className="text-muted">Selecciona una opción para comenzar.</p>;
     }
@@ -146,6 +150,18 @@ const TallerPinturas = () => {
                   <FontAwesomeIcon icon={faTruck} className="mr-2" />
                   Tipos de Vehículos
                 </Button>
+
+                
+
+                <Button
+                  color="primary"
+                  onClick={() => setActiveComponent("movimientos")}
+                  className="btn-icon"
+                >
+                  <FontAwesomeIcon icon={faClipboardList} className="mr-2" />
+                  Movimientos
+                </Button>
+
 
               
 

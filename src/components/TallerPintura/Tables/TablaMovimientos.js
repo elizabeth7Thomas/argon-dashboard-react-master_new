@@ -1,9 +1,18 @@
 import React, { useEffect, useState } from "react";
-import { Table, Button,DropdownItem,DropdownToggle,DropdownMenu,UncontrolledDropdown, Container, Card } from "reactstrap";
-import ModalAgregarMovimiento from "./ModalAgregarMovimiento";
+import {
+  Table,
+  Button,
+  Card,
+  DropdownItem,
+  DropdownMenu,
+  DropdownToggle,
+  UncontrolledDropdown,
+  Container,
+} from "reactstrap";
+import ModalAgregarMovimiento from "components/TallerPintura/Modals/ModalAgregarMovimiento";
 import HeaderTallerPintura from "components/Headers/HeaderTallerPintura";
 
-const TablaMovimientos = (onEditarClick,onVerClick) => {
+const TablaMovimientos = ({ onEditarClick = () => {}, onVerClick = () => {} }) => {
   const [movimientos, setMovimientos] = useState([]);
   const [modal, setModal] = useState(false);
 
@@ -37,58 +46,67 @@ const TablaMovimientos = (onEditarClick,onVerClick) => {
 
   return (
     <>
-    <HeaderTallerPintura/>
-    <Container className="mt--7" fluid>
-      <Button color="info" onClick={toggleModal}>
-        Agregar Movimiento
-      </Button>
-      <Card className="shadow p-4 mb-4">
-      <Table className="align-items-center table-flush" responsive>
-        <thead className="thead-light">
-          <tr>
-            <th>#</th>
-            <th>Tipo Movimiento</th>
-            <th>Cantidad</th>
-            <th>Fecha Movimiento</th>
-          </tr>
-        </thead>
-        <tbody>
-          {movimientos.length === 0 ? (
-            <tr>
-              <td colSpan="4" className="text-center">
-                No hay movimientos registrados
-              </td>
-            </tr>
-          ) : (
-          movimientos.map((mov, index) => (
-            <tr key={index}>
-              <td>{index + 1}</td>
-              <td>{mov.TipoMovimiento}</td>
-              <td>{mov.Cantidad}</td>
-              <td>{mov.FechaMovimiento}</td>
-              <td className="text-right">
-              <UncontrolledDropdown>
-                  <DropdownToggle className="btn-icon-only text-light" size="sm">
-                      <i className="fas fa-ellipsis-v" />
-                        </DropdownToggle>
+      <Container className="mt-4" fluid>
+        <Card className="shadow mb-3 p-3">
+          <div className="d-flex justify-content-between align-items-center mb-3 px-2">
+            <h3 className="mb-0">Listado de Movimientos</h3>
+            <Button color="primary" onClick={toggleModal}>
+              Agregar
+            </Button>
+          </div>
+
+          <div style={{ maxHeight: "400px", overflowY: "auto" }}>
+            <Table className="table-bordered table-hover table-striped mb-0" responsive>
+              <thead className="thead-light">
+                <tr>
+                  <th>#</th>
+                  <th>Tipo Movimiento</th>
+                  <th>Cantidad</th>
+                  <th>Fecha Movimiento</th>
+                  <th className="text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody>
+                {movimientos.length === 0 ? (
+                  <tr>
+                    <td colSpan="5" className="text-center">
+                      No hay movimientos registrados
+                    </td>
+                  </tr>
+                ) : (
+                  movimientos.map((mov, index) => (
+                    <tr key={index}>
+                      <td>{index + 1}</td>
+                      <td>{mov.TipoMovimiento}</td>
+                      <td>{mov.Cantidad}</td>
+                      <td>{mov.FechaMovimiento}</td>
+                      <td className="text-right">
+                        <UncontrolledDropdown>
+                          <DropdownToggle className="btn-icon-only text-light" size="sm">
+                            <i className="fas fa-ellipsis-v" />
+                          </DropdownToggle>
                           <DropdownMenu right>
-                            <DropdownItem onClick={() => onVerClick()}>Ver</DropdownItem>
-                            <DropdownItem onClick={() => onEditarClick()}>Editar</DropdownItem>
-                            <DropdownItem>Eliminar</DropdownItem>
+                            <DropdownItem onClick={() => onVerClick(mov)}>Ver</DropdownItem>
+                            <DropdownItem onClick={() => onEditarClick(mov)}>Editar</DropdownItem>
+                            <DropdownItem disabled title="Eliminar no implementado">
+                              Eliminar (deshabilitado)
+                            </DropdownItem>
                           </DropdownMenu>
-                  </UncontrolledDropdown>                
-              </td>
-            </tr>
-          ))
-        )}
-        </tbody>
-      </Table>
-      <ModalAgregarMovimiento
-        isOpen={modal}
-        toggle={toggleModal}
-        onSubmit={agregarMovimiento}
-      />
-      </Card>
+                        </UncontrolledDropdown>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </Table>
+          </div>
+        </Card>
+
+        <ModalAgregarMovimiento
+          isOpen={modal}
+          toggle={toggleModal}
+          onSubmit={agregarMovimiento}
+        />
       </Container>
     </>
   );
