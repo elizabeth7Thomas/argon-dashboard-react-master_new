@@ -11,7 +11,7 @@ import {
   Form,
 } from "reactstrap";
 
-const CrearInventarioModal = ({ isOpen, toggle }) => {
+const CrearInventarioModal = ({ isOpen, toggle, onInventarioCreado }) => {
   const [formData, setFormData] = useState({
     NombreProducto: "",
     CantidadDisponible: "",
@@ -21,7 +21,7 @@ const CrearInventarioModal = ({ isOpen, toggle }) => {
     CodigoColor: "",
     FechaAdquisicion: "",
     FechaVencimiento: "",
-    EstadoInventario: true, // true = 1, false = 0
+    EstadoInventario: true,
   });
 
   const handleChange = (e) => {
@@ -35,34 +35,49 @@ const CrearInventarioModal = ({ isOpen, toggle }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("No se encontró un token de autenticación, por favor inicia sesión.");
+      return;
+    }
+
+    const request = {
+      accion: "crear",
+      idInventario: 0,
+      TipoInventario: parseInt(formData.TipoInventario),
+      NombreProducto: formData.NombreProducto,
+      idTipoPintura: formData.idTipoPintura !== "" ? parseInt(formData.idTipoPintura) : null,
+      CodigoColor: formData.CodigoColor !== "" ? formData.CodigoColor : null,
+      Lote: formData.Lote,
+      CantidadDisponible: parseInt(formData.CantidadDisponible),
+      FechaAdquisicion: formData.FechaAdquisicion,
+      FechaVencimiento: formData.FechaVencimiento,
+      EstadoInventario: formData.EstadoInventario,
+      deleted: false,
+    };
+
     const payload = {
       metadata: {
-        uri: "/pinturas/POST/inventarios",
+        uri: "/pintura/POST/inventarios",
       },
-      request: {
-        NombreProducto: formData.NombreProducto,
-        CantidadDisponible: parseInt(formData.CantidadDisponible),
-        idTipoPintura: formData.idTipoPintura ? parseInt(formData.idTipoPintura) : null,
-        TipoInventario: parseInt(formData.TipoInventario),
-        Lote: formData.Lote,
-        CodigoColor: formData.CodigoColor,
-        FechaAdquisicion: formData.FechaAdquisicion,
-        FechaVencimiento: formData.FechaVencimiento,
-        EstadoInventario: formData.EstadoInventario ? 1 : 0,
-      },
+      request,
     };
 
     try {
+      console.log("Payload enviado:", JSON.stringify(payload, null, 2));
       const response = await fetch("http://64.23.169.22:3761/broker/api/rest", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": token
+        },
         body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
         const error = await response.json();
         console.error("Error al crear inventario:", error);
-        alert("Error: " + JSON.stringify(error.detail));
+        alert("Error: " + JSON.stringify(error.detail || error));
         return;
       }
 
@@ -70,11 +85,15 @@ const CrearInventarioModal = ({ isOpen, toggle }) => {
       console.log("Inventario creado:", data);
       alert("Inventario creado exitosamente");
       toggle(); // cerrar modal
+      if (onInventarioCreado) {
+        onInventarioCreado(); // Notifica al padre
+      }
     } catch (error) {
       console.error("Error de red:", error);
       alert("Error de red: " + error.message);
     }
   };
+
 
   return (
     <Modal isOpen={isOpen} toggle={toggle}>

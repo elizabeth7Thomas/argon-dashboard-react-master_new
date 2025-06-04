@@ -1,4 +1,3 @@
-//src/Payment/Bancos/BancosList.js
 import React from "react";
 import { Table, Button } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";

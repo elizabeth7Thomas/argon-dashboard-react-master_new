@@ -11,7 +11,7 @@ const TablaMovimientos = (onEditarClick,onVerClick) => {
 
   const obtenerMovimientos = async () => {
     try {
-      const res = await fetch("http://localhost:8000/pintura/GET/movimientos");
+      const res = await fetch("http://64.23.169.22:8000/pintura/GET/movimientos");
       const data = await res.json();
       const movimientosArray = Array.isArray(data) ? data : [data];
       setMovimientos(movimientosArray);
@@ -22,7 +22,7 @@ const TablaMovimientos = (onEditarClick,onVerClick) => {
   };
 
   const agregarMovimiento = async (nuevoMovimiento) => {
-    await fetch("http://localhost:8000/pintura/POST/movimientos", {
+    await fetch("http://64.23.169.22:8000/pintura/POST/movimientos", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(nuevoMovimiento),

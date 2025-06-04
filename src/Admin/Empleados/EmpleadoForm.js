@@ -23,6 +23,10 @@ export default function EmpleadoForm({ initialData, onSave, onCancel }) {
   const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  const catalogoJornadas = JSON.parse(localStorage.getItem("catalogo_jornadas") || "[]");
+  const catalogoAreas = JSON.parse(localStorage.getItem("catalogo_areas") || "[]");
+  const catalogoRoles = JSON.parse(localStorage.getItem("catalogo_roles") || "[]");
+
   useEffect(() => {
     setAlert(null);
     setSuccess(null);
@@ -222,12 +226,12 @@ export default function EmpleadoForm({ initialData, onSave, onCancel }) {
           )}
         </Alert>
       )}
-      <FormGroup><Label>DPI</Label><Input name="dpi" value={formData.dpi} onChange={handleChange} required /></FormGroup>
-      <FormGroup><Label>Nombres</Label><Input name="nombres" value={formData.nombres} onChange={handleChange} required /></FormGroup>
-      <FormGroup><Label>Apellidos</Label><Input name="apellidos" value={formData.apellidos} onChange={handleChange} required /></FormGroup>
-      <FormGroup><Label>Teléfono</Label><Input name="telefono" value={formData.telefono} onChange={handleChange} required /></FormGroup>
-      <FormGroup><Label>Dirección</Label><Input name="direccion" value={formData.direccion} onChange={handleChange} /></FormGroup>
-      <FormGroup><Label>NIT</Label><Input name="nit" value={formData.nit} onChange={handleChange} required /></FormGroup>
+      <FormGroup><Label>DPI</Label><Input name="dpi" value={formData.dpi} onChange={handleChange} required  placeholder="13 díjitos"/></FormGroup>
+      <FormGroup><Label>Nombres</Label><Input name="nombres" value={formData.nombres} onChange={handleChange} required placeholder="ej: Juan"/></FormGroup>
+      <FormGroup><Label>Apellidos</Label><Input name="apellidos" value={formData.apellidos} onChange={handleChange} required placeholder="ej: Morales"/></FormGroup>
+      <FormGroup><Label>Teléfono</Label><Input name="telefono" value={formData.telefono} onChange={handleChange} required placeholder="8 díjitos"/></FormGroup>
+      <FormGroup><Label>Dirección</Label><Input name="direccion" value={formData.direccion} onChange={handleChange} placeholder="ej: Quetzaltenango zona 1"/></FormGroup>
+      <FormGroup><Label>NIT</Label><Input name="nit" value={formData.nit} onChange={handleChange} required placeholder="CF"/></FormGroup>
       <FormGroup>
         <Label>Email</Label>
         <Input
@@ -236,6 +240,7 @@ export default function EmpleadoForm({ initialData, onSave, onCancel }) {
           value={formData.email}
           onChange={handleChange}
           required
+          placeholder="ej: juan.1@gmail.com"
         />
       </FormGroup>
       <FormGroup tag="fieldset">
@@ -281,8 +286,8 @@ export default function EmpleadoForm({ initialData, onSave, onCancel }) {
           required
         >
           <option value="">Seleccione una jornada</option>
-          {[...Array(2)].map((_, i) => (
-            <option key={i + 1} value={i + 1}>{i + 1}</option>
+          {catalogoJornadas.map(j => (
+            <option key={j.id} value={j.id}>{j.nombre}</option>
           ))}
         </Input>
       </FormGroup>
@@ -296,8 +301,8 @@ export default function EmpleadoForm({ initialData, onSave, onCancel }) {
           required
         >
           <option value="">Seleccione un área</option>
-          {[...Array(7)].map((_, i) => (
-            <option key={i + 1} value={i + 1}>{i + 1}</option>
+          {catalogoAreas.map(a => (
+            <option key={a.id} value={a.id}>{a.nombre}</option>
           ))}
         </Input>
       </FormGroup>
@@ -311,8 +316,8 @@ export default function EmpleadoForm({ initialData, onSave, onCancel }) {
           required
         >
           <option value="">Seleccione un rol</option>
-          {[...Array(7)].map((_, i) => (
-            <option key={i + 1} value={i + 1}>{i + 1}</option>
+          {catalogoRoles.map(r => (
+            <option key={r.id} value={r.id}>{r.nombre}</option>
           ))}
         </Input>
       </FormGroup>

@@ -25,7 +25,7 @@ const ModalAgregarTipoServicio = ({ isOpen, toggle, onSuccess }) => {
 
   const obtenerServicios = async () => {
     try {
-      const res = await fetch("http://localhost:8000/pintura/GET/servicios");
+      const res = await fetch("http://64.23.169.22:8000/pintura/GET/servicios");
       if (!res.ok) throw new Error("No se pudo obtener los servicios");
       const data = await res.json();
       setServicios(data);
@@ -58,7 +58,7 @@ const ModalAgregarTipoServicio = ({ isOpen, toggle, onSuccess }) => {
     setSubmitError("");
 
     try {
-      const response = await fetch("http://localhost:8000/pintura/POST/tiposervicios", {
+      const response = await fetch("http://64.23.169.22:8000/pintura/POST/tiposervicios", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

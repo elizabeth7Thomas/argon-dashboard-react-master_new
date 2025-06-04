@@ -89,10 +89,17 @@ export default function PageAlertasAdmin() {
     }
   };
 
+  const handleAgregar = () => {
+    setAlertaEditar(null); // Limpiar edición
+    setModalOpen(true); // Abrir modal
+  };
+
   return (
     <>
       <div className="mb-3 d-flex justify-content-end">
- 
+        <Button color="primary" onClick={handleAgregar}>
+          Agregar Alerta
+        </Button>
       </div>
       <AlertaList
         alertas={alertas}

@@ -44,7 +44,7 @@ const ModalAgregarServicio = ({ isOpen, toggle, modoEdicion = false, tipoEditar 
       headers: {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${token}`,
-        "Access-Control-Allow-Origin": "*"
+        //"Access-Control-Allow-Origin": "*"
       },
       body: JSON.stringify({
         metadata: {

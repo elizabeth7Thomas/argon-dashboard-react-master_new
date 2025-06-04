@@ -14,11 +14,12 @@ import { faEdit, faTrashAlt, faIdCard } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from "axios";
 
-export default function ProveedorList({ onEditar, onEliminar }) {
+export default function ProveedorList({ onEditar }) {
   const [proveedores, setProveedores] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [alert, setAlert] = useState(null);
 
   useEffect(() => {
     const fetchProveedores = async () => {
@@ -75,6 +76,107 @@ export default function ProveedorList({ onEditar, onEliminar }) {
     fetchProveedores();
   }, []);
 
+  // Eliminar proveedor
+  const handleEliminar = async (proveedor) => {
+    if (!window.confirm("¿Seguro que deseas eliminar este proveedor?")) return;
+    setAlert(null);
+    const token = localStorage.getItem("token");
+    const uri = `administracion/PATCH/proveedores/${proveedor.id}`;
+    const payload = {
+      metadata: { uri },
+      request: {}
+    };
+    try {
+      const response = await axios.post(
+        "http://64.23.169.22:3761/broker/api/rest",
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const brokerResponse = response.data?.response?.data;
+      const brokerMsg = response.data?.response?._broker_message;
+      const brokerStatus = response.data?.response?._broker_status;
+      if (brokerMsg || brokerResponse?.message) {
+        setAlert(
+          <div style={{ color: "#fff" }}>
+            {brokerResponse?.message && (
+              <>
+                <strong>{brokerResponse.message}</strong>
+                <br />
+              </>
+            )}
+            {brokerMsg && <span>{brokerMsg}</span>}
+            {brokerStatus && (
+              <>
+                <br />
+                <span>Código: {brokerStatus}</span>
+              </>
+            )}
+          </div>
+        );
+      }
+      // Refresca la lista después de eliminar
+      setProveedores(prev => prev.filter(p => p.id !== proveedor.id));
+    } catch (error) {
+      let brokerMsg = "";
+      let brokerStatus = "";
+      let brokerError = "";
+      let brokerPath = "";
+      let brokerTimestamp = "";
+      if (error.response) {
+        const resp = error.response.data?.response;
+        brokerMsg = resp?._broker_message;
+        brokerStatus = resp?._broker_status;
+        brokerError = resp?.data?.error;
+        brokerPath = resp?.data?.path;
+        brokerTimestamp = resp?.data?.timestamp;
+        setAlert(
+          <div style={{ color: "#fff" }}>
+            <strong>Error del broker:</strong>
+            {brokerMsg && (
+              <>
+                <br />
+                <span>{brokerMsg}</span>
+              </>
+            )}
+            {brokerStatus && (
+              <>
+                <br />
+                <span>Código: {brokerStatus}</span>
+              </>
+            )}
+            {brokerError && (
+              <>
+                <br />
+                <span>Detalle: {brokerError}</span>
+              </>
+            )}
+            {brokerPath && (
+              <>
+                <br />
+                <span>Ruta: {brokerPath}</span>
+              </>
+            )}
+            {brokerTimestamp && (
+              <>
+                <br />
+                <span>Fecha: {brokerTimestamp}</span>
+              </>
+            )}
+          </div>
+        );
+      } else if (error.request) {
+        setAlert(<span style={{ color: "#fff" }}>No hubo respuesta del servidor. Revisa tu conexión.</span>);
+      } else {
+        setAlert(<span style={{ color: "#fff" }}>{error.message || "Error desconocido."}</span>);
+      }
+    }
+  };
+
   const proveedoresFiltrados = proveedores.filter(
     (p) =>
       ((p.nombres + " " + p.apellidos).toLowerCase().includes(busqueda.toLowerCase())) ||
@@ -113,6 +215,11 @@ export default function ProveedorList({ onEditar, onEliminar }) {
             </Row>
           </CardHeader>
           <CardBody>
+            {alert && (
+              <div style={{ background: "#dc3545", borderRadius: 4, padding: 12, margin: 10, color: "#fff" }}>
+                {alert}
+              </div>
+            )}
             <Table className="align-items-center table-flush" responsive hover>
               <thead className="thead-light">
                 <tr>
@@ -145,7 +252,7 @@ export default function ProveedorList({ onEditar, onEliminar }) {
                         <Button
                           size="sm"
                           color="danger"
-                          onClick={() => onEliminar(item)}
+                          onClick={() => handleEliminar(item)}
                         >
                           <FontAwesomeIcon icon={faTrashAlt} />
                         </Button>

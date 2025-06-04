@@ -1,52 +1,76 @@
-//ClientList.js
 import React from "react";
+import axios from "axios";
 import { Table, Button } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrash, faEye } from "@fortawesome/free-solid-svg-icons";
 
-function ClientesList({ clientes = [], onEdit, onDelete, onView }) {
+export default function ClientesList({ clientes = [], onEdit, onDelete, onView }) {
+  const token = localStorage.getItem("token");
+
+  const handleDelete = async (cliente) => {
+    const confirm = window.confirm(`¿Seguro que deseas eliminar a ${cliente.nombreCliente}?`);
+    if (!confirm) return;
+
+    try {
+      await axios.put(
+        "http://64.23.169.22:3761/broker/api/rest",
+        {
+          metadata: {
+            uri: `pagos/cliente/eliminar/${cliente._id}`,
+          },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      onDelete(); // esto viene de props y recarga lista, perfecto
+    } catch (error) {
+      alert("Error al eliminar el cliente.");
+      console.error(error);
+    }
+  };
+
   return (
-    <Table responsive hover>
+    <Table striped>
       <thead>
         <tr>
           <th>Nombre</th>
-          <th>Apellido</th>
+          <th>Apellidos</th>
           <th>NIT</th>
-          <th>Email</th>
-          <th>Estado</th>
           <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
-        {clientes.length === 0 ? (
-          <tr>
-            <td colSpan="6" className="text-center">No se encontraron clientes.</td>
-          </tr>
-        ) : (
+        {clientes.length > 0 ? (
           clientes.map((cliente) => (
             <tr key={cliente._id}>
               <td>{cliente.nombreCliente}</td>
               <td>{cliente.apellidosCliente}</td>
               <td>{cliente.nit}</td>
-              <td>{cliente.email}</td>
-              <td>{cliente.estado ? "Activo" : "Inactivo"}</td>
               <td>
-                <Button size="sm" color="info" className="me-2" onClick={() => onView(cliente)}>
+                <Button color="info" onClick={() => onView(cliente)}>
                   <FontAwesomeIcon icon={faEye} />
-                </Button>
-                <Button size="sm" color="warning" className="me-2" onClick={() => onEdit(cliente)}>
+                </Button>{" "}
+                <Button color="warning" onClick={() => onEdit(cliente)}>
                   <FontAwesomeIcon icon={faEdit} />
-                </Button>
-                <Button size="sm" color="danger" onClick={() => onDelete(cliente)}>
+                </Button>{" "}
+                <Button color="danger" onClick={() => handleDelete(cliente)}>
                   <FontAwesomeIcon icon={faTrash} />
                 </Button>
               </td>
             </tr>
           ))
+        ) : (
+          <tr>
+            <td colSpan="4" className="text-center">
+              No hay clientes registrados
+            </td>
+          </tr>
         )}
       </tbody>
     </Table>
   );
 }
-
-export default ClientesList;

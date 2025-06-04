@@ -1,4 +1,3 @@
-//ClientePage.js
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import ClientesList from "../Clientes/ClienteList";
@@ -12,6 +11,7 @@ export default function ClientesPage() {
   const [isEditing, setIsEditing] = useState(false);
   const [selectedId, setSelectedId] = useState(null);
   const [nitBusqueda, setNitBusqueda] = useState("");
+  const [error, setError] = useState("");
 
   const token = localStorage.getItem("token");
 
@@ -30,9 +30,13 @@ export default function ClientesPage() {
           },
         }
       );
-      setClientes(res.data.response.data.clientes || []);
-    } catch (error) {
-      console.error("Error al cargar clientes:", error);
+      const data = res.data.response?.data?.clientes || [];
+      setClientes(data);
+      setError("");
+    } catch (err) {
+      console.error("Error al cargar clientes:", err);
+      const brokerMessage = err?.response?.data?.response?.message;
+      setError(brokerMessage || "Error al cargar los clientes.");
     }
   };
 
@@ -48,6 +52,9 @@ export default function ClientesPage() {
   };
 
   const handleDelete = async (cliente) => {
+    const confirm = window.confirm(`¿Seguro que deseas eliminar a ${cliente.nombreCliente}?`);
+    if (!confirm) return;
+
     try {
       const res = await axios.post(
         "http://64.23.169.22:3761/broker/api/rest",
@@ -62,11 +69,13 @@ export default function ClientesPage() {
           },
         }
       );
-      alert(res.data.response.mensaje);
+      const mensaje = res.data.response?.message || "Cliente eliminado exitosamente.";
+      alert(mensaje);
       fetchClientes();
-    } catch (error) {
-      console.error("Error al eliminar cliente:", error);
-      alert("Error al eliminar cliente.");
+    } catch (err) {
+      console.error("Error al eliminar cliente:", err);
+      const brokerMessage = err?.response?.data?.response?.message;
+      alert(brokerMessage || "Error al eliminar el cliente.");
     }
   };
 
@@ -75,6 +84,7 @@ export default function ClientesPage() {
   };
 
   const handleSearch = async () => {
+    if (!nitBusqueda.trim()) return;
     try {
       const res = await axios.post(
         "http://64.23.169.22:3761/broker/api/rest",
@@ -89,15 +99,26 @@ export default function ClientesPage() {
           },
         }
       );
-      setClientes([res.data.response.data.cliente]);
-    } catch (error) {
-      alert("Cliente no encontrado");
+      const cliente = res.data.response?.data?.cliente;
+      if (cliente) {
+        setClientes([cliente]);
+        setError("");
+      } else {
+        setClientes([]);
+        setError("Cliente no encontrado.");
+      }
+    } catch (err) {
+      console.error("Error al buscar cliente:", err);
+      const brokerMessage = err?.response?.data?.response?.message;
+      setClientes([]);
+      setError(brokerMessage || "Error al buscar cliente.");
     }
   };
 
   return (
     <div className="container mt-4">
       <h2>Lista de Clientes</h2>
+
       <Row className="mb-3">
         <Col sm={8}>
           <Input
@@ -110,16 +131,28 @@ export default function ClientesPage() {
           <Button color="primary" onClick={handleSearch}>
             Buscar
           </Button>{" "}
-          <Button color="success" onClick={() => {
-            setFormData({});
-            setIsEditing(false);
-            setModalOpen(true);
-          }}>
+          <Button
+            color="success"
+            onClick={() => {
+              setFormData({});
+              setIsEditing(false);
+              setModalOpen(true);
+            }}
+          >
             Nuevo Cliente
           </Button>
         </Col>
       </Row>
-      <ClientesList clientes={clientes} onEdit={handleEdit} onDelete={handleDelete} onView={handleView} />
+
+      {error && <p className="text-danger small">{error}</p>}
+
+      <ClientesList
+        clientes={clientes}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onView={handleView}
+      />
+
       <ClienteForm
         isOpen={modalOpen}
         toggle={() => setModalOpen(!modalOpen)}
