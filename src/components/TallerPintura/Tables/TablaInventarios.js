@@ -1,70 +1,141 @@
-// TablaInventario.js
 import React, { useEffect, useState } from "react";
-import { Table, Button, DropdownItem, DropdownMenu, DropdownToggle, UncontrolledDropdown, Container, Card,} from "reactstrap";
+import axios from "axios";
+import {
+  Table,
+  Button,
+  DropdownItem,
+  DropdownMenu,
+  DropdownToggle,
+  UncontrolledDropdown,
+  Container,
+  Card,
+  Spinner,
+} from "reactstrap";
 import ModalAgregarInventario from "../Modals/ModalAgregarInventario";
 import HeaderTallerPintura from "components/Headers/HeaderTallerPintura";
 
 const TablaInventario = () => {
   const [inventarios, setInventarios] = useState([]);
   const [modal, setModal] = useState(false);
-  const [nextId, setNextId] = useState(1); // Para ID correlativo
   const [modoEdicion, setModoEdicion] = useState(false);
   const [tipoEditar, setTipoEditar] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  const toggleModal = () => {setModal(!modal);
-    if(modal) {
+  const toggleModal = () => {
+    setModal(!modal);
+    if (modal) {
       setModoEdicion(false);
       setTipoEditar(null);
     }
-  }
+  };
+
+  const token = localStorage.getItem("token");
 
   const obtenerInventarios = async () => {
+    setLoading(true);
     try {
-      const res = await fetch("http://localhost:8000/pintura/GET/inventarios");
-      const data = await res.json();
+      const res = await axios.post(
+        "http://64.23.169.22:3761/broker/api/rest",
+        {
+          metadata: { uri: "/pintura/GET/inventarios" },
+          request: {},
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const data = res.data?.response?.data || [];
       const inventariosArray = Array.isArray(data) ? data : [data];
       setInventarios(inventariosArray);
-
-      if (inventariosArray.length > 0) {
-        const maxId = Math.max(...inventariosArray.map(i => i.idInventario));
-        setNextId(maxId + 1);
-      }
-    } catch (error) {
-      console.error("Error al obtener inventario:", error);
+    } catch (err) {
+      console.error("Error al obtener inventario:", err);
       setInventarios([]);
+    } finally {
+      setLoading(false);
     }
   };
 
-  const agregarInventario = (nuevoInventario) => {
-    if (modoEdicion && tipoEditar){
-      const inventariosActualizados = inventarios.map((Inventario) =>
-      Inventario.idInventario === tipoEditar.idInventario
-        ? {...Inventario, NombreProducto: nuevoInventario.NombreProducto, CantidadDisponible: nuevoInventario.CantidadDisponible, idTipoPintura: nuevoInventario.idTipoPintura, TipoInventario: nuevoInventario.TipoInventario, Lote: nuevoInventario.Lote, CodigoColor: nuevoInventario.CodigoColor, FechaAdquisicion: nuevoInventario.FechaAdquisicion, FechaVencimiento: nuevoInventario.FechaVencimiento, EstadoInventario: nuevoInventario.EstadoInventario }
-      : Inventario
-    );
-    setInventarios(inventariosActualizados);
-    }else {
-      const inventarioConId = {
-        idInventario: nextId,
-        ...nuevoInventario,
-      };
-      setInventarios((prev) => [...prev, inventarioConId]);
-      setNextId((prev) => prev + 1);
+  const agregarInventario = async (nuevoInventario) => {
+    if (!token) {
+      alert("Token no encontrado");
+      return;
     }
-    toggleModal();
+
+    try {
+      if (modoEdicion && tipoEditar) {
+        await axios.post(
+          "http://64.23.169.22:3761/broker/api/rest",
+          {
+            metadata: { uri: "/pintura/PUT/inventario" },
+            request: {
+              idInventario: tipoEditar.idInventario,
+              ...nuevoInventario,
+            },
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      } else {
+        await axios.post(
+          "http://64.23.169.22:3761/broker/api/rest",
+          {
+            metadata: { uri: "/pintura/POST/inventario" },
+            request: nuevoInventario,
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+      }
+
+      obtenerInventarios();
+      toggleModal();
+    } catch (err) {
+      console.error("Error al guardar inventario:", err);
+      alert("Error al guardar el inventario");
+    }
   };
 
-  const eliminarInventario = (id) =>{
+  const eliminarInventario = async (id) => {
     const confirmacion = window.confirm("¿Estás seguro de que deseas eliminar?");
-    if (confirmacion){
-    const nuevosInventarios = inventarios.filter((Inventario) => Inventario.idInventario !== id);
-    setInventarios(nuevosInventarios);
-  }
+    if (!confirmacion) return;
+
+    try {
+      await axios.post(
+        "http://64.23.169.22:3761/broker/api/rest",
+        {
+          metadata: { uri: "/pintura/DELETE/inventario" },
+          request: { idInventario: id },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      obtenerInventarios();
+    } catch (err) {
+      console.error("Error al eliminar inventario:", err);
+      alert("No se pudo eliminar el inventario.");
+    }
   };
 
-  const iniciarEdicion = (Inventario) => {
+  const iniciarEdicion = (inventario) => {
     setModoEdicion(true);
-    setTipoEditar(Inventario);
+    setTipoEditar(inventario);
     setModal(true);
   };
 
@@ -72,12 +143,14 @@ const TablaInventario = () => {
     obtenerInventarios();
   }, []);
 
+  if (loading) return <Spinner />;
+
   return (
     <>
       <HeaderTallerPintura />
-      <br></br><br></br>
+      <br />
+      <br />
       <Container className="mt--7" fluid>
-       
         <Card className="shadow p-4 mb-4">
           <Table className="align-items-center table-flush" responsive>
             <thead className="thead-light">
@@ -121,8 +194,12 @@ const TablaInventario = () => {
                           <i className="fas fa-ellipsis-v" />
                         </DropdownToggle>
                         <DropdownMenu right>
-                          <DropdownItem onClick={() => iniciarEdicion(inv)}>Editar</DropdownItem>
-                          <DropdownItem onClick={() => eliminarInventario(inv.idInventario)}>Eliminar</DropdownItem>
+                          <DropdownItem onClick={() => iniciarEdicion(inv)}>
+                            Editar
+                          </DropdownItem>
+                          <DropdownItem onClick={() => eliminarInventario(inv.idInventario)}>
+                            Eliminar
+                          </DropdownItem>
                         </DropdownMenu>
                       </UncontrolledDropdown>
                     </td>
@@ -131,9 +208,15 @@ const TablaInventario = () => {
               )}
             </tbody>
           </Table>
-          <ModalAgregarInventario isOpen={modal} toggle={toggleModal} onSubmit={agregarInventario}/>
+          <ModalAgregarInventario
+            isOpen={modal}
+            toggle={toggleModal}
+            onSubmit={agregarInventario}
+            modoEdicion={modoEdicion}
+            inventarioEditar={tipoEditar}
+          />
         </Card>
-         <Button color="primary" onClick={toggleModal}>
+        <Button color="primary" onClick={toggleModal}>
           Agregar Inventario
         </Button>
       </Container>

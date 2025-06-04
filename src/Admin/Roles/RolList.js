@@ -1,16 +1,7 @@
-// src/Admin/Roles/RolList.js
-
 import React, { useEffect, useState } from 'react';
 import {
-  Table,
-  Button,
-  Row,
-  Col,
-  Input,
-  Card,
-  CardHeader,
-  CardBody,
-  Spinner
+  Table,Button,Row,Col,Input,
+  Card,CardHeader,CardBody,Spinner
 } from 'reactstrap';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrash, faIdCard } from "@fortawesome/free-solid-svg-icons";

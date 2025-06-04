@@ -1,132 +1,64 @@
-import React, { useState } from "react";
-import {
-  Container,
-  Button,
-  Table,
-  Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Form,
-  FormGroup,
-  Label,
-  Input
-} from "reactstrap";
 
-function BancosPage() {
+//src/Payment/BancosPage.js
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import BancoList from "../Bancos/BancosList";
+
+export default function BancosPage() {
   const [bancos, setBancos] = useState([]);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [mensaje, setMensaje] = useState("");
 
-  const toggleModal = () => {
-    setModalOpen(!modalOpen);
-    setMensaje("");
-  };
+  useEffect(() => {
+    const fetchBancos = async () => {
+      const token = localStorage.getItem("token");
+      try {
+        const response = await axios.post(
+          "http://64.23.169.22:3761/broker/api/rest",
+          {
+            metadata: { uri: "pagos/bancos/obtener" },
+            request: {},
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              "Content-Type": "application/json",
+            },
+          }
+        );
 
-  const [form, setForm] = useState({
-    nombre: ""
-  });
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!form.nombre.trim()) {
-      alert("Por favor ingresa el nombre del banco.");
-      return;
-    }
-
-    try {
-      const res = await fetch("http://localhost:3001/pagos/bancos/crear", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nombre: form.nombre })
-      });
-
-      const data = await res.json();
-
-      if (res.ok) {
-        setMensaje("✅ " + data.mensaje);
-        setBancos((prev) => [...prev, { id: Date.now(), nombre: form.nombre }]);
-        setForm({ nombre: "" });
-        toggleModal();
-      } else {
-        setMensaje("❌ " + data.mensaje);
+        const data = response.data?.response?.data?.Bancos;
+        setBancos(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Error al cargar los bancos:", error);
+        alert("Error al cargar los bancos.");
       }
+    };
+
+    fetchBancos();
+  }, []);
+
+  const handleView = (banco) => {
+    alert(`Viendo banco: ${banco.nombre}`);
+  };
+
+  const handleEdit = (banco) => {
+    alert(`Editando banco: ${banco.nombre}`);
+  };
+
+  const handleDelete = async (banco) => {
+    try {
+      // Aquí deberías integrar la lógica real de eliminación si existe en backend
+      alert(`Banco ${banco.nombre} eliminado`);
+      setBancos(bancos.filter((b) => b._id !== banco._id));
     } catch (error) {
-      setMensaje("❌ Error de red al crear el banco.");
+      console.error("Error al eliminar el banco:", error);
+      alert("Hubo un error al eliminar el banco");
     }
   };
 
   return (
-   
-    <Container className="mt-4">
-      <h2>Bancos</h2>
-      <Button color="primary" onClick={toggleModal}>
-        Nuevo Banco
-      </Button>
-
-      <Table striped responsive className="mt-3">
-        <thead>
-          <tr>
-            <th>Nombre</th>
-          </tr>
-        </thead>
-        <tbody>
-          {bancos.length === 0 ? (
-            <tr>
-              <td colSpan="1" className="text-center">
-                No hay bancos registrados
-              </td>
-            </tr>
-          ) : (
-            bancos.map((banco) => (
-              <tr key={banco.id}>
-                <td>{banco.nombre}</td>
-              </tr>
-            ))
-          )}
-        </tbody>
-      </Table>
-
-      {/* Modal */}
-      <Modal isOpen={modalOpen} toggle={toggleModal}>
-        <ModalHeader toggle={toggleModal}>Registrar Banco</ModalHeader>
-        <Form onSubmit={handleSubmit}>
-          <ModalBody>
-            <FormGroup>
-              <Label for="nombre">Nombre del banco</Label>
-              <Input
-                type="text"
-                id="nombre"
-                name="nombre"
-                value={form.nombre}
-                onChange={handleChange}
-                required
-              />
-            </FormGroup>
-            {mensaje && (
-              <p className={mensaje.includes("✅") ? "text-success" : "text-danger"}>
-                {mensaje}
-              </p>
-            )}
-          </ModalBody>
-          <ModalFooter>
-            <Button type="submit" color="primary">
-              Guardar
-            </Button>
-            <Button color="secondary" onClick={toggleModal}>
-              Cancelar
-            </Button>
-          </ModalFooter>
-        </Form>
-      </Modal>
-    </Container>
+    <div className="container mt-4">
+      <h2>Lista de Bancos</h2>
+      <BancoList bancos={bancos} onView={handleView} onEdit={handleEdit} onDelete={handleDelete} />
+    </div>
   );
 }
-
-export default BancosPage;
