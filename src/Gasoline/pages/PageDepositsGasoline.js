@@ -1,13 +1,26 @@
-// src/gasoline/pages/PageDepositsGasoline.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
-  Container, Row, Col, Card, CardHeader, CardBody, Button, Table, Spinner, Badge
-} from 'reactstrap';
-import { faGasPump, faPlus, faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
+  Container,
+  Row,
+  Col,
+  Card,
+  CardHeader,
+  CardBody,
+  Button,
+  Table,
+  Spinner,
+  Badge,
+  Alert,
+} from "reactstrap";
+import {
+  faGasPump,
+  faPlus,
+  faEdit,
+  faTrash,
+} from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import axios from 'axios';
-import DepositForm from '../Deposits/DepositForm';
-import Header from "components/Headers/Header_fuel";
+import apiClient from "../utils/apiClient";
+import DepositForm from "../Deposits/DepositForm";
 
 export default function Deposits() {
   const [modalForm, setModalForm] = useState(false);
@@ -26,28 +39,12 @@ export default function Deposits() {
   };
 
   const fetchDeposits = async () => {
-    const token = localStorage.getItem("token");
-
-    if (!token) {
-      setError("No se encontró un token de autenticación");
-      setLoading(false);
-      return;
-    }
-
+    setLoading(true);
     try {
-      const response = await axios.post(
-        "http://64.23.169.22:3761/broker/api/rest",
-        {
-          metadata: { uri: "generalDeposit/list" },
-          request: {}
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-          }
-        }
-      );
+      const response = await apiClient.post("", {
+        metadata: { uri: "generalDeposit/list" },
+        request: {},
+      });
 
       const depositsData = response.data?.response?.data || [];
       setDeposits(depositsData);
@@ -64,34 +61,44 @@ export default function Deposits() {
   }, []);
 
   const handleSubmit = async (formData) => {
-    const token = localStorage.getItem("token");
-
     try {
-      const response = await axios.post(
-        "http://64.23.169.22:3761/broker/api/rest",
-        {
-          metadata: { uri: "generalDeposit/create" },
-          request: {
-            maxCapacity: formData.maxCapacity,
-            currentCapacity: formData.currentCapacity,
-            fuel: {
-              fuelId: formData.fuel?.fuelId,
-              fuelName: formData.fuel?.fuelName
-            }
-          }
+      const requestData = {
+        maxCapacity: formData.maxCapacity
+          ? parseFloat(formData.maxCapacity)
+          : 0,
+        currentCapacity: formData.currentCapacity
+          ? parseFloat(formData.currentCapacity)
+          : 0,
+        fuel: {
+          fuelId: formData.fuel?.fuelId,
+          fuelName: formData.fuel?.fuelName,
+          salePriceGalon: formData.fuel?.salePriceGalon
+            ? parseFloat(formData.fuel.salePriceGalon)
+            : 0,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-          }
-        }
-      );
+      };
+
+      if (isEditing) {
+        await apiClient.post("", {
+          metadata: {
+            uri: `generalDeposit/update/${formData.generalDepositId}`,
+          },
+          request: requestData,
+        });
+      } else {
+        await apiClient.post("", {
+          metadata: { uri: "generalDeposit/create" },
+          request: requestData,
+        });
+      }
 
       fetchDeposits();
       toggleForm();
     } catch (err) {
-      console.error("Error al crear depósito:", err);
+      console.error(
+        `Error al ${isEditing ? "actualizar" : "crear"} depósito:`,
+        err
+      );
     }
   };
 
@@ -104,24 +111,13 @@ export default function Deposits() {
   const handleDelete = async (generalDepositId) => {
     if (!window.confirm("¿Estás seguro de eliminar este depósito?")) return;
 
-    const token = localStorage.getItem("token");
-
     try {
-      await axios.post(
-        "http://64.23.169.22:3761/broker/api/rest",
-        {
-          metadata: {
-            uri: `generalDeposit/delete/${generalDepositId}`
-          },
-          request: {}
+      await apiClient.post("", {
+        metadata: {
+          uri: `generalDeposit/delete/${generalDepositId}`,
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json"
-          }
-        }
-      );
+        request: {},
+      });
 
       fetchDeposits();
     } catch (err) {
@@ -131,7 +127,6 @@ export default function Deposits() {
 
   return (
     <>
-      <Header />
       <Container className="py-4" fluid>
         <Row className="mb-4">
           <Col>
@@ -174,20 +169,29 @@ export default function Deposits() {
                       {deposits.map((dep, idx) => (
                         <tr key={dep.generalDepositId}>
                           <td>{idx + 1}</td>
-                          <td>{dep.fuel?.fuelName || 'Desconocido'}</td>
-                          <td>{dep.maxCapacity} gal</td>
-                          <td>{dep.currentCapacity} gal</td>
-                          <td>{dep.createdBy?.employeeName || 'N/D'}</td>
+                          <td>{dep.fuel?.fuelName || "Desconocido"}</td>
+                          <td>{Number(dep.maxCapacity).toFixed(4)} gal</td>
+                          <td>{Number(dep.currentCapacity).toFixed(4)} gal</td>
+                          <td>{dep.createdBy?.employeeName || "N/A"}</td>
                           <td>
-                            <Badge color={dep.status ? 'success' : 'secondary'}>
-                              {dep.status ? 'Activo' : 'Inactivo'}
+                            <Badge color={dep.status ? "success" : "secondary"}>
+                              {dep.status ? "Activo" : "Inactivo"}
                             </Badge>
                           </td>
                           <td>
-                            <Button color="info" size="sm" onClick={() => handleEdit(dep)} className="mr-2">
+                            <Button
+                              color="info"
+                              size="sm"
+                              onClick={() => handleEdit(dep)}
+                              className="mr-2"
+                            >
                               <FontAwesomeIcon icon={faEdit} />
                             </Button>
-                            <Button color="danger" size="sm" onClick={() => handleDelete(dep.generalDepositId)}>
+                            <Button
+                              color="danger"
+                              size="sm"
+                              onClick={() => handleDelete(dep.generalDepositId)}
+                            >
                               <FontAwesomeIcon icon={faTrash} />
                             </Button>
                           </td>

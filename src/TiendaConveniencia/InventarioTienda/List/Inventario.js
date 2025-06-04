@@ -98,4 +98,4 @@ const Inventario = () => {
   );
 };
 
-export default Inventario;
+export default Inventario;

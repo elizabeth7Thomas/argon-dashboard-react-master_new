@@ -6,8 +6,7 @@ import {
 import { faExclamationTriangle, faPlus, faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from 'axios';
-import AlertForm from '../Alerts/AlertForm'; // Asumimos que este componente modal ya existe
-import Header from "components/Headers/Header_alerta";
+import AlertForm from '../Alerts/AlertForm';
 
 export default function Alerts() {
   const [modalForm, setModalForm] = useState(false);
@@ -112,7 +111,6 @@ export default function Alerts() {
 
   return (
     <>
-      <Header />
       <Container className="py-4" fluid>
         <Row className="mb-4">
           <Col>

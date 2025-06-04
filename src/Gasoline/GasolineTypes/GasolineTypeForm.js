@@ -1,13 +1,23 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect } from "react";
 import {
-  Modal,Button, ModalHeader, ModalBody, Form,
-  FormGroup, Label, Input, ModalFooter
-} from 'reactstrap';
+  Modal,
+  Button,
+  ModalHeader,
+  ModalBody,
+  Form,
+  FormGroup,
+  Label,
+  Input,
+  ModalFooter,
+} from "reactstrap";
 
 const GasolineTypeForm = ({ isOpen, toggle, onSubmit, fuel }) => {
   const [formData, setFormData] = useState({
-    fuelName: '',
-    status: true
+    fuelId: null,
+    fuelName: "",
+    costPriceGalon: "",
+    salePriceGalon: "",
+    createdBy: { employeeId: "N/A", employeeName: "N/A" },
   });
 
   useEffect(() => {
@@ -15,8 +25,11 @@ const GasolineTypeForm = ({ isOpen, toggle, onSubmit, fuel }) => {
       setFormData(fuel);
     } else {
       setFormData({
-        fuelName: '',
-        status: true
+        fuelId: null,
+        fuelName: "",
+        costPriceGalon: "",
+        salePriceGalon: "",
+        createdBy: { employeeId: "N/A", employeeName: "N/A" },
       });
     }
   }, [fuel]);
@@ -25,7 +38,7 @@ const GasolineTypeForm = ({ isOpen, toggle, onSubmit, fuel }) => {
     const { name, value, type, checked } = e.target;
     setFormData({
       ...formData,
-      [name]: type === 'checkbox' ? checked : value
+      [name]: type === "checkbox" ? checked : value,
     });
   };
 
@@ -37,7 +50,7 @@ const GasolineTypeForm = ({ isOpen, toggle, onSubmit, fuel }) => {
   return (
     <Modal isOpen={isOpen} toggle={toggle}>
       <ModalHeader toggle={toggle}>
-        {fuel ? 'Editar Tipo de Combustible' : 'Nuevo Tipo de Combustible'}
+        {fuel ? "Editar Tipo de Combustible" : "Nuevo Tipo de Combustible"}
       </ModalHeader>
       <ModalBody>
         <Form onSubmit={handleSubmit}>
@@ -54,22 +67,34 @@ const GasolineTypeForm = ({ isOpen, toggle, onSubmit, fuel }) => {
             />
           </FormGroup>
 
-          <FormGroup check>
-            <Label check>
-              <Input
-                type="checkbox"
-                name="status"
-                checked={formData.status}
-                onChange={handleChange}
-              />{' '}
-              Activo
-            </Label>
+          <FormGroup>
+            <Label>Precio costo</Label>
+            <Input
+              type="number"
+              name="costPriceGalon"
+              value={formData.costPriceGalon}
+              onChange={handleChange}
+              required
+            />
+          </FormGroup>
+
+          <FormGroup>
+            <Label>Precio venta</Label>
+            <Input
+              type="number"
+              name="salePriceGalon"
+              value={formData.salePriceGalon}
+              onChange={handleChange}
+              required
+            />
           </FormGroup>
 
           <ModalFooter>
-            <Button color="secondary" onClick={toggle}>Cancelar</Button>
+            <Button color="secondary" onClick={toggle}>
+              Cancelar
+            </Button>
             <Button color="primary" type="submit">
-              {fuel ? 'Guardar Cambios' : 'Guardar'}
+              {fuel ? "Guardar Cambios" : "Guardar"}
             </Button>
           </ModalFooter>
         </Form>
