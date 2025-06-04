@@ -21,30 +21,56 @@ const TablaTipoPinturas = () => {
     }
   };
 
-  const obtenerTiposPinturas = async () =>{
-    const token = localStorage.getItem("token");
+  const obtenerTiposPinturas = async () => {
+  const token = localStorage.getItem("token");
 
-    if(!token){
-      setError("No se encontro un token de autenticación");
-      setLoading(false);
-      return
-    }
-
-    try{
-      const res = await fetch("http://localhost:8000/pintura/GET/tipopinturas");
-      const data = await res.json();
-      const TiposPinturaArray = Array.isArray(data) ? data : [data];
-      setTiposPintura(TiposPinturaArray);
-
-      if(TiposPinturaArray.length > 0){
-        const maxId = Math.max(...TiposPinturaArray.map(i => i.idTipoPintura));
-        setNextId(maxId + 1);
-      }
-    }catch (error) {
-     console.error("Error al obtener los datos", error);
-     setTiposPintura([]);   
-    }
+  if (!token) {
+    setError("No se encontró un token de autenticación");
+    setLoading(false);
+    return;
   }
+
+  try {
+    const res = await fetch("http://64.23.169.22:3761/broker/api/rest", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token
+      },
+      body: JSON.stringify({
+        metadata: {
+          uri: "/pintura/GET/tipopinturas"
+        },
+        request: {}
+      })
+    });
+
+    if (!res.ok) {
+      console.error("Respuesta del servidor no fue OK:", res.status);
+      setTiposPintura([]);
+      return;
+    }
+
+    const data = await res.json();
+    const TiposPinturaArray = Array.isArray(data.response?.data) ? data.response.data : [];
+
+    setTiposPintura(TiposPinturaArray);
+
+    if (TiposPinturaArray.length > 0) {
+      const maxId = Math.max(...TiposPinturaArray.map(i => i.idTipoPintura || 0));
+      setNextId(maxId + 1);
+    } else {
+      setNextId(1);
+    }
+
+  } catch (error) {
+    console.error("Error al obtener los datos", error);
+    setTiposPintura([]);
+  } finally {
+    setLoading(false);
+  }
+};
+
 
   const agregarTipoPintura = (nuevoTipo) => {
     if (modoEdicion && tipoEditar) {

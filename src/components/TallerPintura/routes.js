@@ -1,4 +1,4 @@
-export const API_BASE_URL = "http://localhost:8000/pintura";
+export const API_BASE_URL = "http://64.23.169.22:8000/pintura";
 
 export const routes = {
   servicios: {

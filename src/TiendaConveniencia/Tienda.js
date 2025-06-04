@@ -1,6 +1,6 @@
 // Tienda.js
 import React, { useState, useEffect } from "react";
-import ProductList from "./ProductList";
+import ProductList from "TiendaConveniencia/InventarioTienda/List/ProductList";
 import HeaderTienda from "components/Headers/HeaderTienda";
 import CarritoPanel from "./CarritoPanel";
 import axios from "axios";

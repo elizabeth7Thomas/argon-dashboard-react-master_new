@@ -27,15 +27,40 @@ const TablaTiposVehiculos = () => {
     }
   };
   const obtenerTipoVehiculos = async () => {
-    try{
-      const res = await fetch("http://127.0.0.1:8000/pintura/GET/tipovehiculos");
-      if(!res.ok) throw new Error("Error al obtener el tipo de vehiculos");
-      const data = await res.json();
-      setTiposVehiculos(data);
-    }catch(error){
-      console.error("Error al cargar los datos", error.message);
+  try {
+    const token = localStorage.getItem("token");
+
+    const res = await fetch("http://64.23.169.22:3761/broker/api/rest", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token
+      },
+      body: JSON.stringify({
+        metadata: {
+          uri: "/pintura/GET/tipovehiculos"
+        },
+        request: {}
+      })
+    });
+
+    if (!res.ok) {
+      console.error("Respuesta del servidor no fue OK:", res.status);
+      setTiposVehiculos([]);
+      return;
     }
-  };
+
+    const data = await res.json();
+
+    const tiposArray = Array.isArray(data.response?.data) ? data.response.data : [];
+
+    setTiposVehiculos(tiposArray);
+
+  } catch (error) {
+    console.error("Error al cargar los datos", error.message);
+    setTiposVehiculos([]);
+  }
+}; 
 
   const agregarTipoVehiculo = (nuevoTipo) => {
     if (modoEdicion && tipoEditar) {

@@ -10,19 +10,48 @@ const TablaDevoluciones = ({onEditarClick, onVerClick}) => {
   const toggleModal = () => setModal(!modal);
 
   const obtenerDevoluciones = async () => {
-    try {
-      const res = await fetch("http://localhost:8000/pintura/GET/devolucion");
-      const data = await res.json();
-      const devolucionArray = Array.isArray(data) ? data : [data];
-      setDevoluciones(devolucionArray);
-    } catch (error) {
-      console.error("Error al obtener devoluciones:", error);
+  try {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      console.error("No se encontró un token de autenticación");
       setDevoluciones([]);
+      return;
     }
-  };
+
+    const res = await fetch("http://64.23.169.22:3761/broker/api/rest", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token
+      },
+      body: JSON.stringify({
+        metadata: {
+          uri: "/pintura/GET/devolucion"
+        },
+        request: {}
+      })
+    });
+
+    if (!res.ok) {
+      console.error("Respuesta del servidor no fue OK:", res.status);
+      setDevoluciones([]);
+      return;
+    }
+
+    const data = await res.json();
+    const devolucionArray = Array.isArray(data.response?.data) ? data.response.data : [];
+
+    setDevoluciones(devolucionArray);
+
+  } catch (error) {
+    console.error("Error al obtener devoluciones:", error);
+    setDevoluciones([]);
+  }
+};
 
   const agregarDevolucion = async (nuevaDevolucion) => {
-    await fetch("http://localhost:8000/pintura/POST/devolucion", {
+    await fetch("http://64.23.169.22:8000/pintura/POST/devolucion", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(nuevaDevolucion),

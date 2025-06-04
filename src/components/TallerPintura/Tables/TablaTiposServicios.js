@@ -23,27 +23,57 @@ const TablaTiposServicios = () => {
   };
 
   const obtenerTiposServicios = async () => {
-    try {
-      const res = await fetch("http://127.0.0.1:8000/pintura/GET/tiposervicios");
-      if (!res.ok) throw new Error("Error al obtener los tipos de servicio.");
-      const data = await res.json();
-      setTiposServicios(data);
-    } catch (error) {
-      console.error("Error cargando tipos de servicios:", error.message);
+  try {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      console.error("No se encontró un token de autenticación");
+      setTiposServicios([]);
+      return;
     }
-  };
 
-  useEffect(() => {
-    obtenerTiposServicios();
-  }, []);
+    const res = await fetch("http://64.23.169.22:3761/broker/api/rest", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token
+      },
+      body: JSON.stringify({
+        metadata: {
+          uri: "/pintura/GET/tiposervicios"
+        },
+        request: {}
+      })
+    });
 
-  const handleSuccess = () => {
-    obtenerTiposServicios(); // Recargar la tabla después de agregar o editar
-  };
+    if (!res.ok) {
+      console.error("Respuesta del servidor no fue OK:", res.status);
+      setTiposServicios([]);
+      return;
+    }
+
+    const data = await res.json();
+    const tiposArray = Array.isArray(data.response?.data) ? data.response.data : [];
+
+    setTiposServicios(tiposArray);
+
+  } catch (error) {
+    console.error("Error cargando tipos de servicios:", error.message);
+    setTiposServicios([]);
+  }
+};
+
+useEffect(() => {
+  obtenerTiposServicios();
+}, []);
+
+const handleSuccess = () => {
+  obtenerTiposServicios(); // Recargar la tabla después de agregar o editar
+};
 
   const eliminarTipoServicio = async (id) => {
     try {
-      const res = await fetch(`http://localhost:8000/pintura/DELETE/tiposervicios/${id}`, {
+      const res = await fetch(`http://64.23.169.22:8000/pintura/DELETE/tiposervicios/${id}`, {
         method: "DELETE",
       });
       if (!res.ok) throw new Error("Error al eliminar el tipo de servicio.");
