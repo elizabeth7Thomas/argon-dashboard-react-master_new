@@ -128,67 +128,78 @@ const TablaVentas = ({ onEditarClick, onVerClick }) => {
   }, []);
 
   return (
-    <>
-      <HeaderTallerPintura />
-      <Container className="mt--7" fluid>
+<>
+  <Container className="mt-4" fluid>
+    <Card className="shadow mb-3 p-3">
+      <div className="d-flex justify-content-between align-items-center mb-3 px-2">
+        <h3 className="mb-0">Listado de Ventas</h3>
         <Button color="primary" onClick={toggleModal}>
           Agregar Venta
         </Button>
-        <Card className="shadow p-4 mb-4">
-          <Table className="align-items-center table-flush" responsive>
-            <thead className="thead-light">
+      </div>
+
+      <div style={{ maxHeight: "400px", overflowY: "auto" }}>
+        <Table className="table-bordered table-hover table-striped mb-0" responsive>
+          <thead className="thead-light">
+            <tr>
+              <th>No. Venta</th>
+              <th>Fecha Venta</th>
+              <th>Total</th>
+              <th>Cliente</th>
+              <th className="text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ventas.length === 0 ? (
               <tr>
-                <th>No. Venta</th>
-                <th>Fecha Venta</th>
-                <th>Total</th>
-                <th>Cliente</th>
-                <th>Acciones</th>
+                <td colSpan="5" className="text-center">
+                  No hay ventas registradas
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {ventas.length === 0 ? (
-                <tr>
-                  <td colSpan="5" className="text-center">
-                    No hay ventas registradas
+            ) : (
+              ventas.map((venta) => (
+                <tr key={venta.idVenta}>
+                  <td>{venta.idVenta}</td>
+                  <td>{new Date(venta.FechaVenta).toLocaleString()}</td>
+                  <td>${venta.TotalVenta.toFixed(2)}</td>
+                  <td>
+                    {venta.cliente
+                      ? `${venta.cliente.nombreCliente} ${venta.cliente.apellidosCliente}`
+                      : "Cliente no encontrado"}
+                  </td>
+                  <td className="text-right">
+                    <UncontrolledDropdown>
+                      <DropdownToggle className="btn-icon-only text-light" size="sm">
+                        <i className="fas fa-ellipsis-v" />
+                      </DropdownToggle>
+                      <DropdownMenu right>
+                        <DropdownItem onClick={() => verDetallesVenta(venta)}>
+                          Ver Detalles
+                        </DropdownItem>
+                      </DropdownMenu>
+                    </UncontrolledDropdown>
                   </td>
                 </tr>
-              ) : (
-                ventas.map((venta) => (
-                  <tr key={venta.idVenta}>
-                    <td>{venta.idVenta}</td>
-                    <td>{new Date(venta.FechaVenta).toLocaleString()}</td>
-                    <td>${venta.TotalVenta.toFixed(2)}</td>
-                    <td>{venta.cliente ? `${venta.cliente.nombreCliente} ${venta.cliente.apellidosCliente}` : "Cliente no encontrado"}</td>
-                    <td className="text-right">
-                      <UncontrolledDropdown>
-                        <DropdownToggle className="btn-icon-only text-light" size="sm">
-                          <i className="fas fa-ellipsis-v" />
-                        </DropdownToggle>
-                        <DropdownMenu right>
-                          <DropdownItem onClick={() => verDetallesVenta(venta)}>
-                            Ver Detalles
-                          </DropdownItem>
-                        </DropdownMenu>
-                      </UncontrolledDropdown>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </Table>
-          <ModalAgregarVenta
-            isOpen={modal}
-            toggle={toggleModal}
-            onSubmit={agregarVenta}
-          />
-          <ModalVerDetalles
-            isOpen={modalDetallesOpen}
-            toggle={toggleModalDetalles}
-            venta={ventaSeleccionada}
-          />
-        </Card>
-      </Container>
-    </>
+              ))
+            )}
+          </tbody>
+        </Table>
+      </div>
+    </Card>
+
+    <ModalAgregarVenta
+      isOpen={modal}
+      toggle={toggleModal}
+      onSubmit={agregarVenta}
+    />
+    <ModalVerDetalles
+      isOpen={modalDetallesOpen}
+      toggle={toggleModalDetalles}
+      venta={ventaSeleccionada}
+    />
+  </Container>
+</>
+
   );
 };
 

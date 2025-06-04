@@ -179,59 +179,67 @@ useEffect(() => {
 }, []);
 
   return (
-    <>
-     
-      <br></br><br></br>
-      <Container className="mt--7" fluid>
-        
-        <Card className="shadow p-4 mb-4">
-          <Table className="align-items-center table-flush" responsive>
-            <thead className="thead-light">
+<>
+  <Container className="mt-4" fluid>
+    <Card className="shadow mb-3 p-3">
+      <div className="d-flex justify-content-between align-items-center mb-3 px-2">
+        <h3 className="mb-0">Listado de Servicios</h3>
+        <Button color="primary" onClick={toggleModal}>
+          Agregar Servicio
+        </Button>
+      </div>
+
+      <div style={{ maxHeight: "400px", overflowY: "auto" }}>
+        <Table className="table-bordered table-hover table-striped mb-0" responsive>
+          <thead className="thead-light">
+            <tr>
+              <th>ID</th>
+              <th>Nombre del Servicio</th>
+              <th>Descripción</th>
+              <th className="text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {servicios.length === 0 ? (
               <tr>
-                <th>ID</th>
-                <th>Nombre del Servicio</th>
-                <th>Descripción</th>
-                <th className="text-right">Acciones</th>
+                <td colSpan="4" className="text-center">
+                  No hay servicios disponibles
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {servicios.length === 0 ? (
-                <tr>
-                  <td colSpan="3" className="text-center">No hay servicios disponibles</td>
+            ) : (
+              servicios.map((s) => (
+                <tr key={s.idServicio}>
+                  <td>{s.idServicio}</td>
+                  <td>{s.NombreServicio}</td>
+                  <td>{s.DescripcionServicio}</td>
+                  <td className="text-right">
+                    <UncontrolledDropdown>
+                      <DropdownToggle className="btn-icon-only text-light" size="sm">
+                        <i className="fas fa-ellipsis-v" />
+                      </DropdownToggle>
+                      <DropdownMenu right>
+                        <DropdownItem onClick={() => iniciarEdicion(s)}>Editar</DropdownItem>
+                        <DropdownItem onClick={() => eliminarServicio(s.idServicio)}>Eliminar</DropdownItem>
+                      </DropdownMenu>
+                    </UncontrolledDropdown>
+                  </td>
                 </tr>
-              ) : (
-                servicios.map((s) => (
-                  <tr key={s.idServicio}>
-                    <td>{s.idServicio}</td>
-                    <td>{s.NombreServicio}</td>
-                    <td>{s.DescripcionServicio}</td>
-                    <td className="text-right">
-                      <UncontrolledDropdown>
-                        <DropdownToggle className="btn-icon-only text-light" size="sm">
-                          <i className="fas fa-ellipsis-v" />
-                        </DropdownToggle>
-                        <DropdownMenu right>
-                          <DropdownItem onClick={() => iniciarEdicion(s)}>Editar</DropdownItem>
-                          <DropdownItem onClick={() => eliminarServicio(s.idServicio)}>Eliminar</DropdownItem>
-                        </DropdownMenu>
-                      </UncontrolledDropdown>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </Table>
-          <ModalAgregarServicio
-            isOpen={modal}
-            toggle={toggleModal}
-            onSubmit={agregarServicio}
-            modoEdicion={modoEdicion}
-            tipoEditar={tipoEditar}
-          />
-        </Card>
-        <Button color="primary" onClick={toggleModal}>Agregar Servicio</Button>
-      </Container>
-    </>
+              ))
+            )}
+          </tbody>
+        </Table>
+      </div>
+    </Card>
+
+    <ModalAgregarServicio
+      isOpen={modal}
+      toggle={toggleModal}
+      onSubmit={agregarServicio}
+      modoEdicion={modoEdicion}
+      tipoEditar={tipoEditar}
+    />
+  </Container>
+</>
   );
 };
 

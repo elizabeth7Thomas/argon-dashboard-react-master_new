@@ -151,79 +151,83 @@ const TablaInventario = () => {
   }, []);
 
   return (
-    <>
-      <HeaderTallerPintura />
-      <br></br><br></br>
-      <Container className="mt--7" fluid>
-       
-        <Card className="shadow p-4 mb-4">
-          <Table className="align-items-center table-flush" responsive>
-            <thead className="thead-light">
-              <tr>
-                <th>ID</th>
-                <th>Nombre del Producto</th>
-                <th>Cantidad Disponible</th>
-                <th>ID Tipo Pintura</th>
-                <th>Tipo Inventario</th>
-                <th>Lote</th>
-                <th>Código Color</th>
-                <th>Fecha Adquisición</th>
-                <th>Fecha Vencimiento</th>
-                <th>Estado Inventario</th>
-                <th className="text-right">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {inventarios.length === 0 ? (
-                <tr>
-                  <td colSpan="11" className="text-center">
-                    No hay inventario disponible
-                  </td>
-                </tr>
-              ) : (
-                inventarios.map((inv) => (
-                  <tr key={inv.idInventario}>
-                    <td>{inv.idInventario}</td>
-                    <td>{inv.NombreProducto}</td>
-                    <td>{inv.CantidadDisponible}</td>
-                    <td>{inv.idTipoPintura}</td>
-                    <td>{inv.TipoInventario}</td>
-                    <td>{inv.Lote}</td>
-                    <td>{inv.CodigoColor}</td>
-                    <td>{inv.FechaAdquisicion}</td>
-                    <td>{inv.FechaVencimiento}</td>
-                    <td>{inv.EstadoInventario}</td>
-                    <td className="text-right">
-                      <UncontrolledDropdown>
-                        <DropdownToggle className="btn-icon-only text-light" size="sm">
-                          <i className="fas fa-ellipsis-v" />
-                        </DropdownToggle>
-                        <DropdownMenu right>
-                          <DropdownItem onClick={() => iniciarEdicion(inv)}>Editar</DropdownItem>
-                          <DropdownItem onClick={() => eliminarInventario(inv.idInventario)}>Eliminar</DropdownItem>
-                        </DropdownMenu>
-                      </UncontrolledDropdown>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </Table>
-          <ModalAgregarInventario
-            isOpen={modal}
-            toggle={toggleModal}
-            onSubmit={agregarInventario}
-            onInventarioCreado={obtenerInventarios}
-            modoEdicion={modoEdicion}
-            inventarioEditar={tipoEditar}
-          />
-
-        </Card>
-         <Button color="primary" onClick={toggleModal}>
+<>
+  <Container className="mt-4" fluid>
+    <Card className="shadow mb-3 p-3">
+      <div className="d-flex justify-content-between align-items-center mb-3 px-2">
+        <h3 className="mb-0">Listado de Inventario</h3>
+        <Button color="primary" onClick={toggleModal}>
           Agregar Inventario
         </Button>
-      </Container>
-    </>
+      </div>
+
+      <div style={{ maxHeight: "400px", overflowY: "auto" }}>
+        <Table className="table-bordered table-hover table-striped mb-0" responsive>
+          <thead className="thead-light">
+            <tr>
+              <th>ID</th>
+              <th>Nombre del Producto</th>
+              <th>Cantidad Disponible</th>
+              <th>ID Tipo Pintura</th>
+              <th>Tipo Inventario</th>
+              <th>Lote</th>
+              <th>Código Color</th>
+              <th>Fecha Adquisición</th>
+              <th>Fecha Vencimiento</th>
+              <th>Estado Inventario</th>
+              <th className="text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {inventarios.length === 0 ? (
+              <tr>
+                <td colSpan="11" className="text-center">
+                  No hay inventario disponible
+                </td>
+              </tr>
+            ) : (
+              inventarios.map((inv) => (
+                <tr key={inv.idInventario}>
+                  <td>{inv.idInventario}</td>
+                  <td>{inv.NombreProducto}</td>
+                  <td>{inv.CantidadDisponible}</td>
+                  <td>{inv.idTipoPintura}</td>
+                  <td>{inv.TipoInventario}</td>
+                  <td>{inv.Lote}</td>
+                  <td>{inv.CodigoColor}</td>
+                  <td>{inv.FechaAdquisicion}</td>
+                  <td>{inv.FechaVencimiento}</td>
+                  <td>{inv.EstadoInventario}</td>
+                  <td className="text-right">
+                    <UncontrolledDropdown>
+                      <DropdownToggle className="btn-icon-only text-light" size="sm">
+                        <i className="fas fa-ellipsis-v" />
+                      </DropdownToggle>
+                      <DropdownMenu right>
+                        <DropdownItem onClick={() => iniciarEdicion(inv)}>Editar</DropdownItem>
+                        <DropdownItem onClick={() => eliminarInventario(inv.idInventario)}>Eliminar</DropdownItem>
+                      </DropdownMenu>
+                    </UncontrolledDropdown>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </Table>
+      </div>
+    </Card>
+
+    <ModalAgregarInventario
+      isOpen={modal}
+      toggle={toggleModal}
+      onSubmit={agregarInventario}
+      onInventarioCreado={obtenerInventarios}
+      modoEdicion={modoEdicion}
+      inventarioEditar={tipoEditar}
+    />
+  </Container>
+</>
+
   );
 };
 
