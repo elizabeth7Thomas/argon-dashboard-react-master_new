@@ -61,13 +61,39 @@ const TablaPrecioServicio = ({ onEditarClick, onVerClick }) => {
   };
 
   const agregarPrecio = async (nuevoPrecio) => {
-    await fetch("http://64.23.169.22:8000/pintura/POST/precioservicio", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(nuevoPrecio),
-    });
-    obtenerPrecios();
-    toggleModal();
+    const token = localStorage.getItem("token");
+    if (!token) {
+      console.error("Token no encontrado");
+      return;
+    }
+
+    const body = {
+      metadata: {
+        uri: "/pintura/POST/precioservicio",
+      },
+      request: nuevoPrecio,
+    };
+
+    try {
+      const res = await fetch("http://64.23.169.22:3761/broker/api/rest", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+        body: JSON.stringify(body),
+      });
+
+      if (!res.ok) {
+        console.error("Error al agregar precio:", res.status, await res.text());
+        return;
+      }
+
+      obtenerPrecios();
+      toggleModal();
+    } catch (err) {
+      console.error("Fallo en la solicitud agregarPrecio:", err);
+    }
   };
 
   useEffect(() => {
