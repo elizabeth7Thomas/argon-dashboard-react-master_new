@@ -23,6 +23,10 @@ export default function EmpleadoForm({ initialData, onSave, onCancel }) {
   const [success, setSuccess] = useState(null);
   const [loading, setLoading] = useState(false);
 
+  const catalogoJornadas = JSON.parse(localStorage.getItem("catalogo_jornadas") || "[]");
+  const catalogoAreas = JSON.parse(localStorage.getItem("catalogo_areas") || "[]");
+  const catalogoRoles = JSON.parse(localStorage.getItem("catalogo_roles") || "[]");
+
   useEffect(() => {
     setAlert(null);
     setSuccess(null);
@@ -281,8 +285,8 @@ export default function EmpleadoForm({ initialData, onSave, onCancel }) {
           required
         >
           <option value="">Seleccione una jornada</option>
-          {[...Array(2)].map((_, i) => (
-            <option key={i + 1} value={i + 1}>{i + 1}</option>
+          {catalogoJornadas.map(j => (
+            <option key={j.id} value={j.id}>{j.nombre}</option>
           ))}
         </Input>
       </FormGroup>
@@ -296,8 +300,8 @@ export default function EmpleadoForm({ initialData, onSave, onCancel }) {
           required
         >
           <option value="">Seleccione un área</option>
-          {[...Array(7)].map((_, i) => (
-            <option key={i + 1} value={i + 1}>{i + 1}</option>
+          {catalogoAreas.map(a => (
+            <option key={a.id} value={a.id}>{a.nombre}</option>
           ))}
         </Input>
       </FormGroup>
@@ -311,8 +315,8 @@ export default function EmpleadoForm({ initialData, onSave, onCancel }) {
           required
         >
           <option value="">Seleccione un rol</option>
-          {[...Array(7)].map((_, i) => (
-            <option key={i + 1} value={i + 1}>{i + 1}</option>
+          {catalogoRoles.map(r => (
+            <option key={r.id} value={r.id}>{r.nombre}</option>
           ))}
         </Input>
       </FormGroup>

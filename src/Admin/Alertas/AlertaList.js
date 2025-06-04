@@ -9,8 +9,11 @@ import {
   Input,
   CardBody,
   Spinner,
+  Pagination,
+  PaginationItem,
+  PaginationLink,
 } from "reactstrap";
-import { faEdit, faTrashAlt, faIdCard } from "@fortawesome/free-solid-svg-icons";
+import { faAngleDoubleLeft, faAngleLeft, faAngleRight, faAngleDoubleRight, faEdit, faTrashAlt, faIdCard } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from "axios";
 
@@ -19,6 +22,11 @@ export default function AlertaList({ onEditar, onEliminar }) {
   const [busqueda, setBusqueda] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [pagina, setPagina] = useState(1);
+  const [idServicioFiltro, setIdServicioFiltro] = useState("");
+  const [estadoFiltro, setEstadoFiltro] = useState(""); // "", "activo", "inactivo"
+
+  const POR_PAGINA = 15;
 
   useEffect(() => {
     const fetchAlertas = async () => {
@@ -83,12 +91,87 @@ export default function AlertaList({ onEditar, onEliminar }) {
     fetchAlertas();
   }, []);
 
-  const alertasFiltradas = alertas.filter(
-    (a) =>
-      (a.nombre_producto && a.nombre_producto.toLowerCase().includes(busqueda.toLowerCase())) ||
-      (a.mensaje && a.mensaje.toLowerCase().includes(busqueda.toLowerCase())) ||
-      (a.id && a.id.toString().includes(busqueda))
+  // Filtros
+  const alertasFiltradas = alertas.filter((a) => {
+    const coincideBusqueda =
+      (!busqueda ||
+        (a.nombre_producto && a.nombre_producto.toLowerCase().includes(busqueda.toLowerCase())) ||
+        (a.mensaje && a.mensaje.toLowerCase().includes(busqueda.toLowerCase())) ||
+        (a.id && a.id.toString().includes(busqueda)));
+    const coincideServicio =
+      !idServicioFiltro || (a.id_servicio && a.id_servicio.toString() === idServicioFiltro);
+    const coincideEstado =
+      !estadoFiltro ||
+      (estadoFiltro === "activo" && a.estado === true) ||
+      (estadoFiltro === "inactivo" && a.estado === false);
+    return coincideBusqueda && coincideServicio && coincideEstado;
+  });
+
+  // Paginación
+  const totalPaginas = Math.ceil(alertasFiltradas.length / POR_PAGINA);
+  const alertasPagina = alertasFiltradas.slice(
+    (pagina - 1) * POR_PAGINA,
+    pagina * POR_PAGINA
   );
+
+  // Si cambian los filtros o búsqueda, vuelve a la página 1
+  useEffect(() => {
+    setPagina(1);
+  }, [busqueda, idServicioFiltro, estadoFiltro]);
+
+  // Paginación mejorada
+  const renderPagination = () => {
+    if (totalPaginas <= 1) return null;
+
+    const paginasVisibles = 3; // Cuántos botones de página mostrar a la izquierda y derecha
+    let start = Math.max(1, pagina - paginasVisibles);
+    let end = Math.min(totalPaginas, pagina + paginasVisibles);
+
+    // Ajusta el rango si estás cerca del inicio o fin
+    if (pagina <= paginasVisibles) {
+      end = Math.min(totalPaginas, paginasVisibles * 2 + 1);
+    }
+    if (pagina > totalPaginas - paginasVisibles) {
+      start = Math.max(1, totalPaginas - paginasVisibles * 2);
+    }
+
+    const pageNumbers = [];
+    for (let i = start; i <= end; i++) {
+      pageNumbers.push(i);
+    }
+
+    return (
+      <Pagination className="mt-3 justify-content-center">
+        <PaginationItem disabled={pagina === 1}>
+          <PaginationLink first onClick={() => setPagina(1)}>
+            <FontAwesomeIcon icon={faAngleDoubleLeft} />
+          </PaginationLink>
+        </PaginationItem>
+        <PaginationItem disabled={pagina === 1}>
+          <PaginationLink previous onClick={() => setPagina(pagina - 1)}>
+            <FontAwesomeIcon icon={faAngleLeft} />
+          </PaginationLink>
+        </PaginationItem>
+        {pageNumbers.map((num) => (
+          <PaginationItem active={pagina === num} key={num}>
+            <PaginationLink onClick={() => setPagina(num)}>
+              {num}
+            </PaginationLink>
+          </PaginationItem>
+        ))}
+        <PaginationItem disabled={pagina === totalPaginas}>
+          <PaginationLink next onClick={() => setPagina(pagina + 1)}>
+            <FontAwesomeIcon icon={faAngleRight} />
+          </PaginationLink>
+        </PaginationItem>
+        <PaginationItem disabled={pagina === totalPaginas}>
+          <PaginationLink last onClick={() => setPagina(totalPaginas)}>
+            <FontAwesomeIcon icon={faAngleDoubleRight} />
+          </PaginationLink>
+        </PaginationItem>
+      </Pagination>
+    );
+  };
 
   if (loading) return <Spinner />;
   if (error)
@@ -114,8 +197,25 @@ export default function AlertaList({ onEditar, onEliminar }) {
                   placeholder="Buscar alerta..."
                   value={busqueda}
                   onChange={(e) => setBusqueda(e.target.value)}
-                  style={{ maxWidth: "300px" }}
+                  style={{ maxWidth: "200px", marginRight: 8 }}
                 />
+                <Input
+                  type="text"
+                  placeholder="ID Servicio"
+                  value={idServicioFiltro}
+                  onChange={(e) => setIdServicioFiltro(e.target.value)}
+                  style={{ maxWidth: "120px", marginRight: 8 }}
+                />
+                <Input
+                  type="select"
+                  value={estadoFiltro}
+                  onChange={(e) => setEstadoFiltro(e.target.value)}
+                  style={{ maxWidth: "120px" }}
+                >
+                  <option value="">Todos</option>
+                  <option value="activo">Activos</option>
+                  <option value="inactivo">Inactivos</option>
+                </Input>
               </Col>
             </Row>
           </CardHeader>
@@ -132,8 +232,8 @@ export default function AlertaList({ onEditar, onEliminar }) {
                 </tr>
               </thead>
               <tbody>
-                {alertasFiltradas.length > 0 ? (
-                  alertasFiltradas.map((item, index) => (
+                {alertasPagina.length > 0 ? (
+                  alertasPagina.map((item, index) => (
                     <tr key={item.id || index}>
                       <td>{item.id}</td>
                       <td>{item.nombre_producto}</td>
@@ -142,7 +242,7 @@ export default function AlertaList({ onEditar, onEliminar }) {
                       <td>
                         {item.estado === true
                           ? <span className="text-success font-weight-bold">Activo</span>
-                          : <span className="text-danger font-weight-bold">Desactivo</span>
+                          : <span className="text-danger font-weight-bold">Inactivo</span>
                         }
                       </td>
                       <td>
@@ -173,6 +273,8 @@ export default function AlertaList({ onEditar, onEliminar }) {
                 )}
               </tbody>
             </Table>
+            {/* Paginación */}
+            {renderPagination()}
           </CardBody>
         </Card>
       </Col>
