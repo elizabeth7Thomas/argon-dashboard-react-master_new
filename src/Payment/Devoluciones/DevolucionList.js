@@ -1,3 +1,5 @@
+// src/Payment/Devoluciones/DevolucionesList.js
+
 import React from "react";
 import { Table } from "reactstrap";
 
@@ -21,8 +23,8 @@ export default function DevolucionesList({ devoluciones = [] }) {
             <td colSpan="7" className="text-center">No hay devoluciones.</td>
           </tr>
         ) : (
-          devoluciones.map((dev) => (
-            <tr key={dev.NoDevolucion}>
+          devoluciones.map((dev, i) => (
+            <tr key={dev.NoDevolucion || i}>
               <td>{dev.NoDevolucion}</td>
               <td>{dev.NoTransaccion}</td>
               <td>{dev.Monto}</td>

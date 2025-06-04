@@ -1,37 +1,43 @@
+// src/Payment/Transacciones/TransaccionList.js
+
 import React from "react";
 import { Table, Button } from "reactstrap";
 
-export default function TransaccionList({ transacciones }) {
+export default function TransaccionList({ transacciones = [], onAnular }) {
   return (
-    <Table responsive hover>
+    <Table responsive hover className="mt-4">
       <thead>
         <tr>
           <th>No. Transacción</th>
-          <th>No. Autorización</th>
           <th>Fecha</th>
-          <th>No. Factura</th>
-          <th>Total</th>
-          <th>ID Cliente</th>
-          <th>ID Caja</th>
+          <th>Monto</th>
+          <th>Servicio</th>
           <th>Estado</th>
+          <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
-        {transacciones?.length === 0 ? (
+        {transacciones.length === 0 ? (
           <tr>
-            <td colSpan="8" className="text-center">No se encontraron transacciones.</td>
+            <td colSpan="6" className="text-center">No hay transacciones.</td>
           </tr>
         ) : (
           transacciones.map((tx) => (
-            <tr key={tx.idTransaccion}>
+            <tr key={tx.NoTransaccion}>
               <td>{tx.NoTransaccion}</td>
-              <td>{tx.NoAutorizacion || "—"}</td>
-              <td>{tx.Fecha ? new Date(tx.Fecha).toLocaleString() : "—"}</td>
-              <td>{tx.NoFactura || "—"}</td>
-              <td>{tx.Total}</td>
-              <td>{tx.IdCliente || "—"}</td>
-              <td>{tx.IdCaja || "—"}</td>
+              <td>{new Date(tx.Fecha).toLocaleString()}</td>
+              <td>{tx.Monto}</td>
+              <td>{tx.Servicio}</td>
               <td>{tx.Estado}</td>
+              <td>
+                <Button
+                  size="sm"
+                  color="danger"
+                  onClick={() => onAnular(tx.NoTransaccion)}
+                >
+                  Anular
+                </Button>
+              </td>
             </tr>
           ))
         )}

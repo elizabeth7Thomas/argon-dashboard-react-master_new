@@ -1,3 +1,5 @@
+//src/Payment/Clientes/ClienteForm.js
+
 import React from "react";
 import {
   Modal, ModalHeader, ModalBody, ModalFooter,
@@ -29,7 +31,15 @@ export default function ClienteForm({
           ? `pagos/cliente/actualizar/${idCliente}`
           : "pagos/cliente/crear",
       },
-      request: {
+       request: isEditing
+    ? {
+        NombreCliente: formData.nombreCliente,
+        ApellidosCliente: formData.apellidosCliente,
+        Direccion: formData.direccion,
+        Telefono: formData.telefono,
+        Email: formData.email,
+      }
+    : {
         NombreCliente: formData.nombreCliente,
         ApellidosCliente: formData.apellidosCliente,
         Nit: formData.nit,
@@ -38,7 +48,7 @@ export default function ClienteForm({
         Email: formData.email,
         Dpi: formData.dpi,
       },
-    };
+};
 
     try {
       await axios.post(

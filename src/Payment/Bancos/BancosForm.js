@@ -1,4 +1,3 @@
-//src/Payment/Bancos/BancosForm.js
 import React from "react";
 import {
   Modal, ModalHeader, ModalBody, ModalFooter,
@@ -13,7 +12,6 @@ export default function BancoForm({
   setFormData,
   onSuccess,
   isEditing,
-  idBanco
 }) {
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -27,9 +25,11 @@ export default function BancoForm({
     try {
       const payload = {
         metadata: {
-          uri: isEditing ? `pagos/bancos/actualizar/${idBanco}` : "pagos/bancos/crear",
+          uri: "pagos/bancos/crear"
         },
-        request: formData,
+        request: {
+          nombre: formData.nombre,
+        },
       };
 
       await axios.post(
@@ -43,8 +43,8 @@ export default function BancoForm({
         }
       );
 
-      onSuccess(); // Recarga la lista
-      toggle();    // Cierra modal
+      onSuccess();
+      toggle();
     } catch (error) {
       console.error("Error al guardar el banco:", error);
       alert("Hubo un error al guardar el banco");
@@ -54,7 +54,7 @@ export default function BancoForm({
   return (
     <Modal isOpen={isOpen} toggle={toggle}>
       <ModalHeader toggle={toggle}>
-        {isEditing ? "Editar Banco" : "Nuevo Banco"}
+        {isEditing ? "Editar Banco (no habilitado)" : "Nuevo Banco"}
       </ModalHeader>
       <ModalBody>
         <Form onSubmit={handleSubmit}>
@@ -68,21 +68,6 @@ export default function BancoForm({
               placeholder="Nombre del banco"
               required
             />
-          </FormGroup>
-          <FormGroup>
-            <Label for="estado">Estado</Label>
-            <Input
-              id="estado"
-              name="estado"
-              type="select"
-              value={formData.estado ?? ""}
-              onChange={handleChange}
-              required
-            >
-              <option value="">Seleccionar</option>
-              <option value={1}>Activo</option>
-              <option value={0}>Inactivo</option>
-            </Input>
           </FormGroup>
           <ModalFooter>
             <Button color="secondary" onClick={toggle}>Cancelar</Button>

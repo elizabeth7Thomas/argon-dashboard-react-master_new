@@ -73,20 +73,15 @@ export default function PumpStatusForm({ isOpen, toggle, initialData, refreshLis
           employeeName: formData.employeeName,
         },
         status: parseInt(formData.status),
-        updatedBy: {
-          employeeId: user.employeeId,
-          employeeName: user.employeeName,
-        }
+        createdBy: { employeeId: "N/A", employeeName: "N/A" }, 
+        updatedBy: { employeeId: "N/A", employeeName: "N/A" },
       };
 
       if (initialData) {
         await updatePump(initialData.bombId, payload);
         setSuccess("Bomba actualizada correctamente");
       } else {
-        payload.createdBy = {
-          employeeId: user.employeeId,
-          employeeName: user.employeeName,
-        };
+        
         await createPump(payload);
         setSuccess("Bomba creada correctamente");
       }
@@ -164,9 +159,9 @@ export default function PumpStatusForm({ isOpen, toggle, initialData, refreshLis
               value={formData.status}
               onChange={handleChange}
             >
-              <option value="1">Activo</option>
-              <option value="0">Inactivo</option>
-              <option value="2">Mantenimiento</option>
+              <option value="2">Inactivo</option>
+              <option value="3">Activa</option>
+              <option value="4">Mantenimiento</option>
             </Input>
           </FormGroup>
         </Form>
