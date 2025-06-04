@@ -1,63 +1,64 @@
-//src/Payment/MetodosPago/MetodoPagoForm.js
-
-import React, { useState } from "react";
+// src/Payment/MetodosPago/MetodoPagoForm.js
+import React, { useState, useEffect } from "react";
 import {
-  Modal, ModalHeader, ModalBody, Form, FormGroup, Label, Input, Button
+  Modal, ModalHeader, ModalBody, Form, FormGroup, Label, Input, Button, Alert
 } from "reactstrap";
-import axios from "axios";
 
 export default function MetodoPagoForm({
-  isOpen, toggle, formData, setFormData, onSubmit, isEditing, idMetodo
+  isOpen, toggle, formData, setFormData, onSubmit, isEditing
 }) {
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setLoading(false);
+      setError(null);
+      setSuccess(null);
+    }
+  }, [isOpen]);
 
   const handleChange = (e) => {
     setFormData({ ...formData, Metodo: e.target.value });
+    // Limpiar errores cuando el usuario escribe
+    if (error) setError(null);
   };
 
-  const handleSave = async () => {
-    const token = localStorage.getItem("token");
-    const uri = isEditing
-      ? `pagos/metodos/actualizar/${idMetodo}`
-      : "pagos/metodos/crear";
-
+  const handleSave = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setSuccess(null);
+    
     try {
-      setLoading(true);
-      await axios.post(
-        "http://64.23.169.22:3761/broker/api/rest",
-        {
-          metadata: { uri },
-          request: {
-            Metodo: formData.Metodo,
-          },
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      alert(isEditing ? "Método actualizado" : "Método creado");
-      toggle();
-      setFormData({ Metodo: "" });
-      if (onSubmit) onSubmit();
-    } catch (error) {
-      console.error("Error al guardar el método:", error);
-      alert("Error al guardar el método");
+      await onSubmit();
+      setSuccess(isEditing ? "Método de pago actualizado correctamente" : "Método de pago creado correctamente");
+      // Opcional: cerrar el modal después de un tiempo
+      setTimeout(() => {
+        toggle();
+      }, 1500);
+    } catch (err) {
+      // Manejar diferentes formatos de error
+      const errorMessage = err.response?.data?.message || 
+                          err.message || 
+                          "Ocurrió un error al procesar la solicitud";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Modal isOpen={isOpen} toggle={toggle}>
+    <Modal isOpen={isOpen} toggle={toggle} backdrop="static">
       <ModalHeader toggle={toggle}>
         {isEditing ? "Editar Método de Pago" : "Nuevo Método de Pago"}
       </ModalHeader>
       <ModalBody>
-        <Form>
+        {error && <Alert color="danger">{error}</Alert>}
+        {success && <Alert color="success">{success}</Alert>}
+        
+        <Form onSubmit={handleSave}>
           <FormGroup>
             <Label for="metodo">Método</Label>
             <Input
@@ -67,10 +68,15 @@ export default function MetodoPagoForm({
               value={formData.Metodo || ""}
               onChange={handleChange}
               placeholder="Ej: Efectivo, Tarjeta"
+              invalid={!!error}
             />
           </FormGroup>
-          <Button color="primary" onClick={handleSave} disabled={loading}>
+          <Button color="primary" type="submit" disabled={loading}>
             {loading ? "Guardando..." : isEditing ? "Actualizar" : "Crear"}
+          </Button>
+          {' '}
+          <Button color="secondary" onClick={toggle} disabled={loading}>
+            Cancelar
           </Button>
         </Form>
       </ModalBody>

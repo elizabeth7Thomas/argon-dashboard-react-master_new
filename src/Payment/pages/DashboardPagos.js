@@ -3,8 +3,6 @@ import { Button,Card, CardBody,Col, Container, Row,} from 'reactstrap';
 import { faUser, faCreditCard, faExchangeAlt, faUndoAlt, faUniversity,faReceipt,faCashRegister,} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
-
-// Importar componentes reales
 import ClientesPage from './ClientesPage'
 import BancosPage from './BancosPage';
 import FacturasPage from './FacturasPage';
@@ -12,15 +10,16 @@ import FacturasPage from './FacturasPage';
 import DevolucionesPage from './DevolucionesPage';
 import MetodosPagoPage from './MetodosPagoPage';
 import TransaccionesPage from './TransaccionesPage';
-import HeaderPagos from 'components/Headers/HeaderPagos';
+
 import CierreCajaPage from './CierreCajaPage';
+import HeaderPagos from "../../components/Headers/HeaderPagos";
 
 export default function DashboardPagos() {
   const [totalPagos, setTotalPagos] = useState(0);
   const [selectedSection, setSelectedSection] = useState(null);
 
   useEffect(() => {
-    // Simulación de datos
+   
     setTotalPagos(12500);
   }, []);
 

@@ -1,17 +1,19 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import BancoList from "../Bancos/BancosList";
-import BancoForm from "../Bancos/BancosForm";
-import { Button } from "reactstrap";
+import { Button, Alert, Spinner } from "reactstrap";
+import { toast } from "react-toastify";
+import { handleBrokerError } from "../utils/apiErrorHandler";
 
 export default function BancosPage() {
   const [bancos, setBancos] = useState([]);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [formData, setFormData] = useState({});
-  const [isEditing, setIsEditing] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const fetchBancos = async () => {
     const token = localStorage.getItem("token");
+    setLoading(true);
+    setError(null);
+    
     try {
       const response = await axios.post(
         "http://64.23.169.22:3761/broker/api/rest",
@@ -27,51 +29,33 @@ export default function BancosPage() {
         }
       );
 
+      // Verificar si la respuesta del broker indica error
+      if (response.data?.response?._broker_status !== 200) {
+        throw {
+          response: {
+            data: response.data
+          }
+        };
+      }
+
       const data = response.data?.response?.data?.Bancos;
       setBancos(Array.isArray(data) ? data : []);
     } catch (error) {
-      console.error("Error al cargar los bancos:", error);
-      alert("Error al cargar los bancos.");
+      const errorMessage = handleBrokerError(error);
+      console.error("Error en fetchBancos:", error);
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    fetchBancos();
-  }, []);
-
-  const handleView = async (banco) => {
-    const token = localStorage.getItem("token");
-    try {
-      const response = await axios.post(
-        "http://64.23.169.22:3761/broker/api/rest",
-        {
-          metadata: { uri: `pagos/bancos/obtener/${banco._id}` },
-          request: {},
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
-
-      const detalle = response.data?.response?.data?.Banco;
-      alert(`Banco: ${detalle.nombre}\nTotal Transacciones: ${detalle.totalTransacciones}`);
-    } catch (error) {
-      console.error("Error al obtener el banco:", error);
-      alert("Error al obtener los detalles del banco.");
-    }
-  };
-
-  const handleEdit = (banco) => {
-    alert("La edición no está habilitada en el backend.");
   };
 
   const handleDelete = async (banco) => {
+    if (!window.confirm(`¿Está seguro de eliminar ${banco.nombre}?`)) return;
+    
     const token = localStorage.getItem("token");
     try {
-      await axios.put(
+      const response = await axios.put(
         "http://64.23.169.22:3761/broker/api/rest",
         {
           metadata: { uri: `pagos/bancos/eliminar/${banco._id}` },
@@ -84,35 +68,81 @@ export default function BancosPage() {
           },
         }
       );
-      alert(`Banco ${banco.nombre} eliminado.`);
-      setBancos(bancos.filter((b) => b._id !== banco._id));
+
+      // Verificar respuesta del broker
+      if (response.data?.response?._broker_status !== 200) {
+        throw {
+          response: {
+            data: response.data
+          }
+        };
+      }
+
+      toast.success(`${banco.nombre} eliminado correctamente`);
+      fetchBancos();
     } catch (error) {
-      console.error("Error al eliminar el banco:", error);
-      alert("Error al eliminar el banco.");
+      const errorMessage = handleBrokerError(error);
+      console.error("Error en handleDelete:", error);
+      toast.error(errorMessage);
+      
+      // Mostrar detalles completos del error en consola para depuración
+      if (error.response?.data) {
+        console.log("Respuesta completa del error:", error.response.data);
+      }
     }
   };
 
-  const handleOpenCreate = () => {
-    setIsEditing(false);
-    setFormData({});
-    setModalOpen(true);
-  };
+  useEffect(() => {
+    fetchBancos();
+  }, []);
 
   return (
     <div className="container mt-4">
       <h2>Lista de Bancos</h2>
-      <Button color="primary" className="mb-3" onClick={handleOpenCreate}>
-        Crear Banco
-      </Button>
-      <BancoList bancos={bancos} onView={handleView} onEdit={handleEdit} onDelete={handleDelete} />
-      <BancoForm
-        isOpen={modalOpen}
-        toggle={() => setModalOpen(!modalOpen)}
-        formData={formData}
-        setFormData={setFormData}
-        onSuccess={fetchBancos}
-        isEditing={isEditing}
-      />
+      
+      {error && (
+        <Alert color="danger" toggle={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
+      
+      {loading ? (
+        <div className="text-center">
+          <Spinner color="primary" />
+          <p>Cargando bancos...</p>
+        </div>
+      ) : (
+        <>
+          <Button color="primary" className="mb-3" onClick={() => {}}>
+            Crear Banco
+          </Button>
+          
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Acciones</th>
+              </tr>
+            </thead>
+            <tbody>
+              {bancos.map(banco => (
+                <tr key={banco._id}>
+                  <td>{banco.nombre}</td>
+                  <td>
+                    <Button 
+                      color="danger" 
+                      size="sm" 
+                      onClick={() => handleDelete(banco)}
+                    >
+                      Eliminar
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
+      )}
     </div>
   );
 }

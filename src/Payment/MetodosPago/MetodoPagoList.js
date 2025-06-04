@@ -1,5 +1,4 @@
-//src/Payment/MetodosPago/MetodoPagoList.js
-
+//src/Payment/MetodosPago/// MetodoPagoList.js
 import React from "react";
 import { Table, Button } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
