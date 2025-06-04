@@ -1,9 +1,7 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useState, useEffect } from "react";
 import {
   Table,
   Button,
-  Spinner,
   DropdownItem,
   DropdownMenu,
   DropdownToggle,
@@ -16,110 +14,81 @@ import HeaderTallerPintura from "components/Headers/HeaderTallerPintura";
 
 const TablaTiposServicios = () => {
   const [tiposServicios, setTiposServicios] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
   const [modal, setModal] = useState(false);
-  const [modoEdicion, setModoEdicion] = useState(false);
-  const [tipoEditar, setTipoEditar] = useState(null);
+  const [editarTipo, setEditarTipo] = useState(null);
 
   const toggleModal = () => {
     setModal(!modal);
-    if (modal) {
-      setModoEdicion(false);
-      setTipoEditar(null);
-    }
+    setEditarTipo(null); // Reiniciar edición si se cancela
   };
 
   const obtenerTiposServicios = async () => {
+  try {
     const token = localStorage.getItem("token");
 
     if (!token) {
-      setError("No se encontró un token de autenticación");
-      setLoading(false);
+      console.error("No se encontró un token de autenticación");
+      setTiposServicios([]);
       return;
     }
 
-    try {
-      const response = await axios.post(
-        "http://64.23.169.22:3761/broker/api/rest",
-        {
-          metadata: { uri: "/pintura/GET/tiposervicios" },
-          request: {},
+    const res = await fetch("http://64.23.169.22:3761/broker/api/rest", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token
+      },
+      body: JSON.stringify({
+        metadata: {
+          uri: "/pintura/GET/tiposervicios"
         },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-        }
-      );
+        request: {}
+      })
+    });
 
-      const data = response.data;
-      if (data && data.response && data.response.data) {
-        const arrayTipos = Array.isArray(data.response.data)
-          ? data.response.data
-          : [data.response.data];
-        setTiposServicios(arrayTipos);
-      } else {
-        setError("La respuesta del broker no contiene datos válidos");
-      }
-    } catch (err) {
-      console.error("Error al obtener tipos de servicios:", err);
-      setError("Error al conectar con el broker");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleAgregarEditar = async (nuevoTipo) => {
-    try {
-      if (modoEdicion && tipoEditar) {
-        // Aquí iría lógica PUT
-        console.warn("PUT aún no implementado");
-      } else {
-        const res = await axios.post("http://localhost:8000/pintura/POST/tiposervicios", nuevoTipo, {
-          headers: { "Content-Type": "application/json" },
-        });
-
-        if (res.status === 200 || res.status === 201) {
-          setTiposServicios((prev) => [...prev, res.data]);
-        }
-      }
-    } catch (error) {
-      console.error("Error al agregar o editar tipo de servicio:", error);
+    if (!res.ok) {
+      console.error("Respuesta del servidor no fue OK:", res.status);
+      setTiposServicios([]);
+      return;
     }
 
-    toggleModal();
-  };
+    const data = await res.json();
+    const tiposArray = Array.isArray(data.response?.data) ? data.response.data : [];
+
+    setTiposServicios(tiposArray);
+
+  } catch (error) {
+    console.error("Error cargando tipos de servicios:", error.message);
+    setTiposServicios([]);
+  }
+};
+
+useEffect(() => {
+  obtenerTiposServicios();
+}, []);
+
+const handleSuccess = () => {
+  obtenerTiposServicios(); // Recargar la tabla después de agregar o editar
+};
 
   const eliminarTipoServicio = async (id) => {
-    const confirmacion = window.confirm("¿Deseas eliminar este tipo de servicio?");
-    if (!confirmacion) return;
-
     try {
-      await axios.delete(`http://localhost:8000/pintura/DELETE/tiposervicios/${id}`);
-      setTiposServicios((prev) => prev.filter((tipo) => tipo.idTipoServicio !== id));
+      const res = await fetch(`http://64.23.169.22:8000/pintura/DELETE/tiposervicios/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) throw new Error("Error al eliminar el tipo de servicio.");
+      obtenerTiposServicios(); // Refrescar tabla
     } catch (error) {
-      console.error("Error al eliminar tipo de servicio:", error);
+      console.error("Error al eliminar:", error.message);
     }
   };
-
-  const iniciarEdicion = (tipo) => {
-    setModoEdicion(true);
-    setTipoEditar(tipo);
-    setModal(true);
-  };
-
-  useEffect(() => {
-    obtenerTiposServicios();
-  }, []);
-
-  if (loading) return <Spinner />;
-  if (error) return <p className="text-danger">{error}</p>;
 
   return (
     <>
+     
+      <br></br><br></br>
       <Container className="mt--7" fluid>
+        
         <Card className="shadow p-4 mb-4">
           <Table className="align-items-center table-flush" responsive>
             <thead className="thead-light">
@@ -127,7 +96,7 @@ const TablaTiposServicios = () => {
                 <th>ID</th>
                 <th>Nombre del Tipo</th>
                 <th>ID Servicio</th>
-                <th className="text-right">Acciones</th>
+                <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -143,14 +112,16 @@ const TablaTiposServicios = () => {
                     <td>{tipo.idTipoServicio}</td>
                     <td>{tipo.NombreTipo}</td>
                     <td>{tipo.idServicio}</td>
-                    <td className="text-right">
+                    <td>
                       <UncontrolledDropdown>
                         <DropdownToggle className="btn-icon-only text-light" size="sm">
                           <i className="fas fa-ellipsis-v" />
                         </DropdownToggle>
                         <DropdownMenu right>
-                          <DropdownItem onClick={() => iniciarEdicion(tipo)}>Editar</DropdownItem>
-                          <DropdownItem onClick={() => eliminarTipoServicio(tipo.idTipoServicio)}>Eliminar</DropdownItem>
+                          <DropdownItem onClick={() => setEditarTipo(tipo)}>Editar</DropdownItem>
+                          <DropdownItem onClick={() => eliminarTipoServicio(tipo.idTipoServicio)}>
+                            Eliminar
+                          </DropdownItem>
                         </DropdownMenu>
                       </UncontrolledDropdown>
                     </td>
@@ -159,20 +130,18 @@ const TablaTiposServicios = () => {
               )}
             </tbody>
           </Table>
-
-          <ModalAgregarTipoServicio
-            isOpen={modal}
-            toggle={toggleModal}
-            onSubmit={handleAgregarEditar}
-            modoEdicion={modoEdicion}
-            tipoEditar={tipoEditar}
-          />
         </Card>
-
-        <Button color="primary" onClick={toggleModal}>
+      </Container>
+      <Button color="primary" onClick={toggleModal}>
           Agregar Tipo de Servicio
         </Button>
-      </Container>
+
+      <ModalAgregarTipoServicio
+        isOpen={modal || editarTipo !== null}
+        toggle={toggleModal}
+        tipoServicio={editarTipo}
+        onSuccess={handleSuccess}
+      />
     </>
   );
 };
