@@ -11,12 +11,22 @@ import {
 } from "reactstrap";
 import ModalAgregarVenta from "../Modals/ModalAgregarVenta";
 import HeaderTallerPintura from "components/Headers/HeaderTallerPintura";
+import ModalVerDetalles from "../Modals/ModalVerDetalles";
 
 const TablaVentas = ({ onEditarClick, onVerClick }) => {
   const [ventas, setVentas] = useState([]);
   const [modal, setModal] = useState(false);
 
+  const [ventaSeleccionada, setVentaSeleccionada] = useState(null);
+  const [modalDetallesOpen, setModalDetallesOpen] = useState(false);
+
+  const toggleModalDetalles = () => setModalDetallesOpen(!modalDetallesOpen);
   const toggleModal = () => setModal(!modal);
+
+  const verDetallesVenta = (venta) => {
+    setVentaSeleccionada(venta);
+    setModalDetallesOpen(true);
+  };
 
   const obtenerVentas = async () => {
     try {
@@ -47,24 +57,34 @@ const TablaVentas = ({ onEditarClick, onVerClick }) => {
         }
 
         const data = await res.json();
-        return Array.isArray(data.response?.data) ? data.response.data : [];
+        const contenido = data.response?.data;
+
+        if (Array.isArray(contenido)) return contenido;
+        if (contenido?.clientes) return contenido.clientes;
+
+        return [];
       };
 
       // 1. Obtener todas las ventas
       const ventasData = await fetchData("/pintura/GET/venta");
 
-      // 2. Obtener detalles de cada venta usando el ID embebido en la URI
+      // 2. Obtener detalles de cada venta
       const detallesData = await Promise.all(
         ventasData.map((venta) =>
-          fetchData(`/pintura/GET/detalleventas/${venta.idVenta}`)
-            .then((detalles) => ({ idVenta: venta.idVenta, detalles }))
+          fetchData(`/pintura/GET/detalleventas/${venta.idVenta}`).then((detalles) => ({
+            idVenta: venta.idVenta,
+            detalles,
+          }))
         )
       );
 
       // 3. Obtener todas las devoluciones
       const devolucionesData = await fetchData("/pintura/GET/devolucion");
 
-      // 4. Armar la estructura final con detalles y devoluciones
+      // 4. Obtener todos los clientes
+      const clientesData = await fetchData("/pagos/cliente/obtener");
+
+      // 5. Relacionar ventas con detalles, devoluciones y cliente
       const ventasCompletas = ventasData.map((venta) => {
         const detalleObj = detallesData.find((d) => d.idVenta === venta.idVenta);
         const detalles = detalleObj?.detalles || [];
@@ -76,9 +96,12 @@ const TablaVentas = ({ onEditarClick, onVerClick }) => {
           return { ...detalle, devolucion };
         });
 
+        const cliente = clientesData.find(c => c._id === venta.idCliente);
+
         return {
           ...venta,
-          detalles: detallesConDevoluciones
+          detalles: detallesConDevoluciones,
+          cliente
         };
       });
 
@@ -91,9 +114,14 @@ const TablaVentas = ({ onEditarClick, onVerClick }) => {
   };
 
   const agregarVenta = (nuevaVenta) => {
-    // Lógica simulada (podrías hacer push al array temporal si gustas)
     toggleModal();
   };
+  
+  useEffect(() => {
+    if (!modal) {
+      obtenerVentas();
+    }
+  }, [modal]);
 
   useEffect(() => {
     obtenerVentas();
@@ -113,18 +141,14 @@ const TablaVentas = ({ onEditarClick, onVerClick }) => {
                 <th>No. Venta</th>
                 <th>Fecha Venta</th>
                 <th>Total</th>
-                <th>Cantidad</th>
-                <th>Subtotal</th>
-                <th>ID Servicio</th>
-                <th>ID Vehículo</th>
-                <th>Devolución</th>
+                <th>Cliente</th>
                 <th>Acciones</th>
               </tr>
             </thead>
             <tbody>
               {ventas.length === 0 ? (
                 <tr>
-                  <td colSpan="9" className="text-center">
+                  <td colSpan="5" className="text-center">
                     No hay ventas registradas
                   </td>
                 </tr>
@@ -132,33 +156,18 @@ const TablaVentas = ({ onEditarClick, onVerClick }) => {
                 ventas.map((venta) => (
                   <tr key={venta.idVenta}>
                     <td>{venta.idVenta}</td>
-                    <td>{venta.FechaVenta}</td>
+                    <td>{new Date(venta.FechaVenta).toLocaleString()}</td>
                     <td>${venta.TotalVenta.toFixed(2)}</td>
-                    <td>{venta.detalle?.Cantidad || "-"}</td>
-                    <td>${venta.detalle?.Subtotal?.toFixed(2) || "-"}</td>
-                    <td>{venta.detalle?.idServicio || "-"}</td>
-                    <td>{venta.detalle?.idTipoVehiculo || "-"}</td>
-                    <td>
-                      {venta.devolucion
-                        ? `${venta.devolucion.Motivo} (${venta.devolucion.FechaDevolucion})`
-                        : "Sin devolución"}
-                    </td>
+                    <td>{venta.cliente ? `${venta.cliente.nombreCliente} ${venta.cliente.apellidosCliente}` : "Cliente no encontrado"}</td>
                     <td className="text-right">
                       <UncontrolledDropdown>
-                        <DropdownToggle
-                          className="btn-icon-only text-light"
-                          size="sm"
-                        >
+                        <DropdownToggle className="btn-icon-only text-light" size="sm">
                           <i className="fas fa-ellipsis-v" />
                         </DropdownToggle>
                         <DropdownMenu right>
-                          <DropdownItem onClick={() => onVerClick(venta)}>
-                            Ver
+                          <DropdownItem onClick={() => verDetallesVenta(venta)}>
+                            Ver Detalles
                           </DropdownItem>
-                          <DropdownItem onClick={() => onEditarClick(venta)}>
-                            Editar
-                          </DropdownItem>
-                          <DropdownItem>Eliminar</DropdownItem>
                         </DropdownMenu>
                       </UncontrolledDropdown>
                     </td>
@@ -171,6 +180,11 @@ const TablaVentas = ({ onEditarClick, onVerClick }) => {
             isOpen={modal}
             toggle={toggleModal}
             onSubmit={agregarVenta}
+          />
+          <ModalVerDetalles
+            isOpen={modalDetallesOpen}
+            toggle={toggleModalDetalles}
+            venta={ventaSeleccionada}
           />
         </Card>
       </Container>

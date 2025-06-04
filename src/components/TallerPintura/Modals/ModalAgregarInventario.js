@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Modal,
   ModalHeader,
@@ -11,7 +11,13 @@ import {
   Form,
 } from "reactstrap";
 
-const CrearInventarioModal = ({ isOpen, toggle, onInventarioCreado }) => {
+const CrearInventarioModal = ({
+  isOpen,
+  toggle,
+  onInventarioCreado,
+  modoEdicion = false,
+  inventarioEditar = null,
+}) => {
   const [formData, setFormData] = useState({
     NombreProducto: "",
     CantidadDisponible: "",
@@ -22,7 +28,18 @@ const CrearInventarioModal = ({ isOpen, toggle, onInventarioCreado }) => {
     FechaAdquisicion: "",
     FechaVencimiento: "",
     EstadoInventario: true,
+    deleted: false,
   });
+
+  useEffect(() => {
+    if (modoEdicion && inventarioEditar) {
+      setFormData({
+        ...inventarioEditar,
+        FechaAdquisicion: inventarioEditar.FechaAdquisicion?.split("T")[0] || "",
+        FechaVencimiento: inventarioEditar.FechaVencimiento?.split("T")[0] || "",
+      });
+    }
+  }, [modoEdicion, inventarioEditar]);
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
@@ -34,60 +51,49 @@ const CrearInventarioModal = ({ isOpen, toggle, onInventarioCreado }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     const token = localStorage.getItem("token");
+
     if (!token) {
-      alert("No se encontró un token de autenticación, por favor inicia sesión.");
+      alert("Token de autenticación no encontrado.");
       return;
     }
 
-    const request = {
-      accion: "crear",
-      idInventario: 0,
-      TipoInventario: parseInt(formData.TipoInventario),
-      NombreProducto: formData.NombreProducto,
-      idTipoPintura: formData.idTipoPintura !== "" ? parseInt(formData.idTipoPintura) : null,
-      CodigoColor: formData.CodigoColor !== "" ? formData.CodigoColor : null,
-      Lote: formData.Lote,
-      CantidadDisponible: parseInt(formData.CantidadDisponible),
-      FechaAdquisicion: formData.FechaAdquisicion,
-      FechaVencimiento: formData.FechaVencimiento,
-      EstadoInventario: formData.EstadoInventario,
-      deleted: false,
-    };
-
     const payload = {
       metadata: {
-        uri: "/pintura/POST/inventarios",
+        uri: modoEdicion
+          ? `/pintura/PUT/inventarios/${inventarioEditar.idInventario}`
+          : "/pintura/POST/inventarios",
       },
-      request,
+      request: {
+        ...formData,
+        idInventario: modoEdicion ? inventarioEditar.idInventario : 0,
+        TipoInventario: parseInt(formData.TipoInventario),
+        idTipoPintura: formData.idTipoPintura !== "" ? parseInt(formData.idTipoPintura) : null,
+        CantidadDisponible: parseInt(formData.CantidadDisponible),
+        deleted: false, // siempre enviar false aquí
+      },
     };
 
     try {
-      console.log("Payload enviado:", JSON.stringify(payload, null, 2));
       const response = await fetch("http://64.23.169.22:3761/broker/api/rest", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Authorization": token
+          Authorization: token,
         },
         body: JSON.stringify(payload),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        console.error("Error al crear inventario:", error);
-        alert("Error: " + JSON.stringify(error.detail || error));
+        console.error("Error al guardar:", error);
+        alert("Error al guardar el inventario");
         return;
       }
 
-      const data = await response.json();
-      console.log("Inventario creado:", data);
-      alert("Inventario creado exitosamente");
-      toggle(); // cerrar modal
-      if (onInventarioCreado) {
-        onInventarioCreado(); // Notifica al padre
-      }
+      alert(modoEdicion ? "Inventario actualizado correctamente" : "Inventario creado");
+      toggle();
+      if (onInventarioCreado) onInventarioCreado();
     } catch (error) {
       console.error("Error de red:", error);
       alert("Error de red: " + error.message);

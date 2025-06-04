@@ -2,7 +2,6 @@
 import React, { useEffect, useState } from "react";
 import { Table, Button, DropdownItem, DropdownMenu, DropdownToggle, UncontrolledDropdown, Container, Card } from "reactstrap";
 import ModalAgregarServicio from "../Modals/ModalAgregarServicio";
-import HeaderTallerPintura from "components/Headers/HeaderTallerPintura";
 
 const TablaServicios = () => {
   const [servicios, setServicios] = useState([]);
@@ -48,7 +47,7 @@ const obtenerServicios = async () => {
     // Validar que la respuesta sea un arreglo
     const serviciosArray = Array.isArray(data.response?.data) ? data.response.data : [];
 
-    setServicios(serviciosArray);
+    setServicios(serviciosArray.filter((s) => !s.deleted));
 
     // Establecer el próximo ID
     if (serviciosArray.length > 0) {
@@ -66,39 +65,108 @@ const obtenerServicios = async () => {
 
 
 
-const agregarServicio = async (nuevoServicio) => {
-  try {
-    if (modoEdicion && tipoEditar) {
-      // Aquí se haría PUT (editar) en el futuro
-      console.warn("Modo edición aún no implementado con backend");
-    } else {
-      const res = await fetch("http://64.23.169.22:8000/pintura/POST/servicios", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(nuevoServicio)
-      });
-
-      if (res.ok) {
-        const servicioCreado = await res.json();
-        setServicios((prev) => [...prev, servicioCreado]);
-        setNextId((prev) => prev + 1);
-      } else {
-        console.error("Error al agregar servicio:", await res.text());
-      }
+  const agregarServicio = async (payload) => {
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("No se encontró un token de autenticación.");
+      return;
     }
-  } catch (error) {
-    console.error("Error al conectar con backend:", error);
-  }
 
-  toggleModal();
-};
+    try {
+      let res;
 
+      if (modoEdicion && tipoEditar) {
+        const uri = `/pintura/PUT/servicios/${tipoEditar.idServicio}`;
+        const payloadEdicion = {
+          metadata: { uri },
+          request: payload.request,
+        };
 
-  const eliminarServicio = (id) => {
-    const confirmacion = window.confirm("Estás seguro de eliminar este dato?");
-    if (confirmacion){const nuevosServicios = servicios.filter((servicio) => servicio.idServicio !== id);
-    setServicios(nuevosServicios);}
+        res = await fetch("http://64.23.169.22:3761/broker/api/rest", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token,
+          },
+          body: JSON.stringify(payloadEdicion),
+        });
+
+        if (res.ok) {
+          await obtenerServicios();
+          alert("Servicio editado exitosamente.");
+        } else {
+          const error = await res.json();
+          console.error("Error al editar servicio:", error);
+          alert("Error al editar: " + JSON.stringify(error.detail || error));
+        }
+      } else {
+        // Crear nuevo
+        res = await fetch("http://64.23.169.22:3761/broker/api/rest", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (res.ok) {
+          await obtenerServicios();
+          alert("Servicio creado exitosamente.");
+        } else {
+          const error = await res.json();
+          console.error("Error al crear servicio:", error);
+          alert("Error: " + JSON.stringify(error.detail || error));
+        }
+      }
+    } catch (error) {
+      console.error("Error de red:", error);
+      alert("Error de red: " + error.message);
+    }
+
+    toggleModal();
   };
+
+
+  const eliminarServicio = async (id) => {
+      const confirmacion = window.confirm("¿Estás seguro de eliminar este servicio?");
+      if (!confirmacion) return;
+
+      const token = localStorage.getItem("token");
+      if (!token) {
+        alert("Token no encontrado.");
+        return;
+      }
+
+      try {
+        const uri = `/pintura/PUT/servicios/${id}`;
+        const payload = {
+          metadata: { uri },
+          request: { deleted: true }
+        };
+
+        const res = await fetch("http://64.23.169.22:3761/broker/api/rest", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token,
+          },
+          body: JSON.stringify(payload),
+        });
+
+        if (res.ok) {
+          await obtenerServicios(); // Recarga los datos
+          alert("Servicio eliminado lógicamente.");
+        } else {
+          const error = await res.json();
+          console.error("Error al eliminar:", error);
+          alert("Error al eliminar: " + JSON.stringify(error.detail || error));
+        }
+      } catch (error) {
+        console.error("Error de red:", error);
+        alert("Error de red: " + error.message);
+      }
+    };
 
   const iniciarEdicion = (servicio) => {
     setModoEdicion(true);
@@ -153,7 +221,13 @@ useEffect(() => {
               )}
             </tbody>
           </Table>
-          <ModalAgregarServicio isOpen={modal} toggle={toggleModal} onSubmit={agregarServicio} />
+          <ModalAgregarServicio
+            isOpen={modal}
+            toggle={toggleModal}
+            onSubmit={agregarServicio}
+            modoEdicion={modoEdicion}
+            tipoEditar={tipoEditar}
+          />
         </Card>
         <Button color="primary" onClick={toggleModal}>Agregar Servicio</Button>
       </Container>

@@ -49,7 +49,9 @@ const TablaInventario = () => {
     }
 
     const data = await res.json();
-    const inventariosArray = Array.isArray(data.response?.data) ? data.response.data : [];
+    const inventariosArray = Array.isArray(data.response?.data)
+    ? data.response.data.filter(i => !i.deleted) // <== SOLO los no eliminados
+    : [];
 
     setInventarios(inventariosArray);
 
@@ -85,12 +87,57 @@ const TablaInventario = () => {
     toggleModal();
   };
 
-  const eliminarInventario = (id) =>{
+  const eliminarInventario = async (id) => {
     const confirmacion = window.confirm("¿Estás seguro de que deseas eliminar?");
-    if (confirmacion){
-    const nuevosInventarios = inventarios.filter((Inventario) => Inventario.idInventario !== id);
-    setInventarios(nuevosInventarios);
-  }
+    if (!confirmacion) return;
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Token de autenticación no encontrado.");
+      return;
+    }
+
+    try {
+      // Buscar el inventario actual para conservar sus valores
+      const inventario = inventarios.find(inv => inv.idInventario === id);
+      if (!inventario) {
+        alert("Inventario no encontrado.");
+        return;
+      }
+
+      const payload = {
+        metadata: {
+          uri: `/pintura/PUT/inventarios/${id}`
+        },
+        request: {
+          ...inventario,
+          deleted: true // Marcamos como eliminado
+        }
+      };
+
+      const response = await fetch("http://64.23.169.22:3761/broker/api/rest", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        console.error("Error al eliminar inventario:", error);
+        alert("Error al eliminar inventario");
+        return;
+      }
+
+      alert("Inventario eliminado correctamente");
+      obtenerInventarios(); // Refresca la lista
+
+    } catch (error) {
+      console.error("Error de red al eliminar:", error);
+      alert("Error de red: " + error.message);
+    }
   };
 
   const iniciarEdicion = (Inventario) => {
@@ -167,7 +214,10 @@ const TablaInventario = () => {
             toggle={toggleModal}
             onSubmit={agregarInventario}
             onInventarioCreado={obtenerInventarios}
+            modoEdicion={modoEdicion}
+            inventarioEditar={tipoEditar}
           />
+
         </Card>
          <Button color="primary" onClick={toggleModal}>
           Agregar Inventario
