@@ -18,57 +18,76 @@ const TablaVentas = ({ onEditarClick, onVerClick }) => {
 
   const toggleModal = () => setModal(!modal);
 
-  const obtenerVentasSimuladas = () => {
-    // Datos simulados
-    const ventasData = [
-      { idVenta: 1, FechaVenta: "2025-03-11", TotalVenta: 200.5 },
-      { idVenta: 2, FechaVenta: "2025-03-12", TotalVenta: 320.75 },
-    ];
+  const obtenerVentas = async () => {
+    try {
+      const token = localStorage.getItem("token");
 
-    const detallesData = [
-      {
-        idDetalleVenta: 1,
-        idVenta: 1,
-        idTipoVehiculo: 1,
-        idServicio: 2,
-        Cantidad: 3,
-        Subtotal: 150.0,
-        Devolucion: 1,
-      },
-      {
-        idDetalleVenta: 2,
-        idVenta: 2,
-        idTipoVehiculo: 2,
-        idServicio: 1,
-        Cantidad: 2,
-        Subtotal: 280.0,
-        Devolucion: 0,
-      },
-    ];
+      if (!token) {
+        console.error("No se encontró un token de autenticación");
+        setVentas([]);
+        return;
+      }
 
-    const devolucionesData = [
-      {
-        FechaDevolucion: "2025-05-10",
-        Motivo: "Desgaste",
-        idDetalleVenta: 1,
-      },
-    ];
+      // Función genérica para hacer peticiones al broker
+      const fetchData = async (uri, request = {}) => {
+        const res = await fetch("http://64.23.169.22:3761/broker/api/rest", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token
+          },
+          body: JSON.stringify({
+            metadata: { uri },
+            request
+          })
+        });
 
-    // Unir la información de los tres endpoints simulados
-    const ventasCompletas = ventasData.map((venta) => {
-      const detalle = detallesData.find((d) => d.idVenta === venta.idVenta);
-      const devolucion = devolucionesData.find(
-        (dev) => dev.idDetalleVenta === detalle?.idDetalleVenta
+        if (!res.ok) {
+          throw new Error(`Error en ${uri}: ${res.status}`);
+        }
+
+        const data = await res.json();
+        return Array.isArray(data.response?.data) ? data.response.data : [];
+      };
+
+      // 1. Obtener todas las ventas
+      const ventasData = await fetchData("/pintura/GET/venta");
+
+      // 2. Obtener detalles de cada venta usando el ID embebido en la URI
+      const detallesData = await Promise.all(
+        ventasData.map((venta) =>
+          fetchData(`/pintura/GET/detalleventas/${venta.idVenta}`)
+            .then((detalles) => ({ idVenta: venta.idVenta, detalles }))
+        )
       );
 
-      return {
-        ...venta,
-        detalle,
-        devolucion,
-      };
-    });
+      // 3. Obtener todas las devoluciones
+      const devolucionesData = await fetchData("/pintura/GET/devolucion");
 
-    setVentas(ventasCompletas);
+      // 4. Armar la estructura final con detalles y devoluciones
+      const ventasCompletas = ventasData.map((venta) => {
+        const detalleObj = detallesData.find((d) => d.idVenta === venta.idVenta);
+        const detalles = detalleObj?.detalles || [];
+
+        const detallesConDevoluciones = detalles.map((detalle) => {
+          const devolucion = devolucionesData.find(
+            (dev) => dev.idDetalleVenta === detalle.idDetalleVenta
+          );
+          return { ...detalle, devolucion };
+        });
+
+        return {
+          ...venta,
+          detalles: detallesConDevoluciones
+        };
+      });
+
+      setVentas(ventasCompletas);
+
+    } catch (error) {
+      console.error("Error al obtener ventas completas:", error);
+      setVentas([]);
+    }
   };
 
   const agregarVenta = (nuevaVenta) => {
@@ -77,7 +96,7 @@ const TablaVentas = ({ onEditarClick, onVerClick }) => {
   };
 
   useEffect(() => {
-    obtenerVentasSimuladas();
+    obtenerVentas();
   }, []);
 
   return (

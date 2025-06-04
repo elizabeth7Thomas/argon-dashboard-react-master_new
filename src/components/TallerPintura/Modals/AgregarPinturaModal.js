@@ -23,7 +23,7 @@ const AgregarPinturaModal = ({ isOpen, toggle, onSubmit, pinturas }) => {
   useEffect(() => {
     const obtenerTiposPintura = async () => {
       try {
-        const response = await fetch("http://localhost:8000/pintura/GET/tipospinturas");
+        const response = await fetch("http://64.23.169.22:8000/pintura/GET/tipospinturas");
         const data = await response.json();
         setTiposPinturas(Array.isArray(data) ? data : [data]);
       } catch (error) {

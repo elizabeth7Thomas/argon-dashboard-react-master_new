@@ -24,9 +24,9 @@ const ModalAgregarVenta = ({ isOpen, toggle, onSubmit }) => {
   const [tiposServicio, setTiposServicio] = useState([]);
 
   const obtenerDatos = async () => {
-    const resClientes = await fetch("http://localhost:8000/pintura/GET/clientes");
-    const resColores = await fetch("http://localhost:8000/pintura/GET/colores");
-    const resTiposServicio = await fetch("http://localhost:8000/pintura/GET/tiposservicio");
+    const resClientes = await fetch("http://64.23.169.22:8000/pintura/GET/clientes");
+    const resColores = await fetch("http://64.23.169.22:8000/pintura/GET/colores");
+    const resTiposServicio = await fetch("http://64.23.169.22:8000/pintura/GET/tiposservicio");
 
     setClientes(await resClientes.json());
     setColores(await resColores.json());

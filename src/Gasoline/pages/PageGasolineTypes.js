@@ -1,36 +1,82 @@
-// src/gasoline/GasolineTypes/GasolineTypes.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from "react";
 import {
-  Container, Row, Col, Card, CardHeader, CardBody, Button, Badge
-} from 'reactstrap';
-import HeaderGasolineType from 'components/Headers/Header_fuel';
+  Container,
+  Row,
+  Col,
+  Card,
+  CardHeader,
+  Button,
+} from "reactstrap";
 import { faGasPump, faPlus } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import GasolineTypeForm from '../GasolineTypes/GasolineTypeForm';
-import GasolineTypeList from '../GasolineTypes/GasolineTypeList';
+import GasolineTypeForm from "../GasolineTypes/GasolineTypeForm";
+import GasolineTypeList from "../GasolineTypes/GasolineTypeList";
+import apiClient from "Gasoline/utils/apiClient";
 
 export default function GasolineTypes() {
   const [modalForm, setModalForm] = useState(false);
   const [editingFuel, setEditingFuel] = useState(null);
-  const [fuels, setFuels] = useState([
-    { fuelId: 1, fuelName: 'Gasolina Regular', status: true },
-    { fuelId: 2, fuelName: 'Gasolina Premium', status: true },
-    { fuelId: 3, fuelName: 'Diésel', status: false }
-  ]);
+  const [fuels, setFuels] = useState([]);
+
+  const fetchFuels = async () => {
+    try {
+      const response = await apiClient.post("", {
+        metadata: { uri: "fuelType/list" },
+        request: {},
+      });
+      if (response?.data?.response?.data) {
+        setFuels(response.data.response.data);
+      }
+    } catch (err) {
+      console.error("Error al cargar los tipos de combustible:", err);
+    }
+  };
+
+  useEffect(() => {
+    fetchFuels();
+  }, []);
 
   const toggleForm = () => {
     setModalForm(!modalForm);
     if (!modalForm) setEditingFuel(null); // Reset al abrir el modal
   };
 
-  const handleAddFuel = (newFuel) => {
-    if (newFuel.fuelId) {
-      setFuels(fuels.map(f => f.fuelId === newFuel.fuelId ? newFuel : f));
-    } else {
-      setFuels([...fuels, { ...newFuel, fuelId: Date.now() }]);
+  const handleAddFuel = async (newFuel) => {
+    try {
+      const requestData = {
+        fuelName: newFuel.fuelName,
+        costPriceGalon: newFuel.costPriceGalon
+          ? parseFloat(newFuel.costPriceGalon)
+          : 0,
+        salePriceGalon: newFuel.salePriceGalon
+          ? parseFloat(newFuel.salePriceGalon)
+          : 0,
+        createdBy: { employeeId: "N/A", employeeName: "N/A" },
+      };
+
+      if (editingFuel) {
+        await apiClient.post("", {
+          metadata: {
+            uri: `fuelType/update/${newFuel.fuelId}`,
+          },
+          request: requestData,
+        });
+      } else {
+        await apiClient.post("", {
+          metadata: { uri: "fuelType/create" },
+          request: requestData,
+        });
+      }
+
+      setModalForm(false);
+      await fetchFuels();
+    } catch (err) {
+      console.error(
+        `Error al ${editingFuel ? "actualizar" : "crear"} tipo de combustible:`,
+        err
+      );
     }
-    setModalForm(false);
   };
 
   const handleEdit = (fuel) => {
@@ -40,16 +86,13 @@ export default function GasolineTypes() {
 
   const handleDelete = (fuelId) => {
     if (window.confirm("¿Estás seguro de eliminar este tipo de combustible?")) {
-      setFuels(fuels.filter(f => f.fuelId !== fuelId));
+      setFuels(fuels.filter((f) => f.fuelId !== fuelId));
     }
   };
 
-  const activeFuelsCount = fuels.filter(f => f.status).length;
-
   return (
     <>
-      <HeaderGasolineType />
-      <Container className="mt-5" fluid>
+      <Container className="mt-3" fluid>
         {/* Encabezado */}
         <Row className="mb-4">
           <Col>
@@ -63,61 +106,17 @@ export default function GasolineTypes() {
                     </h3>
                   </Col>
                   <Col className="text-right">
-                    <Badge color="primary" pill>
-                      {activeFuelsCount} activos
-                    </Badge>
+                    <Button
+                      color="success"
+                      onClick={toggleForm}
+                      className="btn-icon"
+                    >
+                      <FontAwesomeIcon icon={faPlus} className="mr-2" />
+                      Nuevo Tipo
+                    </Button>
                   </Col>
                 </Row>
               </CardHeader>
-            </Card>
-          </Col>
-        </Row>
-
-        {/* Panel de acciones */}
-        <Row>
-          <Col>
-            <Card className="shadow">
-              <CardBody className="text-center">
-                <h4 className="mb-4">Gestión de Tipos de Combustible</h4>
-                <p className="text-muted mb-4">
-                  Administre los diferentes tipos de combustible disponibles en el sistema
-                </p>
-
-                <div className="d-flex justify-content-center gap-4">
-                  <Button color="success" onClick={toggleForm} className="btn-icon">
-                    <FontAwesomeIcon icon={faPlus} className="mr-2" />
-                    Nuevo Tipo
-                  </Button>
-                </div>
-              </CardBody>
-            </Card>
-          </Col>
-        </Row>
-
-        {/* Estadísticas rápidas */}
-        <Row className="mt-4">
-          <Col md="4">
-            <Card className="bg-gradient-info border-0 shadow">
-              <CardBody className="py-3 text-white">
-                <h5 className="text-uppercase ls-1 mb-1">Total Tipos</h5>
-                <h2 className="mb-0">{fuels.length}</h2>
-              </CardBody>
-            </Card>
-          </Col>
-          <Col md="4">
-            <Card className="bg-gradient-success border-0 shadow">
-              <CardBody className="py-3 text-white">
-                <h5 className="text-uppercase ls-1 mb-1">Activos</h5>
-                <h2 className="mb-0">{activeFuelsCount}</h2>
-              </CardBody>
-            </Card>
-          </Col>
-          <Col md="4">
-            <Card className="bg-gradient-secondary border-0 shadow">
-              <CardBody className="py-3 text-white">
-                <h5 className="text-uppercase ls-1 mb-1">Inactivos</h5>
-                <h2 className="mb-0">{fuels.length - activeFuelsCount}</h2>
-              </CardBody>
             </Card>
           </Col>
         </Row>

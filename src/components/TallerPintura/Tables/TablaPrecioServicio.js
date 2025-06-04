@@ -10,13 +10,48 @@ const TablaPrecioServicio = (onEditarClick,onVerClick) => {
   const toggleModal = () => setModal(!modal);
 
   const obtenerPrecios = async () => {
-    const res = await fetch("http://localhost:8000/pintura/GET/precioservicio");
+  try {
+    const token = localStorage.getItem("token");
+
+    if (!token) {
+      console.error("No se encontró un token de autenticación");
+      setPrecios([]);
+      return;
+    }
+
+    const res = await fetch("http://64.23.169.22:3761/broker/api/rest", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token
+      },
+      body: JSON.stringify({
+        metadata: {
+          uri: "/pintura/GET/precioservicio"
+        },
+        request: {}
+      })
+    });
+
+    if (!res.ok) {
+      console.error("Respuesta del servidor no fue OK:", res.status);
+      setPrecios([]);
+      return;
+    }
+
     const data = await res.json();
-    setPrecios(data);
-  };
+    const preciosArray = Array.isArray(data.response?.data) ? data.response.data : [];
+
+    setPrecios(preciosArray);
+
+  } catch (error) {
+    console.error("Error al obtener precios:", error);
+    setPrecios([]);
+  }
+};
 
   const agregarPrecio = async (nuevoPrecio) => {
-    await fetch("http://localhost:8000/pintura/POST/precioservicio", {
+    await fetch("http://64.23.169.22:8000/pintura/POST/precioservicio", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(nuevoPrecio),
