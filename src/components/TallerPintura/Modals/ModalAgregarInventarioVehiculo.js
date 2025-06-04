@@ -24,6 +24,11 @@ const ModalAgregarInventarioVehiculo = ({
     CantidadRequerida: "",
   });
 
+  const [tiposVehiculos, setTiposVehiculos] = useState([]);
+  const [inventarios, setInventarios] = useState([]);
+
+  const token = localStorage.getItem("token");
+
   useEffect(() => {
     if (modoEdicion && vehiculoEditar) {
       setForm({
@@ -36,22 +41,63 @@ const ModalAgregarInventarioVehiculo = ({
     }
   }, [modoEdicion, vehiculoEditar]);
 
+  useEffect(() => {
+    obtenerTiposVehiculos();
+    obtenerInventarios();
+  }, []);
+
+  const obtenerTiposVehiculos = async () => {
+    try {
+      const res = await fetch("http://64.23.169.22:3761/broker/api/rest", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+        body: JSON.stringify({
+          metadata: { uri: "/pintura/GET/tipovehiculos" },
+          request: {},
+        }),
+      });
+      const data = await res.json();
+      setTiposVehiculos(data.response?.data || []);
+    } catch (err) {
+      console.error("Error al cargar tipos de vehículos:", err.message);
+    }
+  };
+
+  const obtenerInventarios = async () => {
+    try {
+      const res = await fetch("http://64.23.169.22:3761/broker/api/rest", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+        body: JSON.stringify({
+          metadata: { uri: "/pintura/GET/inventarios" },
+          request: {},
+        }),
+      });
+      const data = await res.json();
+      setInventarios(data.response?.data || []);
+    } catch (err) {
+      console.error("Error al cargar inventarios:", err.message);
+    }
+  };
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setForm({ ...form, [name]: value });
   };
 
   const handleSubmit = async () => {
-    const token = localStorage.getItem("token");
-
     const uri = modoEdicion
       ? `/pintura/PUT/vehiculoinventarios/${vehiculoEditar.idVehiculoInventario}`
       : "/pintura/POST/vehiculoinventarios";
 
     const payload = {
-      metadata: {
-        uri,
-      },
+      metadata: { uri },
       request: {
         idTipoVehiculo: parseInt(form.idTipoVehiculo),
         idInventario: parseInt(form.idInventario),
@@ -74,9 +120,8 @@ const ModalAgregarInventarioVehiculo = ({
         throw new Error(errData.detail || "Error en la operación.");
       }
 
-      const result = await res.json();
-      onSubmit(); // recargar tabla
-      toggle(); // cerrar modal
+      onSubmit();
+      toggle();
     } catch (error) {
       console.error("Error al guardar inventario vehículo:", error.message);
     }
@@ -90,23 +135,39 @@ const ModalAgregarInventarioVehiculo = ({
       <ModalBody>
         <Form>
           <FormGroup>
-            <Label>ID Tipo Vehículo</Label>
+            <Label>Tipo de Vehículo</Label>
             <Input
-              type="number"
+              type="select"
               name="idTipoVehiculo"
               value={form.idTipoVehiculo}
               onChange={handleChange}
-            />
+            >
+              <option value="">-- Selecciona un tipo --</option>
+              {tiposVehiculos.map((tipo) => (
+                <option key={tipo.idTipoVehiculo} value={tipo.idTipoVehiculo}>
+                  {tipo.NombreTipoVehiculo}
+                </option>
+              ))}
+            </Input>
           </FormGroup>
+
           <FormGroup>
-            <Label>ID Inventario</Label>
+            <Label>Producto / Inventario</Label>
             <Input
-              type="number"
+              type="select"
               name="idInventario"
               value={form.idInventario}
               onChange={handleChange}
-            />
+            >
+              <option value="">-- Selecciona un producto --</option>
+              {inventarios.map((inv) => (
+                <option key={inv.idInventario} value={inv.idInventario}>
+                  {inv.NombreProducto}
+                </option>
+              ))}
+            </Input>
           </FormGroup>
+
           <FormGroup>
             <Label>Cantidad Requerida</Label>
             <Input
@@ -114,6 +175,7 @@ const ModalAgregarInventarioVehiculo = ({
               name="CantidadRequerida"
               value={form.CantidadRequerida}
               onChange={handleChange}
+              min="1"
             />
           </FormGroup>
         </Form>
