@@ -1,3 +1,4 @@
+// src/Payment/Devoluciones/DevolucionForm.js
 import React, { useState } from "react";
 import {
   Modal, ModalHeader, ModalBody, ModalFooter,
@@ -21,11 +22,17 @@ export default function DevolucionForm({ isOpen, toggle, onSuccess }) {
     e.preventDefault();
     const token = localStorage.getItem("token");
 
+    // Parsear Monto a número, asumiendo que el backend espera número
+    const payload = {
+      metadata: { uri: "pagos/devoluciones/crear" },
+      request: {
+        ...formData,
+        Monto: parseFloat(formData.Monto)
+      }
+    };
+
     try {
-      await axios.post("http://64.23.169.22:3761/broker/api/rest", {
-        metadata: { uri: "pagos/devoluciones/crear" },
-        request: formData
-      }, {
+      await axios.post("http://64.23.169.22:3761/broker/api/rest", payload, {
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json"
@@ -35,7 +42,11 @@ export default function DevolucionForm({ isOpen, toggle, onSuccess }) {
       onSuccess();
       toggle();
     } catch (err) {
-      alert(err.response?.data?.Mensaje || "Error al crear la devolución");
+      const mensaje =
+        err?.response?.data?._broker_message ||
+        err?.response?.data?.mensaje ||
+        "Error inesperado al crear la devolución";
+      alert(mensaje);
     }
   };
 
@@ -44,15 +55,22 @@ export default function DevolucionForm({ isOpen, toggle, onSuccess }) {
       <ModalHeader toggle={toggle}>Nueva Devolución</ModalHeader>
       <ModalBody>
         <Form onSubmit={handleSubmit}>
-          {["NoTransaccion", "Monto", "Descripcion"].map((field) => (
+          {[
+            ["NoTransaccion", "Número de Transacción"],
+            ["Monto", "Monto"],
+            ["Descripcion", "Descripción"]
+          ].map(([field, label]) => (
             <FormGroup key={field}>
-              <Label for={field}>{field}</Label>
+              <Label for={field}>{label}</Label>
               <Input
                 id={field}
                 name={field}
                 value={formData[field]}
                 onChange={handleChange}
                 required
+                type={field === "Monto" ? "number" : "text"}
+                step={field === "Monto" ? "0.01" : undefined}
+                min={field === "Monto" ? "0" : undefined}
               />
             </FormGroup>
           ))}

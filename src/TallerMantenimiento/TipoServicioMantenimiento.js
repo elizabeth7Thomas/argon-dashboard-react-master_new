@@ -21,7 +21,7 @@ import {
 } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
-// Ajusta esta URL según tu despliegue
+
 const BASE_URL = "https://tallerrepuestos.vercel.app/tallerrepuestos";
 
 const TipoServicioMantenimiento = () => {

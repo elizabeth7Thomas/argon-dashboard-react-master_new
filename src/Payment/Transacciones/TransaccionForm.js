@@ -1,223 +1,142 @@
-import React, { useState, useEffect } from "react";
+import React from "react";
 import {
   Modal,
   ModalHeader,
   ModalBody,
   ModalFooter,
-  Button,
   Form,
   FormGroup,
   Label,
-  Input
+  Input,
+  Button,
 } from "reactstrap";
+import axios from "axios";
 
-const TransaccionForm = ({
+export default function TransaccionForm({
   isOpen,
   toggle,
-  onSubmit,
-  isEditing,
   formData,
-  setFormData
-}) => {
-  const [detalle, setDetalle] = useState([
-    { Producto: "", Cantidad: 1, Precio: 0, Descuento: 0 }
-  ]);
-
-  const [metodosPago, setMetodosPago] = useState([
-    { IdMetodo: 1, Monto: 0, IdBanco: "", NoTarjeta: "" }
-  ]);
-
-  // Para limpiar cuando se abre el modal
-  useEffect(() => {
-    if (!isOpen) {
-      setDetalle([{ Producto: "", Cantidad: 1, Precio: 0, Descuento: 0 }]);
-      setMetodosPago([{ IdMetodo: 1, Monto: 0, IdBanco: "", NoTarjeta: "" }]);
-    }
-  }, [isOpen]);
-
-  const agregarDetalle = () => {
-    setDetalle([...detalle, { Producto: "", Cantidad: 1, Precio: 0, Descuento: 0 }]);
-  };
-
-  const agregarMetodoPago = () => {
-    setMetodosPago([...metodosPago, { IdMetodo: 1, Monto: 0, IdBanco: "", NoTarjeta: "" }]);
-  };
-
-  const handleDetalleChange = (index, field, value) => {
-    const nuevos = [...detalle];
-    nuevos[index][field] = value;
-    setDetalle(nuevos);
-  };
-
-  const handleMetodoPagoChange = (index, field, value) => {
-    const nuevos = [...metodosPago];
-    nuevos[index][field] = value;
-    setMetodosPago(nuevos);
-  };
-
-  const handleInputChange = (e) => {
+  setFormData,
+  onSuccess,
+  isEditing,
+  idTransaccion,
+}) {
+  const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleFormSubmit = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    const token = localStorage.getItem("token");
 
     const payload = {
-      Nit: formData.Nit || "",
-      IdCaja: parseInt(formData.IdCaja || 0),
-      IdServicioTransaccion: parseInt(formData.IdServicioTransaccion || 1),
-      Detalle: detalle.map(d => ({
-        ...d,
-        Cantidad: parseInt(d.Cantidad),
-        Precio: parseFloat(d.Precio),
-        Descuento: parseFloat(d.Descuento)
-      })),
-      MetodosPago: metodosPago.map(m => ({
-        ...m,
-        Monto: parseFloat(m.Monto)
-      }))
+      metadata: {
+        uri: isEditing
+          ? `pagos/transacciones/actualizar/${idTransaccion}`
+          : "pagos/transacciones/crear",
+      },
+      request: {
+        Monto: parseFloat(formData.monto),
+        Fecha: formData.fecha,
+        MetodoPago: formData.metodoPago,
+        BancoId: formData.bancoId,
+        ClienteId: formData.clienteId,
+      },
     };
 
     try {
-      const res = await fetch("http://localhost:3001/pagos/transacciones/crear", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
-      });
+      await axios.post(
+        "http://64.23.169.22:3761/broker/api/rest",
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-      if (!res.ok) throw new Error("Error al crear transacción");
-
-      const data = await res.json();
-      console.log("Transacción creada:", data);
-      onSubmit(); // cerrar modal desde TransaccionesPage
+      onSuccess();
+      toggle();
     } catch (err) {
-      console.error("Error:", err);
-      alert("Ocurrió un error al crear la transacción");
-    }
+  const mensaje =
+    err?.response?.data?._broker_message ||
+    err?.response?.data?.mensaje ||
+    "Error inesperado al crear la devolución";
+  alert(mensaje);
+}
   };
 
   return (
-    <Modal isOpen={isOpen} toggle={toggle} size="lg">
+    <Modal isOpen={isOpen} toggle={toggle}>
       <ModalHeader toggle={toggle}>
         {isEditing ? "Editar Transacción" : "Nueva Transacción"}
       </ModalHeader>
       <ModalBody>
-        <Form onSubmit={handleFormSubmit}>
+        <Form onSubmit={handleSubmit}>
           <FormGroup>
-            <Label>NIT</Label>
+            <Label for="monto">Monto</Label>
             <Input
-              name="Nit"
-              value={formData.Nit || ""}
-              onChange={handleInputChange}
-              required
-            />
-          </FormGroup>
-
-          <FormGroup>
-            <Label>ID Caja</Label>
-            <Input
+              id="monto"
+              name="monto"
               type="number"
-              name="IdCaja"
-              value={formData.IdCaja || 0}
-              onChange={handleInputChange}
+              value={formData.monto || ""}
+              onChange={handleChange}
               required
             />
           </FormGroup>
-
           <FormGroup>
-            <Label>ID Servicio Transacción</Label>
+            <Label for="fecha">Fecha</Label>
             <Input
-              type="number"
-              name="IdServicioTransaccion"
-              value={formData.IdServicioTransaccion || 1}
-              onChange={handleInputChange}
+              id="fecha"
+              name="fecha"
+              type="date"
+              value={formData.fecha || ""}
+              onChange={handleChange}
               required
             />
           </FormGroup>
-
-          <h6 className="mt-4">Detalle de Productos</h6>
-          {detalle.map((d, index) => (
-            <div key={index} className="border p-2 mb-2 rounded bg-light">
-              <Input
-                placeholder="Producto"
-                value={d.Producto}
-                onChange={(e) => handleDetalleChange(index, "Producto", e.target.value)}
-                className="mb-2"
-              />
-              <Input
-                type="number"
-                placeholder="Cantidad"
-                value={d.Cantidad}
-                onChange={(e) => handleDetalleChange(index, "Cantidad", e.target.value)}
-                className="mb-2"
-              />
-              <Input
-                type="number"
-                placeholder="Precio"
-                value={d.Precio}
-                onChange={(e) => handleDetalleChange(index, "Precio", e.target.value)}
-                className="mb-2"
-              />
-              <Input
-                type="number"
-                step="0.01"
-                placeholder="Descuento"
-                value={d.Descuento}
-                onChange={(e) => handleDetalleChange(index, "Descuento", e.target.value)}
-              />
-            </div>
-          ))}
-          <Button size="sm" onClick={agregarDetalle} className="mb-3" color="secondary">
-            + Agregar Producto
-          </Button>
-
-          <h6>Métodos de Pago</h6>
-          {metodosPago.map((m, index) => (
-            <div key={index} className="border p-2 mb-2 rounded bg-light">
-              <Input
-                type="number"
-                placeholder="Id Método"
-                value={m.IdMetodo}
-                onChange={(e) => handleMetodoPagoChange(index, "IdMetodo", e.target.value)}
-                className="mb-2"
-              />
-              <Input
-                type="number"
-                placeholder="Monto"
-                value={m.Monto}
-                onChange={(e) => handleMetodoPagoChange(index, "Monto", e.target.value)}
-                className="mb-2"
-              />
-              <Input
-                placeholder="Id Banco"
-                value={m.IdBanco}
-                onChange={(e) => handleMetodoPagoChange(index, "IdBanco", e.target.value)}
-                className="mb-2"
-              />
-              <Input
-                placeholder="No. Tarjeta"
-                value={m.NoTarjeta}
-                onChange={(e) => handleMetodoPagoChange(index, "NoTarjeta", e.target.value)}
-              />
-            </div>
-          ))}
-          <Button size="sm" onClick={agregarMetodoPago} className="mb-3" color="secondary">
-            + Agregar Método de Pago
-          </Button>
-
-          <ModalFooter className="p-0 pt-3">
-            <Button color="primary" type="submit">
-              {isEditing ? "Guardar Cambios" : "Crear Transacción"}
-            </Button>
+          <FormGroup>
+            <Label for="metodoPago">Método de Pago</Label>
+            <Input
+              id="metodoPago"
+              name="metodoPago"
+              value={formData.metodoPago || ""}
+              onChange={handleChange}
+              required
+            />
+          </FormGroup>
+          <FormGroup>
+            <Label for="bancoId">ID Banco</Label>
+            <Input
+              id="bancoId"
+              name="bancoId"
+              value={formData.bancoId || ""}
+              onChange={handleChange}
+              required
+            />
+          </FormGroup>
+          <FormGroup>
+            <Label for="clienteId">ID Cliente</Label>
+            <Input
+              id="clienteId"
+              name="clienteId"
+              value={formData.clienteId || ""}
+              onChange={handleChange}
+              required
+            />
+          </FormGroup>
+          <ModalFooter>
             <Button color="secondary" onClick={toggle}>
               Cancelar
+            </Button>
+            <Button color="success" type="submit">
+              {isEditing ? "Guardar Cambios" : "Guardar"}
             </Button>
           </ModalFooter>
         </Form>
       </ModalBody>
     </Modal>
   );
-};
-
-export default TransaccionForm;
+}

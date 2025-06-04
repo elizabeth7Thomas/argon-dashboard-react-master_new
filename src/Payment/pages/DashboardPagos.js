@@ -7,12 +7,13 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 // Importar componentes reales
 import ClientesPage from './ClientesPage'
 import BancosPage from './BancosPage';
+import FacturasPage from './FacturasPage';
 
-import DevolucionesList from 'Payment/Devoluciones/DevolucionList';
+import DevolucionesPage from './DevolucionesPage';
 import MetodosPagoPage from './MetodosPagoPage';
 import TransaccionesPage from './TransaccionesPage';
 import HeaderPagos from 'components/Headers/HeaderPagos';
-
+import CierreCajaPage from './CierreCajaPage';
 
 export default function DashboardPagos() {
   const [totalPagos, setTotalPagos] = useState(0);
@@ -41,9 +42,14 @@ export default function DashboardPagos() {
       case 'transacciones':
         return <TransaccionesPage />;
       case 'devoluciones':
-        return <DevolucionesList />;
+        return <DevolucionesPage  />;
       case 'bancos':
         return <BancosPage />;
+      case 'facturas':
+        return <FacturasPage />;
+      case 'cierres':
+        return <CierreCajaPage />; 
+
       default:
         return <p className="text-muted">Selecciona una opción para comenzar.</p>;
     }
