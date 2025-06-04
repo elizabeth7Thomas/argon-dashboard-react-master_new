@@ -226,12 +226,12 @@ export default function EmpleadoForm({ initialData, onSave, onCancel }) {
           )}
         </Alert>
       )}
-      <FormGroup><Label>DPI</Label><Input name="dpi" value={formData.dpi} onChange={handleChange} required /></FormGroup>
-      <FormGroup><Label>Nombres</Label><Input name="nombres" value={formData.nombres} onChange={handleChange} required /></FormGroup>
-      <FormGroup><Label>Apellidos</Label><Input name="apellidos" value={formData.apellidos} onChange={handleChange} required /></FormGroup>
-      <FormGroup><Label>Teléfono</Label><Input name="telefono" value={formData.telefono} onChange={handleChange} required /></FormGroup>
-      <FormGroup><Label>Dirección</Label><Input name="direccion" value={formData.direccion} onChange={handleChange} /></FormGroup>
-      <FormGroup><Label>NIT</Label><Input name="nit" value={formData.nit} onChange={handleChange} required /></FormGroup>
+      <FormGroup><Label>DPI</Label><Input name="dpi" value={formData.dpi} onChange={handleChange} required  placeholder="13 díjitos"/></FormGroup>
+      <FormGroup><Label>Nombres</Label><Input name="nombres" value={formData.nombres} onChange={handleChange} required placeholder="ej: Juan"/></FormGroup>
+      <FormGroup><Label>Apellidos</Label><Input name="apellidos" value={formData.apellidos} onChange={handleChange} required placeholder="ej: Morales"/></FormGroup>
+      <FormGroup><Label>Teléfono</Label><Input name="telefono" value={formData.telefono} onChange={handleChange} required placeholder="8 díjitos"/></FormGroup>
+      <FormGroup><Label>Dirección</Label><Input name="direccion" value={formData.direccion} onChange={handleChange} placeholder="ej: Quetzaltenango zona 1"/></FormGroup>
+      <FormGroup><Label>NIT</Label><Input name="nit" value={formData.nit} onChange={handleChange} required placeholder="CF"/></FormGroup>
       <FormGroup>
         <Label>Email</Label>
         <Input
@@ -240,6 +240,7 @@ export default function EmpleadoForm({ initialData, onSave, onCancel }) {
           value={formData.email}
           onChange={handleChange}
           required
+          placeholder="ej: juan.1@gmail.com"
         />
       </FormGroup>
       <FormGroup tag="fieldset">

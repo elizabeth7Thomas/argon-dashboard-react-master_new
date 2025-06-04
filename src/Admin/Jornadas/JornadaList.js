@@ -67,11 +67,11 @@ export default function JornadaList({
 
         // Ajuste para la estructura esperada
         if (
-          response.data?.response?.data?.data &&
-          Array.isArray(response.data.response.data.data)
+          response.data?.response?.data?.jornadas &&
+          Array.isArray(response.data.response.data.jornadas)
         ) {
-          console.log("Jornadas extraídas:", response.data.response.data.data);
-          setJornadas(response.data.response.data.data);
+          console.log("Jornadas extraídas:", response.data.response.data.jornadas);
+          setJornadas(response.data.response.data.jornadas);
         } else {
           console.log("Contenido de response.data.response.data:", response.data?.response?.data);
           setError("La respuesta del broker no tiene datos válidos");

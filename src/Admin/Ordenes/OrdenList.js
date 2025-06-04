@@ -11,15 +11,12 @@ import {
   Spinner,
 } from "reactstrap";
 import OrdenForm from "./OrdenForm";
-import { faEdit, faTrash, faIdCard, faEye } from "@fortawesome/free-solid-svg-icons";
+import { faEdit,  faIdCard, faEye } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from "axios";
 
 const OrdenList = ({
   onVerDetalles,
-  onCrearOrden,
-  onEditarOrden,
-  onEliminarOrden,
   estadosDetalles,
 }) => {
   const [ordenes, setOrdenes] = useState([]);
@@ -28,6 +25,7 @@ const OrdenList = ({
   const [error, setError] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [ordenSeleccionada, setOrdenSeleccionada] = useState(null);
+  const [alert, setAlert] = useState(null);
 
   useEffect(() => {
     const fetchOrdenes = async () => {
@@ -96,6 +94,196 @@ const OrdenList = ({
     fetchOrdenes();
   }, []);
 
+  // Función para crear una nueva orden
+  const handleCrearOrden = async (ordenData) => {
+    setAlert(null);
+    const token = localStorage.getItem("token");
+    const payload = {
+      metadata: { uri: "administracion/POST/ordenes" },
+      request: ordenData,
+    };
+    try {
+      const response = await axios.post(
+        "http://64.23.169.22:3761/broker/api/rest",
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const brokerResponse = response.data?.response?.data;
+      const brokerMsg = response.data?.response?._broker_message;
+      if (brokerResponse && brokerResponse.message) {
+        setAlert(
+          <div style={{ color: "#fff", background: "#28a745", borderRadius: 4, padding: 12, margin: 10 }}>
+            <strong>{brokerResponse.message}</strong>
+            {brokerMsg && (
+              <>
+                <br />
+                <span>{brokerMsg}</span>
+              </>
+            )}
+          </div>
+        );
+        // Opcional: recargar las órdenes
+        setOrdenes(prev => [...prev, { ...ordenData, id: brokerResponse.id }]);
+      } else {
+        setAlert("Orden guardada, pero no se recibió mensaje de confirmación.");
+      }
+    } catch (error) {
+      let brokerMsg = "";
+      let brokerStatus = "";
+      let brokerError = "";
+      let brokerPath = "";
+      let brokerTimestamp = "";
+      if (error.response) {
+        const resp = error.response.data?.response;
+        brokerMsg = resp?._broker_message;
+        brokerStatus = resp?._broker_status;
+        brokerError = resp?.data?.error;
+        brokerPath = resp?.data?.path;
+        brokerTimestamp = resp?.data?.timestamp;
+        setAlert(
+          <div style={{ color: "#fff", background: "#dc3545", borderRadius: 4, padding: 12, margin: 10 }}>
+            <strong>Error del broker:</strong>
+            {brokerMsg && (
+              <>
+                <br />
+                <span>{brokerMsg}</span>
+              </>
+            )}
+            {brokerStatus && (
+              <>
+                <br />
+                <span>Código: {brokerStatus}</span>
+              </>
+            )}
+            {brokerError && (
+              <>
+                <br />
+                <span>Detalle: {brokerError}</span>
+              </>
+            )}
+            {brokerPath && (
+              <>
+                <br />
+                <span>Ruta: {brokerPath}</span>
+              </>
+            )}
+            {brokerTimestamp && (
+              <>
+                <br />
+                <span>Fecha: {brokerTimestamp}</span>
+              </>
+            )}
+          </div>
+        );
+      } else if (error.request) {
+        setAlert(<span style={{ color: "#fff" }}>No hubo respuesta del servidor. Revisa tu conexión.</span>);
+      } else {
+        setAlert(<span style={{ color: "#fff" }}>{error.message || "Error desconocido."}</span>);
+      }
+    }
+  };
+
+  // Función para editar una orden existente
+  const handleEditarOrden = async (id, ordenData) => {
+    setAlert(null);
+    const token = localStorage.getItem("token");
+    const payload = {
+      metadata: { uri: `administracion/PUT/ordenes/${id}` },
+      request: ordenData,
+    };
+    try {
+      const response = await axios.post(
+        "http://64.23.169.22:3761/broker/api/rest",
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const brokerResponse = response.data?.response?.data;
+      const brokerMsg = response.data?.response?._broker_message;
+      if (brokerResponse && brokerResponse.message) {
+        setAlert(
+          <div style={{ color: "#fff", background: "#28a745", borderRadius: 4, padding: 12, margin: 10 }}>
+            <strong>{brokerResponse.message}</strong>
+            {brokerMsg && (
+              <>
+                <br />
+                <span>{brokerMsg}</span>
+              </>
+            )}
+          </div>
+        );
+        // Actualiza la orden en el estado local
+        setOrdenes(prev =>
+          prev.map(o => (o.id === id ? { ...o, ...ordenData } : o))
+        );
+      } else {
+        setAlert("Orden actualizada, pero no se recibió mensaje de confirmación.");
+      }
+    } catch (error) {
+      let brokerMsg = "";
+      let brokerStatus = "";
+      let brokerError = "";
+      let brokerPath = "";
+      let brokerTimestamp = "";
+      if (error.response) {
+        const resp = error.response.data?.response;
+        brokerMsg = resp?._broker_message;
+        brokerStatus = resp?._broker_status;
+        brokerError = resp?.data?.error;
+        brokerPath = resp?.data?.path;
+        brokerTimestamp = resp?.data?.timestamp;
+        setAlert(
+          <div style={{ color: "#fff", background: "#dc3545", borderRadius: 4, padding: 12, margin: 10 }}>
+            <strong>Error del broker:</strong>
+            {brokerMsg && (
+              <>
+                <br />
+                <span>{brokerMsg}</span>
+              </>
+            )}
+            {brokerStatus && (
+              <>
+                <br />
+                <span>Código: {brokerStatus}</span>
+              </>
+            )}
+            {brokerError && (
+              <>
+                <br />
+                <span>Detalle: {brokerError}</span>
+              </>
+            )}
+            {brokerPath && (
+              <>
+                <br />
+                <span>Ruta: {brokerPath}</span>
+              </>
+            )}
+            {brokerTimestamp && (
+              <>
+                <br />
+                <span>Fecha: {brokerTimestamp}</span>
+              </>
+            )}
+          </div>
+        );
+      } else if (error.request) {
+        setAlert(<span style={{ color: "#fff" }}>No hubo respuesta del servidor. Revisa tu conexión.</span>);
+      } else {
+        setAlert(<span style={{ color: "#fff" }}>{error.message || "Error desconocido."}</span>);
+      }
+    }
+  };
+
   const handleNuevaOrden = () => {
     setOrdenSeleccionada(null);
     setModalOpen(true);
@@ -108,18 +296,13 @@ const OrdenList = ({
 
   const handleGuardar = (ordenData) => {
     if (ordenSeleccionada) {
-      onEditarOrden(ordenSeleccionada.id, ordenData);
+      handleEditarOrden(ordenSeleccionada.id, ordenData);
     } else {
-      onCrearOrden(ordenData);
+      handleCrearOrden(ordenData);
     }
     setModalOpen(false);
   };
 
-  const handleEliminar = (orden) => {
-    if (window.confirm("¿Seguro que deseas eliminar esta orden?")) {
-      onEliminarOrden(orden.id);
-    }
-  };
 
   const ordenesFiltradas = ordenes.filter((orden) =>
     (orden.servicio?.nombre || "")
@@ -219,13 +402,6 @@ const OrdenList = ({
                           >
                             <FontAwesomeIcon icon={faEdit} /> Editar
                           </Button>
-                          <Button
-                            color="danger"
-                            size="sm"
-                            onClick={() => handleEliminar(orden)}
-                          >
-                            <FontAwesomeIcon icon={faTrash} /> Eliminar
-                          </Button>
                         </td>
                       </tr>
                     ))
@@ -251,6 +427,11 @@ const OrdenList = ({
           toggle={() => setModalOpen(false)}
           onSave={handleGuardar}
         />
+      )}
+      {alert && (
+        <div style={{ background: "#343a40", borderRadius: 4, padding: 12, margin: 10, color: "#fff" }}>
+          {alert}
+        </div>
       )}
     </>
   );

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Input, Container, Row, Col } from "reactstrap";
+import { Input, Container, Row, Col, Button } from "reactstrap";
 import OrdenList from "../Ordenes/OrdenList";
 import OrdenForm from "../Ordenes/OrdenForm";
 import routes from "../routes";
@@ -12,6 +12,7 @@ const PageOrdenesAdmin = () => {
   const [estadosDetalles, setEstadosDetalles] = useState([]);
   const [filtroServicio, setFiltroServicio] = useState("");
   const [busqueda, setBusqueda] = useState("");
+  const [catalogoServicios, setCatalogoServicios] = useState([]);
 
   useEffect(() => {
     const fetchOrdenes = async () => {
@@ -45,12 +46,21 @@ const PageOrdenesAdmin = () => {
 
     fetchOrdenes();
     fetchEstadosDetalles();
+
+    // Cargar catálogo de servicios desde localStorage
+    const servicios = JSON.parse(localStorage.getItem("catalogo_servicios") || "[]");
+    setCatalogoServicios(servicios);
   }, []);
 
   const toggleModal = () => setModalOpen(!modalOpen);
 
   const handleVerDetalles = (orden) => {
     setOrdenSeleccionada(orden);
+    setModalOpen(true);
+  };
+
+  const handleNuevaOrden = () => {
+    setOrdenSeleccionada(null);
     setModalOpen(true);
   };
 
@@ -75,18 +85,23 @@ const PageOrdenesAdmin = () => {
             onChange={(e) => setBusqueda(e.target.value)}
           />
         </Col>
-        <Col md={6}>
+        <Col md={6} className="d-flex justify-content-end align-items-center">
           <Input
             type="select"
+            value={filtroServicio}
             onChange={(e) => setFiltroServicio(e.target.value)}
+            style={{ maxWidth: "300px", marginRight: "10px" }}
           >
             <option value="">Todos los servicios</option>
-            {ordenes.map((o) => o.servicio).filter((s, index, self) =>
-              s && self.findIndex(s2 => s2.id === s.id) === index
-            ).map((servicio) => (
-              <option key={servicio.id} value={servicio.id}>{servicio.nombre}</option>
+            {catalogoServicios.map((servicio) => (
+              <option key={servicio.id} value={servicio.id}>
+                {servicio.nombre}
+              </option>
             ))}
           </Input>
+          <Button color="primary" onClick={handleNuevaOrden}>
+            Nueva Orden
+          </Button>
         </Col>
       </Row>
 

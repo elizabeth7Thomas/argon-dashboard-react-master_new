@@ -13,11 +13,11 @@ import {
   PaginationItem,
   PaginationLink,
 } from "reactstrap";
-import { faAngleDoubleLeft, faAngleLeft, faAngleRight, faAngleDoubleRight, faEdit, faTrashAlt, faIdCard } from "@fortawesome/free-solid-svg-icons";
+import { faAngleDoubleLeft, faAngleLeft, faAngleRight, faAngleDoubleRight,  faTrashAlt, faIdCard } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from "axios";
 
-export default function AlertaList({ onEditar, onEliminar }) {
+export default function AlertaList({ onEditar, onEliminar, onAgregar }) {
   const [alertas, setAlertas] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [loading, setLoading] = useState(true);
@@ -25,8 +25,18 @@ export default function AlertaList({ onEditar, onEliminar }) {
   const [pagina, setPagina] = useState(1);
   const [idServicioFiltro, setIdServicioFiltro] = useState("");
   const [estadoFiltro, setEstadoFiltro] = useState(""); // "", "activo", "inactivo"
+  const [alert, setAlert] = useState(null);
 
   const POR_PAGINA = 15;
+
+  // Cargar catálogo de servicios desde localStorage
+  const catalogoServicios = JSON.parse(localStorage.getItem("catalogo_servicios") || "[]");
+
+  // Helper para mostrar el nombre del servicio
+  const getServicioNombre = (id) => {
+    const servicio = catalogoServicios.find(s => s.id === id || s.id === Number(id));
+    return servicio ? servicio.nombre : id;
+  };
 
   useEffect(() => {
     const fetchAlertas = async () => {
@@ -51,24 +61,17 @@ export default function AlertaList({ onEditar, onEliminar }) {
           }
         );
 
-        // Imprime toda la respuesta para depuración
-        console.log("Respuesta completa del broker (alertas):", response.data);
-
-        // Imprime el posible array de alertas para ver la estructura real
         if (
           response.data?.response?.data?.alertas &&
           Array.isArray(response.data.response.data.alertas)
         ) {
-          console.log("Alertas extraídas:", response.data.response.data.alertas);
           setAlertas(response.data.response.data.alertas);
         } else if (
           response.data?.response?.data?.data &&
           Array.isArray(response.data.response.data.data)
         ) {
-          console.log("Alertas extraídas:", response.data.response.data.data);
           setAlertas(response.data.response.data.data);
         } else {
-          console.log("Contenido de response.data.response.data:", response.data?.response?.data);
           setError("La respuesta del broker no tiene datos válidos");
         }
       } catch (err) {
@@ -99,7 +102,7 @@ export default function AlertaList({ onEditar, onEliminar }) {
         (a.mensaje && a.mensaje.toLowerCase().includes(busqueda.toLowerCase())) ||
         (a.id && a.id.toString().includes(busqueda)));
     const coincideServicio =
-      !idServicioFiltro || (a.id_servicio && a.id_servicio.toString() === idServicioFiltro);
+      !idServicioFiltro || (a.id_servicio && String(a.id_servicio) === idServicioFiltro);
     const coincideEstado =
       !estadoFiltro ||
       (estadoFiltro === "activo" && a.estado === true) ||
@@ -123,11 +126,10 @@ export default function AlertaList({ onEditar, onEliminar }) {
   const renderPagination = () => {
     if (totalPaginas <= 1) return null;
 
-    const paginasVisibles = 3; // Cuántos botones de página mostrar a la izquierda y derecha
+    const paginasVisibles = 3;
     let start = Math.max(1, pagina - paginasVisibles);
     let end = Math.min(totalPaginas, pagina + paginasVisibles);
 
-    // Ajusta el rango si estás cerca del inicio o fin
     if (pagina <= paginasVisibles) {
       end = Math.min(totalPaginas, paginasVisibles * 2 + 1);
     }
@@ -173,6 +175,107 @@ export default function AlertaList({ onEditar, onEliminar }) {
     );
   };
 
+  // Eliminar alerta con manejo de mensajes del broker
+  const handleEliminar = async (alerta) => {
+    if (!window.confirm("¿Seguro que deseas eliminar esta alerta?")) return;
+    setAlert(null);
+    const token = localStorage.getItem("token");
+    const uri = `administracion/PATCH/alertas/${alerta.id}`;
+    const payload = {
+      metadata: { uri },
+      request: {}
+    };
+    try {
+      const response = await axios.post(
+        "http://64.23.169.22:3761/broker/api/rest",
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const brokerResponse = response.data?.response?.data;
+      const brokerMsg = response.data?.response?._broker_message;
+      const brokerStatus = response.data?.response?._broker_status;
+      if (brokerMsg || brokerResponse?.message) {
+        setAlert(
+          <div style={{ color: "#fff" }}>
+            {brokerResponse?.message && (
+              <>
+                <strong>{brokerResponse.message}</strong>
+                <br />
+              </>
+            )}
+            {brokerMsg && <span>{brokerMsg}</span>}
+            {brokerStatus && (
+              <>
+                <br />
+                <span>Código: {brokerStatus}</span>
+              </>
+            )}
+          </div>
+        );
+      }
+      // Refresca la lista después de eliminar
+      setAlertas(prev => prev.filter(a => a.id !== alerta.id));
+    } catch (error) {
+      let brokerMsg = "";
+      let brokerStatus = "";
+      let brokerError = "";
+      let brokerPath = "";
+      let brokerTimestamp = "";
+      if (error.response) {
+        const resp = error.response.data?.response;
+        brokerMsg = resp?._broker_message;
+        brokerStatus = resp?._broker_status;
+        brokerError = resp?.data?.error;
+        brokerPath = resp?.data?.path;
+        brokerTimestamp = resp?.data?.timestamp;
+        setAlert(
+          <div style={{ color: "#fff" }}>
+            <strong>Error del broker:</strong>
+            {brokerMsg && (
+              <>
+                <br />
+                <span>{brokerMsg}</span>
+              </>
+            )}
+            {brokerStatus && (
+              <>
+                <br />
+                <span>Código: {brokerStatus}</span>
+              </>
+            )}
+            {brokerError && (
+              <>
+                <br />
+                <span>Detalle: {brokerError}</span>
+              </>
+            )}
+            {brokerPath && (
+              <>
+                <br />
+                <span>Ruta: {brokerPath}</span>
+              </>
+            )}
+            {brokerTimestamp && (
+              <>
+                <br />
+                <span>Fecha: {brokerTimestamp}</span>
+              </>
+            )}
+          </div>
+        );
+      } else if (error.request) {
+        setAlert(<span style={{ color: "#fff" }}>No hubo respuesta del servidor. Revisa tu conexión.</span>);
+      } else {
+        setAlert(<span style={{ color: "#fff" }}>{error.message || "Error desconocido."}</span>);
+      }
+    }
+  };
+
   if (loading) return <Spinner />;
   if (error)
     return (
@@ -183,101 +286,105 @@ export default function AlertaList({ onEditar, onEliminar }) {
     );
 
   return (
-    <Row>
-      <Col>
-        <Card className="shadow">
-          <CardHeader className="border-0">
-            <Row className="align-items-center">
-              <Col>
-                <h3 className="mb-0">Listado de Alertas</h3>
-              </Col>
-              <Col className="d-flex justify-content-end align-items-center">
-                <Input
-                  type="text"
-                  placeholder="Buscar alerta..."
-                  value={busqueda}
-                  onChange={(e) => setBusqueda(e.target.value)}
-                  style={{ maxWidth: "200px", marginRight: 8 }}
-                />
-                <Input
-                  type="text"
-                  placeholder="ID Servicio"
-                  value={idServicioFiltro}
-                  onChange={(e) => setIdServicioFiltro(e.target.value)}
-                  style={{ maxWidth: "120px", marginRight: 8 }}
-                />
-                <Input
-                  type="select"
-                  value={estadoFiltro}
-                  onChange={(e) => setEstadoFiltro(e.target.value)}
-                  style={{ maxWidth: "120px" }}
-                >
-                  <option value="">Todos</option>
-                  <option value="activo">Activos</option>
-                  <option value="inactivo">Inactivos</option>
-                </Input>
-              </Col>
-            </Row>
-          </CardHeader>
-          <CardBody>
-            <Table className="align-items-center table-flush" responsive hover>
-              <thead className="thead-light">
-                <tr>
-                  <th><FontAwesomeIcon icon={faIdCard} className="mr-1" /> ID</th>
-                  <th>Producto</th>
-                  <th>Mensaje</th>
-                  <th>ID Servicio</th>
-                  <th>Estado</th>
-                  <th>Acciones</th>
-                </tr>
-              </thead>
-              <tbody>
-                {alertasPagina.length > 0 ? (
-                  alertasPagina.map((item, index) => (
-                    <tr key={item.id || index}>
-                      <td>{item.id}</td>
-                      <td>{item.nombre_producto}</td>
-                      <td>{item.mensaje}</td>
-                      <td>{item.id_servicio}</td>
-                      <td>
-                        {item.estado === true
-                          ? <span className="text-success font-weight-bold">Activo</span>
-                          : <span className="text-danger font-weight-bold">Inactivo</span>
-                        }
-                      </td>
-                      <td>
-                        <Button
-                          size="sm"
-                          color="info"
-                          onClick={() => onEditar(item)}
-                          className="mr-2"
-                        >
-                          <FontAwesomeIcon icon={faEdit} />
-                        </Button>
-                        <Button
-                          size="sm"
-                          color="danger"
-                          onClick={() => onEliminar(item)}
-                        >
-                          <FontAwesomeIcon icon={faTrashAlt} />
-                        </Button>
+    <>
+      {alert && (
+        <div style={{ background: "#dc3545", borderRadius: 4, padding: 12, margin: 10, color: "#fff" }}>
+          {alert}
+        </div>
+      )}
+      <Row>
+        <Col>
+          <Card className="shadow">
+            <CardHeader className="border-0">
+              <Row className="align-items-center">
+                <Col>
+                  <h3 className="mb-0">Listado de Alertas</h3>
+                </Col>
+                <Col className="d-flex justify-content-end align-items-center">
+                  <Input
+                    type="text"
+                    placeholder="Buscar alerta..."
+                    value={busqueda}
+                    onChange={(e) => setBusqueda(e.target.value)}
+                    style={{ maxWidth: "200px", marginRight: 8 }}
+                  />
+                  <Input
+                    type="select"
+                    value={idServicioFiltro}
+                    onChange={(e) => setIdServicioFiltro(e.target.value)}
+                    style={{ maxWidth: "180px", marginRight: 8 }}
+                  >
+                    <option value="">Todos los servicios</option>
+                    {catalogoServicios.map(s => (
+                      <option key={s.id} value={s.id}>{s.nombre}</option>
+                    ))}
+                  </Input>
+                  <Input
+                    type="select"
+                    value={estadoFiltro}
+                    onChange={(e) => setEstadoFiltro(e.target.value)}
+                    style={{ maxWidth: "120px" }}
+                    className="mr-2"
+                  >
+                    <option value="">Todos</option>
+                    <option value="activo">Activos</option>
+                    <option value="inactivo">Inactivos</option>
+                  </Input>
+                </Col>
+              </Row>
+            </CardHeader>
+            <CardBody>
+              <Table className="align-items-center table-flush" responsive hover>
+                <thead className="thead-light">
+                  <tr>
+                    <th><FontAwesomeIcon icon={faIdCard} className="mr-1" /> ID</th>
+                    <th>Producto</th>
+                    <th>Mensaje</th>
+                    <th>Servicio</th>
+                    <th>Estado</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {alertasPagina.length > 0 ? (
+                    alertasPagina.map((item, index) => (
+                      <tr key={item.id || index}>
+                        <td>{item.id}</td>
+                        <td>{item.nombre_producto}</td>
+                        <td>{item.mensaje}</td>
+                        <td>{getServicioNombre(item.id_servicio)}</td>
+                        <td>
+                          {item.estado === true
+                            ? <span className="text-success font-weight-bold">Activo</span>
+                            : <span className="text-danger font-weight-bold">Inactivo</span>
+                          }
+                        </td>
+                        <td>
+                          <Button
+                            size="sm"
+                            color="danger"
+                            onClick={() => handleEliminar(item)}
+                          >
+                            <FontAwesomeIcon icon={faTrashAlt} />
+                          </Button>
+                        </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="6" className="text-center text-muted py-4">
+                        No se encontraron alertas
                       </td>
                     </tr>
-                  ))
-                ) : (
-                  <tr>
-                    <td colSpan="6" className="text-center text-muted py-4">
-                      No se encontraron alertas
-                    </td>
-                  </tr>
-                )}
-              </tbody>
-            </Table>
-            {/* Paginación */}
-            {renderPagination()}
-          </CardBody>
-        </Card>
-      </Col>
-    </Row>
+                  )}
+                </tbody>
+              </Table>
+              {/* Paginación */}
+              {renderPagination()}
+            </CardBody>
+          </Card>
+        </Col>
+      </Row>
+    </>
   );
 }
