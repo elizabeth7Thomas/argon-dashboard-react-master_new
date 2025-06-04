@@ -1,4 +1,3 @@
-// src/components/Headers/HeaderGasolineType.js
 import { Card, CardBody, CardTitle, Container, Row, Col } from "reactstrap";
 
 const HeaderGasolineType = () => {
@@ -14,7 +13,7 @@ const HeaderGasolineType = () => {
             </Row>
 
             <Row>
-              <Col xl="3" md="6">
+              <Col xl="4" md="6">
                 <Card className="card-stats mb-4 mb-xl-0">
                   <CardBody>
                     <Row>
@@ -34,7 +33,7 @@ const HeaderGasolineType = () => {
                 </Card>
               </Col>
 
-              <Col xl="3" md="6">
+              <Col xl="4" md="6">
                 <Card className="card-stats mb-4 mb-xl-0">
                   <CardBody>
                     <Row>
@@ -54,7 +53,7 @@ const HeaderGasolineType = () => {
                 </Card>
               </Col>
 
-              <Col xl="3" md="6">
+              <Col xl="4" md="6">
                 <Card className="card-stats mb-4 mb-xl-0">
                   <CardBody>
                     <Row>

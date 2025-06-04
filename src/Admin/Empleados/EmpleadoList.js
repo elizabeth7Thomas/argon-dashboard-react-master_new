@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Card, CardHeader, CardBody, Row, Col, Table, Button, Input, Spinner } from 'reactstrap';
+import { Card, CardHeader, CardBody, Row, Col, Table, Button, Input, Spinner, Alert } from 'reactstrap';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrash, faIdCard, faPhone, faEnvelope, faUser, faClock } from "@fortawesome/free-solid-svg-icons";
 import axios from 'axios';
 export default function EmpleadoList({
   onEdit,
-  onDelete,
   jornadas = [],
   areas = [],
   roles = []
@@ -14,6 +13,7 @@ export default function EmpleadoList({
   const [busqueda, setBusqueda] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [alerta, setAlerta] = useState(null);
 
   useEffect(() => {
     const fetchEmpleados = async () => {
@@ -39,19 +39,15 @@ export default function EmpleadoList({
             }
           }
         );
-
-        // Imprime toda la respuesta para depuración
         console.log("Respuesta completa del broker:", response.data);
 
-        // Imprime el posible array de empleados para ver la estructura real
-        if (
+       if (
           response.data?.response?.data &&
           Array.isArray(response.data.response.data.empleados)
         ) {
           console.log("Empleados extraídos:", response.data.response.data.empleados);
           setEmpleados(response.data.response.data.empleados);
         } else {
-          // Imprime el contenido de data para ver qué trae realmente
           console.log("Contenido de response.data.response.data:", response.data?.response?.data);
           setError("La respuesta del broker no tiene datos válidos");
         }
@@ -106,6 +102,85 @@ export default function EmpleadoList({
     (item.empleado.id ? item.empleado.id.toString() : "").includes(busqueda || "")
   );
 
+  const handleDelete = async (empleadoId) => {
+    const token = localStorage.getItem("token");
+    const uri = `administracion/PATCH/empleados/${empleadoId}`;
+    const payload = {
+      metadata: { uri },
+      request: {}
+    };
+
+    setAlerta(null);
+
+    try {
+      const response = await axios.post(
+        "http://64.23.169.22:3761/broker/api/rest",
+        payload,
+        {
+          headers: {
+            "Authorization": `Bearer ${token}`,
+            "Content-Type": "application/json",
+          }
+        }
+      );
+      console.log("Respuesta del broker (delete):", response.data);
+      const message = response.data?.response?.data?.message || "Empleado eliminado correctamente";
+      const brokerMsg = response.data?.response?._broker_message;
+      setAlerta({
+        type: "success",
+        text: (
+          <>
+            {message}
+            {brokerMsg && (
+              <>
+                <br />
+                <small className="text-muted">{brokerMsg}</small>
+              </>
+            )}
+          </>
+        )
+      });
+      // Refresca la lista si es necesario
+      // fetchEmpleados();
+    } catch (error) {
+      let msg = "Error desconocido.";
+      let brokerMsg = "";
+      if (error.response) {
+        console.log("Error del broker (delete):", error.response.data);
+        // Busca el mensaje principal en varios posibles lugares
+        msg =
+          error.response.data?.response?.data?.message ||
+          error.response.data?.response?.data?.error ||
+          error.response.data?.response?.data?.status ||
+          error.response.data?.response?.data?.statusText ||
+          error.response.data?.response?.data?.path ||
+          error.response.data?.response?._broker_message ||
+          error.response.data?.message ||
+          error.response.data?.error ||
+          `Error ${error.response.status}: ${error.response.statusText}`;
+        brokerMsg = error.response.data?.response?._broker_message;
+      } else if (error.request) {
+        msg = "No hubo respuesta del servidor. Revisa tu conexión.";
+      } else if (error.message) {
+        msg = error.message;
+      }
+      setAlerta({
+        type: "danger",
+        text: (
+          <>
+            {msg}
+            {brokerMsg && (
+              <>
+                <br />
+                <small className="text-muted">{brokerMsg}</small>
+              </>
+            )}
+          </>
+        )
+      });
+    }
+  };
+
   if (loading) {
     return <Spinner />;
   }
@@ -140,6 +215,11 @@ export default function EmpleadoList({
             </Row>
           </CardHeader>
           <CardBody>
+            {alerta && (
+              <Alert color={alerta.type} toggle={() => setAlerta(null)}>
+                {alerta.text}
+              </Alert>
+            )}
             <Table className="align-items-center table-flush" bordered responsive hover>
               <thead className="thead-light">
                 <tr>
@@ -170,13 +250,13 @@ export default function EmpleadoList({
                       <td>{getJornadaNombre(item.empleado.id_jornada)}</td>
                       <td>
                         {item.asignacion
-                          ? (getAreaNombre(item.asignacion.id_area) || item.asignacion.area)
+                          ? (getAreaNombre(item.asignacion.area) || item.asignacion.area)
                           : <span className="text-muted">Sin asignación</span>
                         }
                       </td>
                       <td>
                         {item.asignacion
-                          ? (getRolNombre(item.asignacion.id_rol) || item.asignacion.rol)
+                          ? (getRolNombre(item.asignacion.rol) || item.asignacion.rol)
                           : <span className="text-muted">Sin asignación</span>
                         }
                       </td>
@@ -185,7 +265,7 @@ export default function EmpleadoList({
                         <Button size="sm" color="info" onClick={() => onEdit(item)} className="mr-2">
                           <FontAwesomeIcon icon={faEdit} />
                         </Button>
-                        <Button size="sm" color="danger" onClick={() => onDelete(item.empleado.id)}>
+                        <Button size="sm" color="danger" onClick={() => handleDelete(item.empleado.id)}>
                           <FontAwesomeIcon icon={faTrash} />
                         </Button>
                       </td>

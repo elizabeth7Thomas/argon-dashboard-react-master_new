@@ -1,60 +1,10 @@
 import React, { useEffect, useState } from "react";
-import axios from "axios";
 import { Card, CardBody, Table, Button, Spinner } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
 
-export default function GasolineTypeList({ onEdit, onDelete }) {
-  const [fuels, setFuels] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const fetchFuels = async () => {
-      const token = localStorage.getItem("token");
-
-      if (!token) {
-        setError("No se encontró un token de autenticación");
-        setLoading(false);
-        return;
-      }
-
-      try {
-        const response = await axios.post(
-          "http://64.23.169.22:3761/broker/api/rest",
-          {
-            metadata: { uri: "fuelType/list" },
-            request: {},
-          },
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-              "Content-Type": "application/json",
-            },
-          }
-        );
-
-        const brokerData = response.data?.response?.data;
-
-        if (Array.isArray(brokerData)) {
-          setFuels(brokerData);
-        } else {
-          setError("La respuesta del broker no contiene una lista válida");
-        }
-      } catch (err) {
-        console.error("Error al obtener tipos de gasolina:", err);
-        setError("Error al conectar con el broker");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchFuels();
-  }, []);
-  
-
-  if (loading) return <Spinner />;
-  if (error) return <p className="text-danger">{error}</p>;
+export default function GasolineTypeList({ fuels, onEdit, onDelete }) {
+  if (!fuels.length > 0) return <Spinner />;
 
   return (
     <Card className="shadow">
