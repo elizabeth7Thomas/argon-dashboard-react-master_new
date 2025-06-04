@@ -1,91 +1,98 @@
-import React, { useState } from "react";
-import { Container, Card, CardBody, Button } from "reactstrap";
-
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import {
+  Container, Row, Col, Card, CardBody,
+  Input, Label, FormGroup, Button
+} from "reactstrap";
 import TransaccionList from "../Transacciones/TransaccionList";
-import TransaccionForm from "../Transacciones/TransaccionForm";
-import TransaccionDetail from "../Transacciones/TransaccionDetail";
 
 export default function TransaccionesPage() {
-  const [transacciones] = useState([]);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [detailOpen, setDetailOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [selectedTransaccion, setSelectedTransaccion] = useState(null);
-  const [formData, setFormData] = useState({
-    Cliente: "",
-    MetodoPago: "",
-    Monto: "",
-    Fecha: "",
+  const [transacciones, setTransacciones] = useState([]);
+  const [filtros, setFiltros] = useState({
+    fechaInicio: "",
+    fechaFinal: "",
   });
 
-  const handleCreate = () => {
-    setFormData({
-      Cliente: "",
-      MetodoPago: "",
-      Monto: "",
-      Fecha: "",
-    });
-    setIsEditing(false);
-    setModalOpen(true);
+  const fetchTransacciones = async () => {
+    const token = localStorage.getItem("token");
+    try {
+      const response = await axios.post(
+        "http://64.23.169.22:3761/broker/api/rest",
+        {
+          metadata: { uri: "pagos/transacciones/obtener" },
+          request: {},
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      const data = response.data?.response?.data?.Transacciones;
+      setTransacciones(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Error al obtener transacciones:", error);
+      alert("Hubo un error al cargar las transacciones.");
+    }
   };
 
-  const handleEdit = (transaccion) => {
-    setFormData(transaccion);
-    setIsEditing(true);
-    setModalOpen(true);
+  useEffect(() => {
+    fetchTransacciones();
+  }, []);
+
+  const handleChange = (e) => {
+    setFiltros({ ...filtros, [e.target.name]: e.target.value });
   };
 
-  const handleView = (transaccion) => {
-    setSelectedTransaccion(transaccion);
-    setDetailOpen(true);
-  };
-
-  const handleDelete = (transaccion) => {
-    alert(`Eliminar transacción: ${transaccion.Cliente}`);
-  };
-
-  const handleSubmit = () => {
-    alert(isEditing ? "Editar transacción" : "Crear nueva transacción");
-    setModalOpen(false);
+  const handleBuscar = () => {
+    fetchTransacciones();
   };
 
   return (
-    <>
-      <br></br> <br></br>
-      <br></br><br></br>
-      <Container className="mt--6" fluid>
-        <Card>
-          <CardBody>
-            <div className="d-flex justify-content-end mb-3">
-              
-            </div>
-            <TransaccionList
-              transacciones={transacciones}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onView={handleView}
-            />
-          </CardBody>
-        </Card>
-      </Container>
-
-      <TransaccionForm
-        isOpen={modalOpen}
-        toggle={() => setModalOpen(!modalOpen)}
-        formData={formData}
-        setFormData={setFormData}
-        onSubmit={handleSubmit}
-        isEditing={isEditing}
-      />
-
-      <TransaccionDetail
-        isOpen={detailOpen}
-        toggle={() => setDetailOpen(!detailOpen)}
-        transaccion={selectedTransaccion}
-      />
-      <Button color="primary" onClick={handleCreate}>
-                Nueva Transacción
-              </Button>
-    </>
+    <Container className="mt-4">
+      <Row>
+        <Col>
+          <Card>
+            <CardBody>
+              <h4>Transacciones</h4>
+              <Row className="mb-3">
+                <Col md="4">
+                  <FormGroup>
+                    <Label for="fechaInicio">Fecha Inicio</Label>
+                    <Input
+                      type="date"
+                      id="fechaInicio"
+                      name="fechaInicio"
+                      value={filtros.fechaInicio}
+                      onChange={handleChange}
+                    />
+                  </FormGroup>
+                </Col>
+                <Col md="4">
+                  <FormGroup>
+                    <Label for="fechaFinal">Fecha Final</Label>
+                    <Input
+                      type="date"
+                      id="fechaFinal"
+                      name="fechaFinal"
+                      value={filtros.fechaFinal}
+                      onChange={handleChange}
+                    />
+                  </FormGroup>
+                </Col>
+                <Col md="4" className="d-flex align-items-end">
+                  <Button color="primary" onClick={handleBuscar}>
+                    Buscar
+                  </Button>
+                </Col>
+              </Row>
+              <TransaccionList transacciones={transacciones} />
+            </CardBody>
+          </Card>
+        </Col>
+      </Row>
+    </Container>
   );
 }
