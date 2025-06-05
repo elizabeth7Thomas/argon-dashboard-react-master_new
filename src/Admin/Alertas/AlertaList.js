@@ -13,9 +13,13 @@ import {
   PaginationItem,
   PaginationLink,
 } from "reactstrap";
-import { faAngleDoubleLeft, faAngleLeft, faAngleRight, faAngleDoubleRight,  faTrashAlt, faIdCard } from "@fortawesome/free-solid-svg-icons";
+import { faAngleDoubleLeft, faAngleLeft, faAngleRight, faAngleDoubleRight, faTrashAlt, faIdCard, faFilePdf, faFileExcel } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from "axios";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 export default function AlertaList({ onEditar, onEliminar, onAgregar }) {
   const [alertas, setAlertas] = useState([]);
@@ -276,6 +280,40 @@ export default function AlertaList({ onEditar, onEliminar, onAgregar }) {
     }
   };
 
+  // Exportar a PDF
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    doc.text("Reporte de Alertas", 10, 10);
+    doc.autoTable({
+      head: [["ID", "Producto", "Mensaje", "Servicio", "Estado"]],
+      body: alertasFiltradas.map(a => [
+        a.id,
+        a.nombre_producto,
+        a.mensaje,
+        getServicioNombre(a.id_servicio),
+        a.estado === true ? "Activo" : "Inactivo"
+      ]),
+      startY: 20
+    });
+    doc.save("alertas.pdf");
+  };
+
+  // Exportar a Excel
+  const exportToExcel = () => {
+    const data = alertasFiltradas.map(a => ({
+      ID: a.id,
+      Producto: a.nombre_producto,
+      Mensaje: a.mensaje,
+      Servicio: getServicioNombre(a.id_servicio),
+      Estado: a.estado === true ? "Activo" : "Inactivo"
+    }));
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Alertas");
+    const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    saveAs(new Blob([wbout], { type: "application/octet-stream" }), "alertas.xlsx");
+  };
+
   if (loading) return <Spinner />;
   if (error)
     return (
@@ -301,6 +339,12 @@ export default function AlertaList({ onEditar, onEliminar, onAgregar }) {
                   <h3 className="mb-0">Listado de Alertas</h3>
                 </Col>
                 <Col className="d-flex justify-content-end align-items-center">
+                  <Button color="danger" className="mr-2" onClick={exportToPDF}>
+                    <FontAwesomeIcon icon={faFilePdf} className="mr-1" /> PDF
+                  </Button>
+                  <Button color="success" className="mr-2" onClick={exportToExcel}>
+                    <FontAwesomeIcon icon={faFileExcel} className="mr-1" /> Excel
+                  </Button>
                   <Input
                     type="text"
                     placeholder="Buscar alerta..."
