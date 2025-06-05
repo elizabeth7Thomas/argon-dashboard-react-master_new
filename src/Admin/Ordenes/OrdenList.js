@@ -12,7 +12,7 @@ import {
 } from "reactstrap";
 import OrdenForm from "./OrdenForm";
 import OrdenDetalleModal from "./OrdenDetalleModal";
-import { faEdit,  faIdCard, faEye } from "@fortawesome/free-solid-svg-icons";
+import {  faIdCard, faEye } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from "axios";
 import { format } from "date-fns";
@@ -25,7 +25,7 @@ const OrdenList = ({
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
-  const [ordenSeleccionada, setOrdenSeleccionada] = useState(null);
+  const [ordenSeleccionada] = useState(null);
   const [alert, setAlert] = useState(null);
   const [detalleModalOpen, setDetalleModalOpen] = useState(false);
   const [ordenDetalle, setOrdenDetalle] = useState(null);
@@ -316,15 +316,7 @@ const OrdenList = ({
     }
   };
 
-  const handleNuevaOrden = () => {
-    setOrdenSeleccionada(null);
-    setModalOpen(true);
-  };
 
-  const handleEditar = (orden) => {
-    setOrdenSeleccionada(orden);
-    setModalOpen(true);
-  };
 
   const handleGuardar = (ordenData) => {
     if (ordenSeleccionada) {

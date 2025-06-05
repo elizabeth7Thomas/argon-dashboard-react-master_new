@@ -1,5 +1,6 @@
+// src/TallerMantenimiento/Clientes.js
+
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import {
   Card,
   Row,
@@ -22,11 +23,11 @@ import {
   faTrashAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
 import NuevoClienteForm from "./NuevoClienteForm";
+import apiClient from "./apiClient"; // <-- Ruta corregida: mismo nivel
 
-const BASE_URL = "http://64.23.169.22:3761/broker/api/rest";
-
-const Clientes = () => {
+export default function Clientes() {
   const [clientes, setClientes] = useState([]);
   const [form, setForm] = useState({
     idCliente: "",
@@ -39,6 +40,8 @@ const Clientes = () => {
   const [modoEditar, setModoEditar] = useState(false);
   const [busqueda, setBusqueda] = useState("");
   const [mostrarFormulario, setMostrarFormulario] = useState(false);
+
+  // Estados para el modal de confirmación de borrado
   const [showModal, setShowModal] = useState(false);
   const [clienteAEliminar, setClienteAEliminar] = useState(null);
 
@@ -46,53 +49,115 @@ const Clientes = () => {
     obtenerTodosLosClientes();
   }, []);
 
+  // === FUNCIONES CRUD USANDO EL BROKER ===
+
+  // 1) Listar todos los clientes
   const obtenerTodosLosClientes = async () => {
     try {
-      const payload = {
-        metadata: { uri: "api/clientes" },
+      const response = await apiClient.post("", {
+        metadata: { uri: "/tallerrepuestos/GET/clientes" },
         request: {},
-      };
-      const response = await axios.post(BASE_URL, payload);
-      const clientesMapeados = response.data.map((c) => ({
-        idCliente: c.idcliente?.toString(),
-        nombre: c.nombre,
-        apellido: c.apellido,
-        nit: c.nit || "",
-        telefono: c.telefono,
-        email: c.email,
-        status: c.status,
-      }));
-      setClientes(clientesMapeados);
+      });
+
+      if (response.data?.response?.data) {
+        const dataRaw = response.data.response.data;
+        const clientesMapeados = dataRaw.map((c) => ({
+          idCliente: c.idcliente.toString(),
+          nombre: c.nombre,
+          apellido: c.apellido,
+          nit: c.nit || "",
+          telefono: c.telefono,
+          email: c.email,
+          status: c.status,
+        }));
+        setClientes(clientesMapeados);
+      }
     } catch (error) {
       console.error("Error al obtener clientes:", error);
     }
   };
 
-  const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
-  };
-
+  // 2) Agregar nuevo cliente
   const agregarCliente = async () => {
     if (!form.nombre.trim() || !form.apellido.trim()) return;
+
     try {
-      const payload = {
-        metadata: { uri: "api/clientes" },
-        request: {
-          nombre: form.nombre.trim(),
-          apellido: form.apellido.trim(),
-          nit: form.nit.trim() || null,
-          telefono: form.telefono.trim(),
-          email: form.email.trim(),
-          status: 1,
-        },
+      const nuevo = {
+        nombre: form.nombre.trim(),
+        apellido: form.apellido.trim(),
+        nit: form.nit.trim() ? form.nit.trim() : null,
+        telefono: form.telefono.trim(),
+        email: form.email.trim(),
+        status: 1,
       };
-      await axios.post(BASE_URL, payload);
+
+      await apiClient.post("", {
+        metadata: { uri: "/tallerrepuestos/POST/clientes" },
+        request: nuevo,
+      });
+
       await obtenerTodosLosClientes();
       limpiarFormulario();
       setMostrarFormulario(false);
     } catch (error) {
       console.error("Error al crear cliente:", error);
     }
+  };
+
+  // 3) Actualizar cliente existente
+  const actualizarCliente = async () => {
+    if (!form.idCliente) return;
+
+    try {
+      const actualizado = {
+        nombre: form.nombre.trim(),
+        apellido: form.apellido.trim(),
+        nit: form.nit.trim() ? form.nit.trim() : null,
+        telefono: form.telefono.trim(),
+        email: form.email.trim(),
+        status: 1,
+      };
+
+      await apiClient.post("", {
+        metadata: {
+          uri: `/tallerrepuestos/PUT/clientes/${form.idCliente}`,
+        },
+        request: actualizado,
+      });
+
+      await obtenerTodosLosClientes();
+      limpiarFormulario();
+      setModoEditar(false);
+      setMostrarFormulario(false);
+    } catch (error) {
+      console.error("Error al actualizar cliente:", error);
+    }
+  };
+
+  // 4) Eliminar cliente
+  const confirmarBorrado = async () => {
+    if (!clienteAEliminar) return;
+
+    try {
+      await apiClient.post("", {
+        metadata: {
+          uri: `/tallerrepuestos/DELETE/clientes/${clienteAEliminar.idCliente}`,
+        },
+        request: {},
+      });
+
+      await obtenerTodosLosClientes();
+      setShowModal(false);
+      setClienteAEliminar(null);
+    } catch (error) {
+      console.error("Error al borrar cliente:", error);
+    }
+  };
+
+  // === Manejadores de UI ===
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
   };
 
   const editar = (cliente) => {
@@ -108,51 +173,9 @@ const Clientes = () => {
     setMostrarFormulario(true);
   };
 
-  const actualizarCliente = async () => {
-    if (!form.idCliente) return;
-    try {
-      const payload = {
-        metadata: { uri: `api/clientes/${form.idCliente}` },
-        request: {
-          nombre: form.nombre.trim(),
-          apellido: form.apellido.trim(),
-          nit: form.nit.trim() || null,
-          telefono: form.telefono.trim(),
-          email: form.email.trim(),
-          status: 1,
-        },
-      };
-      await axios.put(BASE_URL, payload);
-      await obtenerTodosLosClientes();
-      limpiarFormulario();
-      setModoEditar(false);
-      setMostrarFormulario(false);
-    } catch (error) {
-      console.error("Error al actualizar cliente:", error);
-    }
-  };
-
   const solicitarBorrado = (cliente) => {
     setClienteAEliminar(cliente);
     setShowModal(true);
-  };
-
-  const confirmarBorrado = async () => {
-    if (!clienteAEliminar) return;
-    try {
-      const payload = {
-        metadata: { uri: `api/clientes/${clienteAEliminar.idCliente}` },
-        request: {
-          status: 0,
-        },
-      };
-      await axios.delete(BASE_URL, { data: payload });
-      await obtenerTodosLosClientes();
-      setShowModal(false);
-      setClienteAEliminar(null);
-    } catch (error) {
-      console.error("Error al borrar cliente:", error);
-    }
   };
 
   const cancelarBorrado = () => {
@@ -169,8 +192,10 @@ const Clientes = () => {
       telefono: "",
       email: "",
     });
+    setModoEditar(false);
   };
 
+  // Filtrado por buscador
   const clientesFiltrados = clientes.filter(
     (cliente) =>
       cliente.nombre.toLowerCase().includes(busqueda.toLowerCase()) ||
@@ -180,7 +205,11 @@ const Clientes = () => {
 
   return (
     <>
-      <Modal isOpen={mostrarFormulario} toggle={() => setMostrarFormulario(false)}>
+      {/* Modal para formulario de cliente */}
+      <Modal
+        isOpen={mostrarFormulario}
+        toggle={() => setMostrarFormulario(false)}
+      >
         <ModalHeader toggle={() => setMostrarFormulario(false)}>
           {modoEditar ? "Editar Cliente" : "Registrar Nuevo Cliente"}
         </ModalHeader>
@@ -189,14 +218,8 @@ const Clientes = () => {
             form={form}
             modoEditar={modoEditar}
             handleChange={handleChange}
-            agregarCliente={async () => {
-              await agregarCliente();
-              setMostrarFormulario(false);
-            }}
-            actualizarCliente={async () => {
-              await actualizarCliente();
-              setMostrarFormulario(false);
-            }}
+            agregarCliente={agregarCliente}
+            actualizarCliente={actualizarCliente}
             limpiarFormulario={limpiarFormulario}
             setModoEditar={setModoEditar}
             onClose={() => setMostrarFormulario(false)}
@@ -204,6 +227,7 @@ const Clientes = () => {
         </ModalBody>
       </Modal>
 
+      {/* Tabla de clientes */}
       <Row>
         <Col>
           <Card className="shadow">
@@ -237,12 +261,18 @@ const Clientes = () => {
             <Table className="align-items-center table-flush" responsive hover>
               <thead className="thead-light">
                 <tr>
-                  <th><FontAwesomeIcon icon={faIdCard} className="mr-1" /> ID</th>
+                  <th>
+                    <FontAwesomeIcon icon={faIdCard} className="mr-1" /> ID
+                  </th>
                   <th>Nombre</th>
                   <th>Apellido</th>
                   <th>NIT</th>
-                  <th><FontAwesomeIcon icon={faPhone} className="mr-1" /> Teléfono</th>
-                  <th><FontAwesomeIcon icon={faEnvelope} className="mr-1" /> Email</th>
+                  <th>
+                    <FontAwesomeIcon icon={faPhone} className="mr-1" /> Teléfono
+                  </th>
+                  <th>
+                    <FontAwesomeIcon icon={faEnvelope} className="mr-1" /> Email
+                  </th>
                   <th>Acciones</th>
                 </tr>
               </thead>
@@ -288,16 +318,27 @@ const Clientes = () => {
         </Col>
       </Row>
 
+      {/* Modal de Confirmación de Borrado */}
       <Modal isOpen={showModal} toggle={cancelarBorrado}>
-        <ModalHeader toggle={cancelarBorrado}>Confirmar eliminación</ModalHeader>
+        <ModalHeader toggle={cancelarBorrado}>
+          Confirmar eliminación
+        </ModalHeader>
         <ModalBody>
           {clienteAEliminar && (
             <>
-              <p>Estás a punto de eliminar al cliente:</p>
+              <p>
+                Estás a punto de eliminar al cliente con los siguientes datos:
+              </p>
               <ul>
-                <li><strong>Nombre:</strong> {clienteAEliminar.nombre}</li>
-                <li><strong>Apellido:</strong> {clienteAEliminar.apellido}</li>
-                <li><strong>Email:</strong> {clienteAEliminar.email}</li>
+                <li>
+                  <strong>Nombre:</strong> {clienteAEliminar.nombre}
+                </li>
+                <li>
+                  <strong>Apellido:</strong> {clienteAEliminar.apellido}
+                </li>
+                <li>
+                  <strong>Email:</strong> {clienteAEliminar.email}
+                </li>
               </ul>
               <p>¿Deseas continuar?</p>
             </>
@@ -314,6 +355,4 @@ const Clientes = () => {
       </Modal>
     </>
   );
-};
-
-export default Clientes;
+}

@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Button, Spinner } from 'reactstrap';
 import ProductForm from '../Forms/ProductForm';
-import { useProductos } from '../Hooks/useProducts'; // Asegúrate de que esta ruta sea correcta
+import { useProductos } from '../Hooks/useProducts';
 import axios from 'axios';
 
-const ProductoList = () => {
-  const { productos, loading, refetch } = useProductos(); // uso del hook
+const ProductList = () => {
+  const { productos, loading, refetch } = useProductos();
   const [modalOpen, setModalOpen] = useState(false);
 
   const toggleModal = () => setModalOpen(!modalOpen);
@@ -28,19 +28,18 @@ const ProductoList = () => {
           }
         }
       );
-      refetch(); // recargar lista después de eliminar
+      refetch();
     } catch (error) {
       console.error('Error al eliminar producto:', error);
     }
   };
 
-  if (loading) {
-    return <Spinner color="primary" />;
-  }
+  if (loading) return <Spinner color="primary" />;
 
   return (
     <div>
       <h4 className="mb-3">Listado de Productos</h4>
+
       <table className="table table-bordered table-striped">
         <thead className="table-white">
           <tr>
@@ -70,8 +69,12 @@ const ProductoList = () => {
                 <td>{p.tipo}</td>
                 <td>{p.es_materia_prima ? 'Sí' : 'No'}</td>
                 <td>
-                  <Button color="warning" size="sm" className="me-2">Editar</Button>
-                  <Button color="danger" size="sm" onClick={() => eliminarProducto(p.id)}>Eliminar</Button>
+                  <Button color="warning" size="sm" className="me-2">
+                    Editar
+                  </Button>
+                  <Button color="danger" size="sm" onClick={() => eliminarProducto(p.id)}>
+                    Eliminar
+                  </Button>
                 </td>
               </tr>
             ))
@@ -88,7 +91,6 @@ const ProductoList = () => {
         Agregar producto
       </Button>
 
-      {/* Modal para agregar producto */}
       <ProductForm
         isOpen={modalOpen}
         toggle={toggleModal}
@@ -98,4 +100,4 @@ const ProductoList = () => {
   );
 };
 
-export default ProductoList;
+export default ProductList;

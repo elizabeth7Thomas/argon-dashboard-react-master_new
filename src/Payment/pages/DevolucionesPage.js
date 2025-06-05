@@ -2,14 +2,11 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import DevolucionesList from "../Devoluciones/DevolucionList";
-import DevolucionForm from "../Devoluciones/DevolucionForm";
 import { Button, Input, InputGroup, InputGroupAddon } from "reactstrap";
-import { handleBrokerError } from "../utils/apiErrorHandler";
 
 export default function DevolucionesPage() {
   const [devoluciones, setDevoluciones] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [formOpen, setFormOpen] = useState(false);
   const [fechaInicio, setFechaInicio] = useState("");
   const [fechaFinal, setFechaFinal] = useState("");
   const [busquedaNo, setBusquedaNo] = useState("");
@@ -20,10 +17,14 @@ export default function DevolucionesPage() {
     setLoading(true);
     try {
       const payload = {
-        metadata: { uri: "pagos/devoluciones/obtener" },
+        metadata: {
+          uri: "/pagos/devoluciones/obtener",
+          _broker_client_id: "18",
+          _broker_client_name: "rosmerythomas.9073"
+        },
         request: {
           fechaInicio,
-          fechaFinal,
+          fechaFinal
         }
       };
 
@@ -34,36 +35,31 @@ export default function DevolucionesPage() {
         }
       });
 
-      setDevoluciones(data.response?.data?.Devoluciones || []);
-    } catch (error) {
-      alert(handleBrokerError(error));
+      const devols = data?.response?.data?.Devoluciones || [];
+      setDevoluciones(devols);
+    } catch (err) {
+      alert("Error al obtener devoluciones: " + err.message);
     } finally {
       setLoading(false);
     }
   };
 
-  const fetchDevolucionPorNumero = async () => {
-    if (!busquedaNo) {
-      alert("Ingresa un número de devolución para buscar");
+  const fetchDevolucionPorNumero = () => {
+    if (!busquedaNo.trim()) {
+      alert("Ingresa un número de devolución válido.");
       return;
     }
-
-    const resultado = devoluciones.find(dev => String(dev.NoDevolucion) === busquedaNo);
-
+    const resultado = devoluciones.find(d => String(d.NoDevolucion) === busquedaNo);
     if (resultado) {
       setDevoluciones([resultado]);
     } else {
-      alert("No se encontró la devolución");
+      alert("Devolución no encontrada.");
     }
   };
 
   useEffect(() => {
     fetchDevoluciones();
   }, []);
-
-  const onCreacionExitosa = () => {
-    fetchDevoluciones();
-  };
 
   return (
     <div>
@@ -96,16 +92,9 @@ export default function DevolucionesPage() {
             <Button color="secondary" onClick={fetchDevolucionPorNumero}>Buscar</Button>
           </InputGroupAddon>
         </InputGroup>
-        
       </div>
 
       {loading ? <p>Cargando devoluciones...</p> : <DevolucionesList devoluciones={devoluciones} />}
-
-      <DevolucionForm
-        isOpen={formOpen}
-        toggle={() => setFormOpen(false)}
-        onSuccess={onCreacionExitosa}
-      />
     </div>
   );
 }

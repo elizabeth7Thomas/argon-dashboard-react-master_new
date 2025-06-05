@@ -1,7 +1,6 @@
 // src/components/CategoriasMantenimiento.jsx
 
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import {
   Button,
   Card,
@@ -29,6 +28,8 @@ const CategoriasMantenimiento = () => {
   const [modal, setModal] = useState(false);
   const [modoEdicion, setModoEdicion] = useState(false);
   const [categoriaEditando, setCategoriaEditando] = useState(null);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [categoriaAEliminar, setCategoriaAEliminar] = useState(null);
 
   const [formulario, setFormulario] = useState({
     nombre: "",
@@ -36,13 +37,12 @@ const CategoriasMantenimiento = () => {
     status: 1,
   });
 
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [categoriaAEliminar, setCategoriaAEliminar] = useState(null);
-
+  // Al montar el componente, traemos todas las categorías
   useEffect(() => {
     obtenerTodasLasCategorias();
   }, []);
 
+  // 1) Listar todas las categorías
   const obtenerTodasLasCategorias = async () => {
     try {
       const resp = await axios.get(`${BASE_URL}/categorias`);
@@ -52,6 +52,7 @@ const CategoriasMantenimiento = () => {
     }
   };
 
+  // Abre/cierra el modal y resetea el formulario si se abre para agregar
   const toggle = () => {
     setModal(!modal);
     if (!modal) {
@@ -70,6 +71,7 @@ const CategoriasMantenimiento = () => {
     setFormulario({ ...formulario, [e.target.name]: e.target.value });
   };
 
+  // 2) Agregar nueva categoría
   const handleAgregar = async () => {
     // validaciones mínimas
     if (!formulario.nombre.trim()) {
@@ -91,6 +93,7 @@ const CategoriasMantenimiento = () => {
     }
   };
 
+  // 3) Preparar edición: cargar datos en el formulario y abrir modal en modo edición
   const handleEditarClick = (categoria) => {
     setFormulario({
       nombre: categoria.nombre,
@@ -102,6 +105,7 @@ const CategoriasMantenimiento = () => {
     setModal(true);
   };
 
+  // 4) Actualizar categoría existente
   const handleActualizar = async () => {
     if (!categoriaEditando) return;
 
@@ -123,11 +127,13 @@ const CategoriasMantenimiento = () => {
     }
   };
 
+  // 5) Solicitar borrado: abrir modal de confirmación
   const solicitarBorrado = (categoria) => {
     setCategoriaAEliminar(categoria);
     setShowDeleteModal(true);
   };
 
+  // 6) Confirmar y borrar categoría
   const confirmarBorrado = async () => {
     if (!categoriaAEliminar) return;
 
@@ -221,30 +227,15 @@ const CategoriasMantenimiento = () => {
           <Form>
             <FormGroup>
               <Label>Nombre</Label>
-              <Input
-                type="text"
-                name="nombre"
-                value={formulario.nombre}
-                onChange={handleChange}
-              />
+              <Input type="text" name="nombre" value={formulario.nombre} onChange={handleChange} />
             </FormGroup>
             <FormGroup>
               <Label>Descripción</Label>
-              <Input
-                type="text"
-                name="descripcion"
-                value={formulario.descripcion}
-                onChange={handleChange}
-              />
+              <Input type="text" name="descripcion" value={formulario.descripcion} onChange={handleChange} />
             </FormGroup>
             <FormGroup>
               <Label>Status</Label>
-              <Input
-                type="select"
-                name="status"
-                value={formulario.status}
-                onChange={handleChange}
-              >
+              <Input type="select" name="status" value={formulario.status} onChange={handleChange}>
                 <option value={1}>Activo</option>
                 <option value={0}>Inactivo</option>
               </Input>
@@ -252,15 +243,9 @@ const CategoriasMantenimiento = () => {
           </Form>
         </ModalBody>
         <ModalFooter>
-          {modoEdicion ? (
-            <Button color="success" onClick={handleActualizar}>
-              Actualizar
-            </Button>
-          ) : (
-            <Button color="primary" onClick={handleAgregar}>
-              Agregar
-            </Button>
-          )}
+          <Button color={modoEdicion ? "success" : "primary"} onClick={modoEdicion ? handleActualizar : handleAgregar}>
+            {modoEdicion ? "Actualizar" : "Agregar"}
+          </Button>
           <Button color="secondary" onClick={toggle}>
             Cancelar
           </Button>
@@ -269,22 +254,14 @@ const CategoriasMantenimiento = () => {
 
       {/* Modal de Confirmación de eliminacion */}
       <Modal isOpen={showDeleteModal} toggle={cancelarBorrado}>
-        <ModalHeader toggle={cancelarBorrado}>
-          Confirmar eliminación
-        </ModalHeader>
+        <ModalHeader toggle={cancelarBorrado}>Confirmar eliminación</ModalHeader>
         <ModalBody>
           {categoriaAEliminar && (
             <>
-              <p>
-                Estás a punto de eliminar la categoría con los siguientes datos:
-              </p>
+              <p>Estás a punto de eliminar la categoría:</p>
               <ul>
-                <li>
-                  <strong>Nombre:</strong> {categoriaAEliminar.nombre}
-                </li>
-                <li>
-                  <strong>Descripción:</strong> {categoriaAEliminar.descripcion}
-                </li>
+                <li><strong>Nombre:</strong> {categoriaAEliminar.nombre}</li>
+                <li><strong>Descripción:</strong> {categoriaAEliminar.descripcion}</li>
               </ul>
               <p>¿Deseas continuar?</p>
             </>

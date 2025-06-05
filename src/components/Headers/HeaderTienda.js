@@ -40,7 +40,7 @@ const HeaderTienda = () => {
                       <CardTitle tag="h5" className="text-uppercase text-muted mb-0">
                         Inventario
                       </CardTitle>
-                      <span className="h2 font-weight-bold mb-0">5,700</span>
+                      <span className="h2 font-weight-bold mb-0"></span>
                       
                     </div>
                     <Col className="col-auto">
@@ -57,15 +57,15 @@ const HeaderTienda = () => {
             <Col lg="6" xl="3">
                 <Card 
                 className="card-stats mb-4 mb-xl-0 hover-card" 
-                onClick={() => navigate("/admin/tienda/devoluciones")}
+                onClick={() => navigate("/admin/tienda/preparados")}
               >
                 <CardBody>
                   <Row>
                     <div className="col">
                       <CardTitle tag="h5" className="text-uppercase text-muted mb-0">
-                        Devoluciones
+                        Preparados
                       </CardTitle>
-                      <span className="h2 font-weight-bold mb-0">2,356</span>
+                      <span className="h2 font-weight-bold mb-0"></span>
                     
                     </div>
                     <Col className="col-auto">
@@ -90,7 +90,7 @@ const HeaderTienda = () => {
                       <CardTitle tag="h5" className="text-uppercase text-muted mb-0">
                         Lotes 
                       </CardTitle>
-                      <span className="h2 font-weight-bold mb-0">24</span>
+                      <span className="h2 font-weight-bold mb-0"></span>
                      
                     </div>
                     <Col className="col-auto">
@@ -115,7 +115,7 @@ const HeaderTienda = () => {
                       <CardTitle tag="h5" className="text-uppercase text-muted mb-0">
                         Ventas Hoy
                       </CardTitle>
-                      <span className="h2 font-weight-bold mb-0">$1,245</span>
+                      <span className="h2 font-weight-bold mb-0"></span>
                    
                     </div>
                     <Col className="col-auto">

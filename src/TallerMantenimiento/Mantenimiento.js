@@ -7,6 +7,9 @@ import CategoriasMantenimiento from './CategoriasMantenimiento';
 import ServiciosMantenimiento from './ServiciosMantenimiento';
 import Empleados from './Empleados';
 import Inventario from './InventariosLote';
+import TipoServicioMantenimiento from './TipoServicioMantenimiento';
+import VentasMantenimiento from '../TallerMantenimiento/Ventas/VentasMantenimiento';
+
 
 import {
   Container,
@@ -24,7 +27,8 @@ import {
   faBoxOpen,
   faUserTie,
   faWarehouse,
-  faTools
+  faTools,
+  faShoppingCart
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 //import Inventario from 'TiendaConveniencia/InventarioTienda/Inventario';
@@ -37,9 +41,11 @@ const Mantenimiento = () => {
     { id: 'categorias', label: 'Categorías', icon: faTags, color: 'primary' },
     { id: 'productos', label: 'Productos', icon: faBoxOpen, color: 'primary' },
     { id: 'vehiculos', label: 'Vehículos', icon: faCar, color: 'primary' },
+    { id: 'TiposServicio', label: 'TiposServicio', icon: faTools, color: 'primary' },
     { id: 'servicios', label: 'Servicios', icon: faTools, color: 'primary' },
     { id: 'Empleados', label: 'Empleados', icon: faUserTie, color: 'primary' },
     { id: 'inventario', label: 'Inventario', icon: faWarehouse, color: 'primary'},
+    {id: 'ventas', label: 'Ventas', icon: faShoppingCart, color: 'success' },
   ];
 
   return (
@@ -86,9 +92,11 @@ const Mantenimiento = () => {
               {selectedSection === 'categorias' && <CategoriasMantenimiento/>}
               {selectedSection === 'productos' && <ProductosMantenimiento />}
               {selectedSection === 'vehiculos' && <VehiculosMantenimiento />}
+              {selectedSection === 'TiposServicio' && <TipoServicioMantenimiento />}
               {selectedSection === 'servicios' && <ServiciosMantenimiento />}
               {selectedSection === 'Empleados' && <Empleados />}
               {selectedSection === 'inventario' && <Inventario />}
+              {selectedSection === 'ventas' && <VentasMantenimiento />}
               {!selectedSection && (
                 <div>
                   <p>Selecciona una opción para comenzar.</p>

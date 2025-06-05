@@ -1,4 +1,3 @@
-// src/Payment/CierreCaja/CierreCajaForm.js
 import React, { useState, useEffect } from 'react';
 import {
   Modal, ModalHeader, ModalBody,
@@ -74,21 +73,20 @@ const CierreCajaForm = ({ isOpen, toggle, onSuccess }) => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    // Previene valores negativos
     if (['CantidadFinal', 'Retiro'].includes(name) && parseFloat(value) < 0) return;
 
     setForm(prev => ({ ...prev, [name]: value }));
   };
 
   const handleSelectEmpleado = (e) => {
-    const empleadoId = e.target.value;
+    const empleadoId = parseInt(e.target.value);
     const empleadoSeleccionado = empleados.find(e => e.empleado.id === empleadoId);
 
     if (empleadoSeleccionado) {
       setForm(prev => ({
         ...prev,
         Empleado: {
-          IdEmpleado: empleadoSeleccionado.empleado.id,
+          IdEmpleado: empleadoSeleccionado.empleado.id.toString(),
           NombreCompleto: `${empleadoSeleccionado.empleado.nombres} ${empleadoSeleccionado.empleado.apellidos}`
         }
       }));
@@ -100,7 +98,9 @@ const CierreCajaForm = ({ isOpen, toggle, onSuccess }) => {
     setError(null);
     setSuccess(null);
 
-    if (!form.IdCaja || !form.Servicio || !form.CantidadFinal || !form.Empleado.IdEmpleado) {
+    const { IdCaja, Servicio, CantidadFinal, Empleado } = form;
+
+    if (!IdCaja || !Servicio || !CantidadFinal || !Empleado?.IdEmpleado) {
       setError('Todos los campos obligatorios deben ser completados.');
       return;
     }
@@ -112,7 +112,13 @@ const CierreCajaForm = ({ isOpen, toggle, onSuccess }) => {
         'http://64.23.169.22:3761/broker/api/rest',
         {
           metadata: { uri: 'pagos/cierre/crear' },
-          request: form
+          request: {
+            IdCaja: parseInt(IdCaja),
+            Servicio: parseInt(Servicio),
+            CantidadFinal: parseFloat(CantidadFinal),
+            Empleado,
+            Retiro: parseFloat(form.Retiro || 0)
+          }
         },
         {
           headers: {
@@ -122,17 +128,17 @@ const CierreCajaForm = ({ isOpen, toggle, onSuccess }) => {
         }
       );
 
-      const { _broker_status, _broker_message } = response.data?.response || {};
-      if (_broker_status === 200 || _broker_status === 201) {
-        setSuccess(_broker_message || 'Cierre de caja creado exitosamente');
-        onSuccess();
-        setTimeout(toggle, 2000);
+      if (response.status === 201) {
+        setSuccess('Cierre de caja creado exitosamente.');
+        onSuccess?.();
+        setTimeout(toggle, 1500);
       } else {
-        setError(_broker_message || 'Error al crear el cierre de caja');
+        const mensaje = response.data?.response?._broker_message || 'Error al crear el cierre de caja.';
+        setError(mensaje);
       }
     } catch (err) {
-      const mensaje = err.response?.data?.response?._broker_message;
-      setError(mensaje || 'Ocurrió un error al enviar el formulario');
+      const mensaje = err.response?.data?.response?._broker_message || err.response?.data?.mensaje;
+      setError(mensaje || 'Ocurrió un error al enviar el formulario.');
       console.error('Error al crear cierre:', err);
     } finally {
       setLoading(false);
