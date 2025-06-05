@@ -2,14 +2,26 @@
 
 import React, { useState, useEffect } from "react";
 import {
-  Button, Card, CardHeader, CardBody, Table,
-  Row, Col, Modal, ModalHeader, ModalBody,
-  ModalFooter, Form, FormGroup, Input, Label
+  Button,
+  Card,
+  CardHeader,
+  CardBody,
+  Table,
+  Row,
+  Col,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  Form,
+  FormGroup,
+  Input,
+  Label,
 } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 
-const BASE_URL = "https://tallerrepuestos.vercel.app/tallerrepuestos";
+import apiClient from "./apiClient"; // <-- Importa el broker (mismo nivel)
 
 const ProductosMantenimiento = () => {
   const [productos, setProductos] = useState([]);
@@ -18,51 +30,76 @@ const ProductosMantenimiento = () => {
   const [modal, setModal] = useState(false);
   const [modoEdicion, setModoEdicion] = useState(false);
   const [productoEditando, setProductoEditando] = useState(null);
+
   const [formulario, setFormulario] = useState({
-    nombre: "", descripcion: "", precio: "",
-    id_categoria: "", existencia_minima: "", status: 1,
+    nombre: "",
+    descripcion: "",
+    precio: "",
+    id_categoria: "",
+    existencia_minima: "",
+    status: 1,
   });
+
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [productoAEliminar, setProductoAEliminar] = useState(null);
-  const [errorModal, setErrorModal] = useState({ open: false, mensaje: "" });
 
   useEffect(() => {
-    obtenerProductos();
-    obtenerCategorias();
+    obtenerTodosLosProductos();
+    obtenerTodasLasCategorias();
   }, []);
 
+  // 1) Listar todos los productos
   const obtenerTodosLosProductos = async () => {
     try {
-      const resp = await axios.get(`${BASE_URL}/productos`);
-      setProductos(resp.data);
+      const response = await apiClient.post("", {
+        metadata: { uri: "/tallerrepuestos/GET/productos" },
+        request: {},
+      });
+      if (response.data?.response?.data) {
+        setProductos(response.data.response.data);
+      }
     } catch (error) {
-      mostrarError("Error al obtener productos.");
+      console.error("Error al obtener productos:", error);
     }
   };
 
+  // 2) Listar todas las categorías (filtrar solo status = 1)
   const obtenerTodasLasCategorias = async () => {
     try {
-      const resp = await axios.get(`${BASE_URL}/categorias`);
-      // Filtramos solo status = 1 (activos)
-      const activos = resp.data.filter((c) => c.status === 1);
-      setCategoriasList(
-        activos.map((c) => ({
-          id: c.idcategoria,
-          nombre: c.nombre,
-        }))
-      );
+      const response = await apiClient.post("", {
+        metadata: { uri: "/tallerrepuestos/GET/categorias" },
+        request: {},
+      });
+      if (response.data?.response?.data) {
+        const activos = response.data.response.data.filter((c) => c.status === 1);
+        setCategoriasList(
+          activos.map((c) => ({
+            id: c.idcategoria,
+            nombre: c.nombre,
+          }))
+        );
+      }
     } catch (error) {
-      mostrarError("Error al obtener categorías.");
+      console.error("Error al obtener categorías:", error);
     }
   };
 
+  // Filtrado de categorías por nombre en el select
+  const categoriasFiltradas = categoriasList.filter((c) =>
+    c.nombre.toLowerCase().includes(busquedaCategoria.toLowerCase())
+  );
 
+  // Abrir/Cerrar modal de Agregar/Editar
   const toggle = () => {
     setModal(!modal);
     if (!modal) {
       setFormulario({
-        nombre: "", descripcion: "", precio: "",
-        id_categoria: "", existencia_minima: "", status: 1,
+        nombre: "",
+        descripcion: "",
+        precio: "",
+        id_categoria: "",
+        existencia_minima: "",
+        status: 1,
       });
       setModoEdicion(false);
       setProductoEditando(null);
@@ -70,14 +107,13 @@ const ProductosMantenimiento = () => {
     }
   };
 
-  // Manejar cambios en formulario
+  // Manejador de cambios en formulario
   const handleChange = (e) => {
     setFormulario({ ...formulario, [e.target.name]: e.target.value });
   };
 
-  // 2) Agregar Producto → POST /productos
+  // 3) Agregar Producto → POST /productos
   const handleAgregar = async () => {
-    // validaciones mínimas
     if (
       !formulario.nombre.trim() ||
       !formulario.descripcion.trim() ||
@@ -89,23 +125,27 @@ const ProductosMantenimiento = () => {
 
     try {
       const nuevo = {
-        nombre: nombre.trim(),
-        descripcion: descripcion.trim(),
-        precio: parseFloat(precio),
-        id_categoria: parseInt(id_categoria, 10),
+        nombre: formulario.nombre.trim(),
+        descripcion: formulario.descripcion.trim(),
+        precio: parseFloat(formulario.precio),
+        id_categoria: parseInt(formulario.id_categoria, 10),
         existencia_minima: parseInt(formulario.existencia_minima || "0", 10),
         status: formulario.status,
       };
 
-      await axios.post(`${BASE_URL}/productos`, nuevo);
+      await apiClient.post("", {
+        metadata: { uri: "/tallerrepuestos/POST/productos" },
+        request: nuevo,
+      });
+
       await obtenerTodosLosProductos();
       toggle();
     } catch (error) {
-      mostrarError("Error al agregar producto.");
+      console.error("Error al crear producto:", error);
     }
   };
 
-  // 3) Cargar formulario para edición
+  // 4) Cargar formulario para edición
   const handleEditarClick = (producto) => {
     setFormulario({
       nombre: producto.nombre,
@@ -119,13 +159,14 @@ const ProductosMantenimiento = () => {
     setProductoEditando(producto);
     setModal(true);
     setBusquedaCategoria(
-      categoriasList.find(c => c.id === producto.idcategoria)?.nombre || ""
+      categoriasList.find((c) => c.id === producto.idcategoria)?.nombre || ""
     );
   };
 
-  // 4) Actualizar Producto → PUT /productos/:id
+  // 5) Actualizar Producto → PUT /productos/:id
   const handleActualizar = async () => {
     if (!productoEditando) return;
+
     try {
       const actualizado = {
         nombre: formulario.nombre.trim(),
@@ -136,14 +177,17 @@ const ProductosMantenimiento = () => {
         status: formulario.status,
       };
 
-      await axios.put(
-        `${BASE_URL}/productos/${productoEditando.idproducto}`,
-        actualizado
-      );
+      await apiClient.post("", {
+        metadata: {
+          uri: `/tallerrepuestos/PUT/productos/${productoEditando.idproducto}`,
+        },
+        request: actualizado,
+      });
+
       await obtenerTodosLosProductos();
       toggle();
     } catch (error) {
-      mostrarError("Error al actualizar producto.");
+      console.error("Error al actualizar producto:", error);
     }
   };
 
@@ -156,14 +200,20 @@ const ProductosMantenimiento = () => {
   // 7) Confirmar y borrar producto → DELETE /productos/:id
   const confirmarBorrado = async () => {
     if (!productoAEliminar) return;
+
     try {
-      await axios.delete(
-        `${BASE_URL}/productos/${productoAEliminar.idproducto}`
-      );
+      await apiClient.post("", {
+        metadata: {
+          uri: `/tallerrepuestos/DELETE/productos/${productoAEliminar.idproducto}`,
+        },
+        request: {},
+      });
+
       await obtenerTodosLosProductos();
       setShowDeleteModal(false);
+      setProductoAEliminar(null);
     } catch (error) {
-      mostrarError("Error al eliminar producto.");
+      console.error("Error al borrar producto:", error);
     }
   };
 
@@ -172,106 +222,120 @@ const ProductosMantenimiento = () => {
     setProductoAEliminar(null);
   };
 
-  const categoriasFiltradas = categoriasList.filter((c) =>
-    c.nombre.toLowerCase().includes(busquedaCategoria.toLowerCase())
-  );
-
   return (
     <>
-        <Row>
-          <Col>
-            <Card className="shadow">
-              <CardHeader className="border-0 d-flex justify-content-between align-items-center">
-                <h3 className="mb-0">Lista de Productos</h3>
-                <Button color="primary" onClick={toggle}>
-                  Agregar Producto
-                </Button>
-              </CardHeader>
-              <CardBody>
-                <Table responsive hover className="align-items-center table-flush">
-                  <thead className="thead-light"> 
+      <Row>
+        <Col>
+          <Card className="shadow">
+            <CardHeader className="border-0 d-flex justify-content-between align-items-center">
+              <h3 className="mb-0">Lista de Productos</h3>
+              <Button color="primary" onClick={toggle}>
+                Agregar Producto
+              </Button>
+            </CardHeader>
+            <CardBody>
+              <Table responsive hover className="align-items-center table-flush">
+                <thead className="thead-light">
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th>Precio</th>
+                    <th>Categoría</th>
+                    <th>Existencia Mínima</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {productos.length > 0 ? (
+                    productos.map((p) => {
+                      const categoria = categoriasList.find(
+                        (c) => c.id === p.idcategoria
+                      );
+                      return (
+                        <tr key={p.idproducto}>
+                          <td>{p.nombre}</td>
+                          <td>{p.descripcion}</td>
+                          <td>{p.precio}</td>
+                          <td>{categoria?.nombre || "N/A"}</td>
+                          <td>{p.existenciaminima}</td>
+                          <td>
+                            <Button
+                              size="sm"
+                              color="info"
+                              className="me-2"
+                              onClick={() => handleEditarClick(p)}
+                            >
+                              <FontAwesomeIcon icon={faEdit} />
+                            </Button>
+                            <Button
+                              size="sm"
+                              color="danger"
+                              onClick={() => solicitarBorrado(p)}
+                            >
+                              <FontAwesomeIcon icon={faTrashAlt} />
+                            </Button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
                     <tr>
-                      <th>Nombre</th>
-                      <th>Descripción</th>
-                      <th>Precio</th>
-                      <th>Categoría</th>
-                      <th>Existencia Mínima</th>
-                      <th>Acciones</th>
+                      <td colSpan="6" className="text-center">
+                        No hay productos disponibles
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {productos.length > 0 ? (
-                      productos.map((p) => {
-                        const categoria = categoriasList.find(
-                          (c) => c.id === p.idcategoria
-                        );
-                        return (
-                          <tr key={p.idproducto}>
-                            <td>{p.nombre}</td>
-                            <td>{p.descripcion}</td>
-                            <td>{p.precio}</td>
-                            <td>{categoria?.nombre || "N/A"}</td>
-                            <td>{p.existenciaminima}</td>
-                            <td>
-                              <Button
-                                size="sm"
-                                color="info"
-                                className="me-2"
-                                onClick={() => handleEditarClick(p)}
-                              >
-                                <FontAwesomeIcon icon={faEdit} className="mr-0" />
-                              </Button>
-                              <Button
-                                size="sm"
-                                color="danger"
-                                onClick={() => solicitarBorrado(p)}
-                              >
-                                <FontAwesomeIcon icon={faTrashAlt} className="mr-0" />
-                              </Button>
-                            </td>
-                          </tr>
-                        );
-                      })
-                    ) : (
-                      <tr>
-                        <td colSpan="6" className="text-center">
-                          No hay productos disponibles
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </Table>
-              </CardBody>
-            </Card>
-          </Col>
-        </Row>
+                  )}
+                </tbody>
+              </Table>
+            </CardBody>
+          </Card>
+        </Col>
+      </Row>
 
-      {/* Moda para agregar y editar p*/}
+      {/* Modal para Agregar o Editar Producto */}
       <Modal isOpen={modal} toggle={toggle}>
-        <ModalHeader toggle={toggle}>{modoEdicion ? "Editar Producto" : "Agregar Producto"}</ModalHeader>
+        <ModalHeader toggle={toggle}>
+          {modoEdicion ? "Editar Producto" : "Agregar Producto"}
+        </ModalHeader>
         <ModalBody>
           <Form>
             <FormGroup>
               <Label>Nombre</Label>
-              <Input name="nombre" value={formulario.nombre} onChange={handleChange} />
+              <Input
+                type="text"
+                name="nombre"
+                value={formulario.nombre}
+                onChange={handleChange}
+              />
             </FormGroup>
             <FormGroup>
               <Label>Descripción</Label>
-              <Input name="descripcion" value={formulario.descripcion} onChange={handleChange} />
+              <Input
+                type="text"
+                name="descripcion"
+                value={formulario.descripcion}
+                onChange={handleChange}
+              />
             </FormGroup>
             <FormGroup>
               <Label>Precio</Label>
-              <Input type="number" step="0.01" name="precio" value={formulario.precio} onChange={handleChange} />
+              <Input
+                type="number"
+                step="0.01"
+                name="precio"
+                value={formulario.precio}
+                onChange={handleChange}
+              />
             </FormGroup>
 
-            {/* espacio para la categoria*/}
             <FormGroup>
               <Label>Buscar Categoría</Label>
               <Input
                 type="text"
-                placeholder="Buscar..."
+                placeholder="Escribe nombre de categoría..."
                 value={busquedaCategoria}
                 onChange={(e) => setBusquedaCategoria(e.target.value)}
+                className="mb-2"
               />
               <Label>Categoría</Label>
               <Input
@@ -282,52 +346,73 @@ const ProductosMantenimiento = () => {
               >
                 <option value="">-- Selecciona una categoría --</option>
                 {categoriasFiltradas.map((c) => (
-                  <option key={c.id} value={c.id}>{c.nombre}</option>
+                  <option key={c.id} value={c.id}>
+                    {c.nombre}
+                  </option>
                 ))}
               </Input>
             </FormGroup>
+
             <FormGroup>
               <Label>Existencia Mínima</Label>
-              <Input name="existencia_minima" value={formulario.existencia_minima} onChange={handleChange} />
+              <Input
+                type="number"
+                name="existencia_minima"
+                value={formulario.existencia_minima}
+                onChange={handleChange}
+              />
             </FormGroup>
           </Form>
         </ModalBody>
         <ModalFooter>
           {modoEdicion ? (
-            <Button color="success" onClick={handleActualizar}>Actualizar</Button>
+            <Button color="success" onClick={handleActualizar}>
+              Actualizar
+            </Button>
           ) : (
-            <Button color="primary" onClick={handleAgregar}>Agregar</Button>
+            <Button color="primary" onClick={handleAgregar}>
+              Agregar
+            </Button>
           )}
-          <Button color="secondary" onClick={toggle}>Cancelar</Button>
+          <Button color="secondary" onClick={toggle}>
+            Cancelar
+          </Button>
         </ModalFooter>
       </Modal>
 
-      {/* Modal de Error */}
-      <Modal isOpen={errorModal.open} toggle={() => setErrorModal({ open: false, mensaje: "" })}>
-        <ModalHeader toggle={() => setErrorModal({ open: false, mensaje: "" })}>Error</ModalHeader>
-        <ModalBody>{errorModal.mensaje}</ModalBody>
-        <ModalFooter>
-          <Button color="danger" onClick={() => setErrorModal({ open: false, mensaje: "" })}>Cerrar</Button>
-        </ModalFooter>
-      </Modal>
-
-      {/* Modal de Confirmación de eliminacion */}
+      {/* Modal de confirmación de eliminación */}
       <Modal isOpen={showDeleteModal} toggle={cancelarBorrado}>
-        <ModalHeader toggle={cancelarBorrado}>Confirmar eliminación</ModalHeader>
+        <ModalHeader toggle={cancelarBorrado}>
+          Confirmar eliminación
+        </ModalHeader>
         <ModalBody>
           {productoAEliminar && (
             <>
-              <p>¿Estás seguro que deseas eliminar el siguiente producto?</p>
+              <p>
+                Estás a punto de eliminar el producto con los siguientes datos:
+              </p>
               <ul>
-                <li><strong>Nombre:</strong> {productoAEliminar.nombre}</li>
-                <li><strong>Descripción:</strong> {productoAEliminar.descripcion}</li>
+                <li>
+                  <strong>Nombre:</strong> {productoAEliminar.nombre}
+                </li>
+                <li>
+                  <strong>Descripción:</strong> {productoAEliminar.descripcion}
+                </li>
+                <li>
+                  <strong>Precio:</strong> {productoAEliminar.precio}
+                </li>
               </ul>
+              <p>¿Deseas continuar?</p>
             </>
           )}
         </ModalBody>
         <ModalFooter>
-          <Button color="danger" onClick={confirmarBorrado}>Eliminar</Button>
-          <Button color="secondary" onClick={cancelarBorrado}>Cancelar</Button>
+          <Button color="danger" onClick={confirmarBorrado}>
+            Sí, eliminar
+          </Button>
+          <Button color="secondary" onClick={cancelarBorrado}>
+            Cancelar
+          </Button>
         </ModalFooter>
       </Modal>
     </>
