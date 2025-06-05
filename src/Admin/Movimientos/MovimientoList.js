@@ -54,6 +54,15 @@ export default function MovimientoList() {
   const [numeroSemestre, setNumeroSemestre] = useState("");
   const [servicioId, setServicioId] = useState("");
 
+  // Catálogo de servicios
+  const catalogoServicios = JSON.parse(localStorage.getItem("catalogo_servicios") || "[]");
+
+  // Función para mostrar el nombre del servicio según el id
+  const getServicioNombre = (id) => {
+    const serv = catalogoServicios.find(s => Number(s.id) === Number(id));
+    return serv ? serv.nombre : id;
+  };
+
   useEffect(() => {
     const fetchMovimientos = async () => {
       setLoading(true);
@@ -147,13 +156,19 @@ export default function MovimientoList() {
     // eslint-disable-next-line
   }, [filtro, fechaDia, fechaMes, anio, numeroTrimestre, numeroSemestre, servicioId]);
 
-  // Filtrado por cualquier campo
+  // Filtrado por cualquier campo y por servicio seleccionado
   const movimientosFiltrados = movimientos.filter((m) => {
+    // Filtro por texto de búsqueda
     const matchBusqueda = Object.values(m)
       .join(" ")
       .toLowerCase()
       .includes(busqueda.toLowerCase());
-    return matchBusqueda;
+
+    // Filtro por servicio (si está seleccionado)
+    const matchServicio =
+      !servicioId || Number(m.id_servicio) === Number(servicioId);
+
+    return matchBusqueda && matchServicio;
   });
 
   // Paginación
@@ -315,14 +330,20 @@ export default function MovimientoList() {
               )}
               <Col md={2}>
                 <FormGroup>
-                  <Label for="servicioId">ID Servicio:</Label>
+                  <Label for="servicioId">Servicio:</Label>
                   <Input
-                    type="number"
+                    type="select"
                     id="servicioId"
                     value={servicioId}
                     onChange={e => setServicioId(e.target.value)}
-                    placeholder="Ej: 1"
-                  />
+                  >
+                    <option value="">Todos los servicios</option>
+                    {catalogoServicios.map(servicio => (
+                      <option key={servicio.id} value={servicio.id}>
+                        {servicio.nombre}
+                      </option>
+                    ))}
+                  </Input>
                 </FormGroup>
               </Col>
               <Col md={3} className="d-flex justify-content-end align-items-center">
@@ -371,7 +392,7 @@ export default function MovimientoList() {
                           <td>{item.concepto}</td>
                           <td>{item.cantidad}</td>
                           <td>{item.fecha_movimiento}</td>
-                          <td>{item.id_servicio || ""}</td>
+                          <td>{getServicioNombre(item.id_servicio)}</td>
                           <td>{item.nombre_empleado || ""}</td>
                           <td>{item.producto || ""}</td>
                           <td>{item.notaCredito || ""}</td>

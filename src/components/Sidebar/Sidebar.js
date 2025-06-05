@@ -207,7 +207,7 @@ const Sidebar = (props) => {
 
 <Nav className="mb-md-3" navbar>
   <NavItem>
-    <NavLink href="/admin/reportes">
+    <NavLink href="/admin/reports">
       <i className="ni ni-single-copy-04 text-yellow" />
       Reportes
     </NavLink>

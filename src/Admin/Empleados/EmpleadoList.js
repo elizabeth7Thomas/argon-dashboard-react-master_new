@@ -5,14 +5,14 @@ import { faEdit, faTrash, faIdCard, faPhone, faEnvelope, faUser, faClock } from 
 import axios from 'axios';
 
 export default function EmpleadoList({
-  onEdit
+  onEdit,
+  onDelete // <-- Asegúrate de recibir onDelete si lo usas
 }) {
   const [empleados, setEmpleados] = useState([]);
   const [busqueda, setBusqueda] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [alerta, setAlerta] = useState(null);
-
 
   const [estadoFiltro, setEstadoFiltro] = useState(""); 
   const [jornadaFiltro, setJornadaFiltro] = useState("");
@@ -33,11 +33,16 @@ export default function EmpleadoList({
         return;
       }
       try {
+        // Cambia la URI según el filtro de estado
+        const uri =
+          estadoFiltro === "inactivo"
+            ? "administracion/GET/empleados/bajas"
+            : "administracion/GET/empleados";
         const response = await axios.post(
           "http://64.23.169.22:3761/broker/api/rest",
           {
             metadata: {
-              uri: "administracion/GET/empleados"
+              uri
             },
             request: {}
           },
@@ -81,7 +86,8 @@ export default function EmpleadoList({
       }
     };
     fetchEmpleados();
-  }, []);
+    // Se vuelve a ejecutar cuando cambia el filtro de estado
+  }, [estadoFiltro]);
 
   // Helpers para mostrar nombres
   const getJornadaNombre = (id) => {
@@ -99,9 +105,7 @@ export default function EmpleadoList({
     return rol ? rol.nombre : id;
   };
 
-
   const empleadosFiltrados = empleados.filter((item) => {
-
     const activo = item.empleado.estado !== false;
     const coincideEstado =
       !estadoFiltro ||
@@ -148,7 +152,6 @@ export default function EmpleadoList({
           }
         }
       );
-      console.log("Respuesta del broker (delete):", response.data);
       const message = response.data?.response?.data?.message || "Empleado eliminado correctamente";
       const brokerMsg = response.data?.response?._broker_message;
       setAlerta({
@@ -170,7 +173,6 @@ export default function EmpleadoList({
       let msg = "Error desconocido.";
       let brokerMsg = "";
       if (error.response) {
-        console.log("Error del broker (delete):", error.response.data);
         msg =
           error.response.data?.response?.data?.message ||
           error.response.data?.response?.data?.error ||
@@ -204,19 +206,82 @@ export default function EmpleadoList({
     }
   };
 
-  if (loading) {
-    return <Spinner />;
-  }
+  // Función para obtener la fecha y hora actual
+  const getFecha = () => {
+    const now = new Date();
+    return now.toISOString().slice(0, 10);
+  };
+  const getHora = () => {
+    const now = new Date();
+    return now.toTimeString().slice(0, 8);
+  };
 
-  if (error) {
-    return (
-      <div className="alert alert-danger" role="alert">
-        <strong>Error:</strong>
-        <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-all" }}>{error}</pre>
-      </div>
-    );
-  }
+  const [loadingId, setLoadingId] = useState(null);
+  const [mensaje, setMensaje] = useState({});
 
+  // Registrar entrada
+  const registrarEntrada = async (item) => {
+    setLoadingId(item.empleado.id);
+    setMensaje({});
+    try {
+      const token = localStorage.getItem("token");
+      const payload = {
+        metadata: { uri: "administracion/POST/asistencias/" },
+        request: {
+          id_empleado: item.empleado.id,
+          fecha: getFecha(),
+          hora_entrada: getHora(),
+        },
+      };
+      const response = await axios.post(
+        "http://64.23.169.22:3761/broker/api/rest",
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      setMensaje({ [item.empleado.id]: response.data?.response?.data?.message || "Entrada registrada" });
+    } catch (err) {
+      setMensaje({ [item.empleado.id]: "Error al registrar entrada" });
+    } finally {
+      setLoadingId(null);
+    }
+  };
+
+  // Registrar salida
+  const registrarSalida = async (item) => {
+    setLoadingId(item.empleado.id);
+    setMensaje({});
+    try {
+      const token = localStorage.getItem("token");
+      const payload = {
+        metadata: { uri: "administracion/PATCH/asistencias/salida" },
+        request: {
+          id_empleado: item.empleado.id,
+          fecha: getFecha(),
+          hora_salida: getHora(),
+        },
+      };
+      const response = await axios.post(
+        "http://64.23.169.22:3761/broker/api/rest",
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      setMensaje({ [item.empleado.id]: response.data?.response?.data?.message || "Salida registrada" });
+    } catch (err) {
+      setMensaje({ [item.empleado.id]: "Error al registrar salida" });
+    } finally {
+      setLoadingId(null);
+    }
+  };
 
   const renderPagination = () => {
     if (totalPaginas <= 1) return null;
@@ -252,6 +317,19 @@ export default function EmpleadoList({
       </Pagination>
     );
   };
+
+  if (loading) {
+    return <Spinner />;
+  }
+
+  if (error) {
+    return (
+      <div className="alert alert-danger" role="alert">
+        <strong>Error:</strong>
+        <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-all" }}>{error}</pre>
+      </div>
+    );
+  }
 
   return (
     <Row>
@@ -365,6 +443,28 @@ export default function EmpleadoList({
                         <Button size="sm" color="danger" onClick={() => handleDelete(item.empleado.id)}>
                           <FontAwesomeIcon icon={faTrash} />
                         </Button>
+                        {/* Toma de asistencia */}
+                        <Button
+                          color="success"
+                          size="sm"
+                          className="ml-2"
+                          onClick={() => registrarEntrada(item)}
+                          disabled={loadingId === item.empleado.id}
+                        >
+                          {loadingId === item.empleado.id ? <Spinner size="sm" /> : "Entrada"}
+                        </Button>
+                        <Button
+                          color="warning"
+                          size="sm"
+                          className="ml-2"
+                          onClick={() => registrarSalida(item)}
+                          disabled={loadingId === item.empleado.id}
+                        >
+                          {loadingId === item.empleado.id ? <Spinner size="sm" /> : "Salida"}
+                        </Button>
+                        {mensaje[item.empleado.id] && (
+                          <span style={{ fontSize: "0.85em", marginLeft: 8 }}>{mensaje[item.empleado.id]}</span>
+                        )}
                       </td>
                     </tr>
                   ))

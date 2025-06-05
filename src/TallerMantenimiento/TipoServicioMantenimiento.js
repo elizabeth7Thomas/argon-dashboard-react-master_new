@@ -1,7 +1,6 @@
-// src/components/TipoServicioMantenimiento.jsx
+// src/components/TipoServicioMantenimiento.js
 
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import {
   Button,
   Card,
@@ -22,7 +21,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 
-const BASE_URL = "https://tallerrepuestos.vercel.app/tallerrepuestos";
+import apiClient from "./apiClient"; // <-- Importa el broker (mismo nivel)
 
 const TipoServicioMantenimiento = () => {
   const [tipos, setTipos] = useState([]);
@@ -37,24 +36,29 @@ const TipoServicioMantenimiento = () => {
     status: 1,
   });
 
-
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [tipoAEliminar, setTipoAEliminar] = useState(null);
-
 
   useEffect(() => {
     obtenerTodosLosTipos();
   }, []);
 
+  // 1) Listar todos los tipos de servicio
   const obtenerTodosLosTipos = async () => {
     try {
-      const resp = await axios.get(`${BASE_URL}/tiposervicios`);
-      setTipos(resp.data);
+      const response = await apiClient.post("", {
+        metadata: { uri: "/tallerrepuestos/GET/tiposervicios" },
+        request: {},
+      });
+      if (response.data?.response?.data) {
+        setTipos(response.data.response.data);
+      }
     } catch (error) {
       console.error("Error al obtener tipos de servicio:", error);
     }
   };
 
+  // Abrir/Cerrar modal de Agregar/Editar
   const toggle = () => {
     setModal(!modal);
     if (!modal) {
@@ -69,11 +73,11 @@ const TipoServicioMantenimiento = () => {
     }
   };
 
-
   const handleChange = (e) => {
     setFormulario({ ...formulario, [e.target.name]: e.target.value });
   };
 
+  // 2) Agregar Tipo de Servicio → POST /tiposervicios
   const handleAgregar = async () => {
     if (
       !formulario.descripcion.trim() ||
@@ -91,7 +95,10 @@ const TipoServicioMantenimiento = () => {
         status: formulario.status,
       };
 
-      await axios.post(`${BASE_URL}/tiposervicio`, nuevo);
+      await apiClient.post("", {
+        metadata: { uri: "/tallerrepuestos/POST/tiposervicios" },
+        request: nuevo,
+      });
       await obtenerTodosLosTipos();
       toggle();
     } catch (error) {
@@ -99,7 +106,7 @@ const TipoServicioMantenimiento = () => {
     }
   };
 
-
+  // 3) Cargar formulario para edición
   const handleEditarClick = (tipo) => {
     setFormulario({
       descripcion: tipo.descripcion,
@@ -112,6 +119,7 @@ const TipoServicioMantenimiento = () => {
     setModal(true);
   };
 
+  // 4) Actualizar Tipo de Servicio → PUT /tiposervicios/:id
   const handleActualizar = async () => {
     if (!tipoEditando) return;
 
@@ -123,10 +131,12 @@ const TipoServicioMantenimiento = () => {
         status: formulario.status,
       };
 
-      await axios.put(
-        `${BASE_URL}/tiposervicio/${tipoEditando.idtiposervicio}`,
-        actualizado
-      );
+      await apiClient.post("", {
+        metadata: {
+          uri: `/tallerrepuestos/PUT/tiposervicios/${tipoEditando.idtiposervicio}`,
+        },
+        request: actualizado,
+      });
       await obtenerTodosLosTipos();
       toggle();
     } catch (error) {
@@ -134,18 +144,23 @@ const TipoServicioMantenimiento = () => {
     }
   };
 
+  // 5) Solicitar borrado: abrir modal de confirmación
   const solicitarBorrado = (tipo) => {
     setTipoAEliminar(tipo);
     setShowDeleteModal(true);
   };
 
+  // 6) Confirmar y borrar Tipo de Servicio → DELETE /tiposervicios/:id
   const confirmarBorrado = async () => {
     if (!tipoAEliminar) return;
 
     try {
-      await axios.delete(
-        `${BASE_URL}/tiposervicio/${tipoAEliminar.idtiposervicio}`
-      );
+      await apiClient.post("", {
+        metadata: {
+          uri: `/tallerrepuestos/DELETE/tiposervicios/${tipoAEliminar.idtiposervicio}`,
+        },
+        request: {},
+      });
       await obtenerTodosLosTipos();
       setShowDeleteModal(false);
       setTipoAEliminar(null);
@@ -161,66 +176,66 @@ const TipoServicioMantenimiento = () => {
 
   return (
     <>
-        <Row>
-          <Col>
-            <Card className="shadow">
-              <CardHeader className="border-0 d-flex justify-content-between align-items-center">
-                <h3 className="mb-0">Lista de Tipos de Servicio</h3>
-                <Button color="primary" onClick={toggle}>
-                  Agregar Tipo de Servicio
-                </Button>
-              </CardHeader>
-              <CardBody>
-                <Table responsive hover className="align-items-center table-flush">
-                  <thead className="thead-light">
-                    <tr>
-                      <th>Descripción</th>
-                      <th>Costo</th>
-                      <th>Tipo Servicio</th>
-                      <th>Status</th>
-                      <th>Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {tipos.length > 0 ? (
-                      tipos.map((t) => (
-                        <tr key={t.idtiposervicio}>
-                          <td>{t.descripcion}</td>
-                          <td>{t.costo}</td>
-                          <td>{t.tiposervicio}</td>
-                          <td>{t.status === 1 ? "Activo" : "Inactivo"}</td>
-                          <td>
-                            <Button
-                              size="sm"
-                              color="info"
-                              className="me-2"
-                              onClick={() => handleEditarClick(t)}
-                            >
-                              <FontAwesomeIcon icon={faEdit} className="mr-0" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              color="danger"
-                              onClick={() => solicitarBorrado(t)}
-                            >
-                              <FontAwesomeIcon icon={faTrashAlt} className="mr-0" />
-                            </Button>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="5" className="text-center">
-                          No hay tipos de servicio disponibles
+      <Row>
+        <Col>
+          <Card className="shadow">
+            <CardHeader className="border-0 d-flex justify-content-between align-items-center">
+              <h3 className="mb-0">Lista de Tipos de Servicio</h3>
+              <Button color="primary" onClick={toggle}>
+                Agregar Tipo de Servicio
+              </Button>
+            </CardHeader>
+            <CardBody>
+              <Table responsive hover className="align-items-center table-flush">
+                <thead className="thead-light">
+                  <tr>
+                    <th>Descripción</th>
+                    <th>Costo</th>
+                    <th>Tipo Servicio</th>
+                    <th>Status</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {tipos.length > 0 ? (
+                    tipos.map((t) => (
+                      <tr key={t.idtiposervicio}>
+                        <td>{t.descripcion}</td>
+                        <td>{t.costo}</td>
+                        <td>{t.tiposervicio}</td>
+                        <td>{t.status === 1 ? "Activo" : "Inactivo"}</td>
+                        <td>
+                          <Button
+                            size="sm"
+                            color="info"
+                            className="me-2"
+                            onClick={() => handleEditarClick(t)}
+                          >
+                            <FontAwesomeIcon icon={faEdit} />
+                          </Button>
+                          <Button
+                            size="sm"
+                            color="danger"
+                            onClick={() => solicitarBorrado(t)}
+                          >
+                            <FontAwesomeIcon icon={faTrashAlt} />
+                          </Button>
                         </td>
                       </tr>
-                    )}
-                  </tbody>
-                </Table>
-              </CardBody>
-            </Card>
-          </Col>
-        </Row>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="5" className="text-center">
+                        No hay tipos de servicio disponibles
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </Table>
+            </CardBody>
+          </Card>
+        </Col>
+      </Row>
 
       {/* Modal Agregar / Editar Tipo de Servicio */}
       <Modal isOpen={modal} toggle={toggle}>
@@ -296,7 +311,8 @@ const TipoServicioMantenimiento = () => {
           {tipoAEliminar && (
             <>
               <p>
-                Estás a punto de eliminar el tipo de servicio con los siguientes datos:
+                Estás a punto de eliminar el tipo de servicio con los siguientes
+                datos:
               </p>
               <ul>
                 <li>

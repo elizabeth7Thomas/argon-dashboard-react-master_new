@@ -51,7 +51,8 @@ export default function DashboardAdmin() {
         { key: "jornadas", uri: "administracion/GET/jornadas" },
         { key: "servicios", uri: "administracion/GET/servicios" },
         { key: "proveedores", uri: "administracion/GET/proveedores" },
-        // Agrega más si lo necesitas
+        { key: "estadosMovimiento", uri: "administracion/GET/ordenes/estados_ordenes"},
+        { key: "empleados", uri: "administracion/GET/empleados" },
       ];
 
       for (const cat of catalogos) {

@@ -65,7 +65,7 @@ const HeaderTallerPintura = () => {
   }, [fetchData]);
 
   return (
-    <div className="header bg-gradient-info pb-6 pt-5">
+    <div className="header bg-gradient-info py-4">
       <Container fluid>
         <div className="header-body">
           <Row className="align-items-center py-4">

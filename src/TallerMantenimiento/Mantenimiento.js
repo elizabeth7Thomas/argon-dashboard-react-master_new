@@ -7,6 +7,8 @@ import CategoriasMantenimiento from './CategoriasMantenimiento';
 import ServiciosMantenimiento from './ServiciosMantenimiento';
 import Empleados from './Empleados';
 import Inventario from './InventariosLote';
+import TipoServicioMantenimiento from './TipoServicioMantenimiento';
+
 
 import {
   Container,
@@ -37,6 +39,7 @@ const Mantenimiento = () => {
     { id: 'categorias', label: 'Categorías', icon: faTags, color: 'primary' },
     { id: 'productos', label: 'Productos', icon: faBoxOpen, color: 'primary' },
     { id: 'vehiculos', label: 'Vehículos', icon: faCar, color: 'primary' },
+    { id: 'TiposServicio', label: 'TiposServicio', icon: faTools, color: 'primary' },
     { id: 'servicios', label: 'Servicios', icon: faTools, color: 'primary' },
     { id: 'Empleados', label: 'Empleados', icon: faUserTie, color: 'primary' },
     { id: 'inventario', label: 'Inventario', icon: faWarehouse, color: 'primary'},
@@ -86,6 +89,7 @@ const Mantenimiento = () => {
               {selectedSection === 'categorias' && <CategoriasMantenimiento/>}
               {selectedSection === 'productos' && <ProductosMantenimiento />}
               {selectedSection === 'vehiculos' && <VehiculosMantenimiento />}
+              {selectedSection === 'TiposServicio' && <TipoServicioMantenimiento />}
               {selectedSection === 'servicios' && <ServiciosMantenimiento />}
               {selectedSection === 'Empleados' && <Empleados />}
               {selectedSection === 'inventario' && <Inventario />}
