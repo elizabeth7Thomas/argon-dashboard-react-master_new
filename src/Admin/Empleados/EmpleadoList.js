@@ -33,11 +33,16 @@ export default function EmpleadoList({
         return;
       }
       try {
+        // Cambia la URI según el filtro de estado
+        const uri =
+          estadoFiltro === "inactivo"
+            ? "administracion/GET/empleados/bajas"
+            : "administracion/GET/empleados";
         const response = await axios.post(
           "http://64.23.169.22:3761/broker/api/rest",
           {
             metadata: {
-              uri: "administracion/GET/empleados"
+              uri
             },
             request: {}
           },
@@ -81,7 +86,8 @@ export default function EmpleadoList({
       }
     };
     fetchEmpleados();
-  }, []);
+    // Se vuelve a ejecutar cuando cambia el filtro de estado
+  }, [estadoFiltro]);
 
   // Helpers para mostrar nombres
   const getJornadaNombre = (id) => {
