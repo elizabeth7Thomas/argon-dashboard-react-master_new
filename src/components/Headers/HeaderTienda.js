@@ -82,13 +82,13 @@ const HeaderTienda = () => {
             <Col lg="6" xl="3">
               <Card 
                 className="card-stats mb-4 mb-xl-0 hover-card" 
-                onClick={() => navigate("/admin/proveedoresTienda")}
+                onClick={() => navigate("/admin/tienda/lotes")}
               >
                 <CardBody>
                   <Row>
                     <div className="col">
                       <CardTitle tag="h5" className="text-uppercase text-muted mb-0">
-                        Proveedores
+                        Lotes 
                       </CardTitle>
                       <span className="h2 font-weight-bold mb-0">24</span>
                      

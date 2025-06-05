@@ -1,16 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
-  Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Form,
-  FormGroup,
-  Label,
-  Input,
-  Button,
-  Alert,
-  Spinner
+  Modal, ModalHeader, ModalBody, ModalFooter,
+  Form, FormGroup, Label, Input, Button, Alert, Spinner
 } from 'reactstrap';
 import axios from 'axios';
 
@@ -36,12 +27,13 @@ const ProductForm = ({ isOpen, toggle, onCreated }) => {
   const [success, setSuccess] = useState(false);
 
   const token = localStorage.getItem('token');
+  const usuarioId = localStorage.getItem('usuario_id') || 1; // Puedes modificar esto según tu lógica
 
   const fetchOptions = async () => {
     try {
       const [catRes, marcaRes] = await Promise.all([
         axios.post('http://64.23.169.22:3761/broker/api/rest', {
-          metadata: { uri: '/tienda-conveniencia/GET/categorias/' },
+          metadata: { uri: 'tienda-conveniencia/GET/categorias/' },
           request: {}
         }, {
           headers: { Authorization: `Bearer ${token}` }
@@ -64,6 +56,7 @@ const ProductForm = ({ isOpen, toggle, onCreated }) => {
   useEffect(() => {
     if (isOpen) {
       fetchOptions();
+      setFormData(prev => ({ ...prev, usuario_creacion: usuarioId }));
     }
   }, [isOpen]);
 
@@ -95,7 +88,7 @@ const ProductForm = ({ isOpen, toggle, onCreated }) => {
       const response = await axios.post(
         'http://64.23.169.22:3761/broker/api/rest',
         {
-          metadata: { uri: 'tienda-conveniencia/POST/productos' },
+          metadata: { uri: '/tienda-conveniencia/POST/productos' },
           request: payload
         },
         {
@@ -103,7 +96,7 @@ const ProductForm = ({ isOpen, toggle, onCreated }) => {
         }
       );
 
-      if (response.data?.response?.status === 'success') {
+      if (response.data?.response?._broker_status === 200) {
         setSuccess(true);
         if (onCreated) onCreated();
         toggle();
@@ -138,11 +131,11 @@ const ProductForm = ({ isOpen, toggle, onCreated }) => {
 
           <FormGroup>
             <Label>Precio de referencia</Label>
-            <Input type="number" name="precio_referencia" value={formData.precio_referencia} onChange={handleChange} required step="0.01" />
+            <Input type="number" name="precio_referencia" step="0.01" value={formData.precio_referencia} onChange={handleChange} required />
           </FormGroup>
 
           <FormGroup>
-            <Label>ID Unidad de medida</Label>
+            <Label>Unidad de medida (ID)</Label>
             <Input type="number" name="id_unidad_medida" value={formData.id_unidad_medida} onChange={handleChange} required />
           </FormGroup>
 
@@ -173,7 +166,7 @@ const ProductForm = ({ isOpen, toggle, onCreated }) => {
 
           <FormGroup>
             <Label>Tipo</Label>
-            <Input type="text" name="tipo" value={formData.tipo} onChange={handleChange} required />
+            <Input name="tipo" value={formData.tipo} onChange={handleChange} required />
           </FormGroup>
 
           <FormGroup check>

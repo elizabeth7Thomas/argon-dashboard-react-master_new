@@ -32,7 +32,7 @@ const ReportesTienda = () => {
       console.error('Error al obtener ventas:', error);
       setError('Hubo un error al cargar las ventas.');
     } finally {
-      setCargando(false); // ✅ Esto es lo que faltaba
+      setCargando(false); // 
     }
   };
 
@@ -41,7 +41,10 @@ const ReportesTienda = () => {
 
 
   return (
+    <>
+    <HeaderTienda />
     <Container className="mt-4">
+      
       
       
       <h2>Reporte de Ventas</h2>
@@ -79,6 +82,7 @@ const ReportesTienda = () => {
         </Table>
       )}
     </Container>
+    </>
   );
 };
 
