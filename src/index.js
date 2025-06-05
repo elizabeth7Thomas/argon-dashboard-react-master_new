@@ -64,7 +64,6 @@ import PrecioHistorialMantenimiento from "TallerMantenimiento/PrecioHistorial";
 import ProveedoresTienda from "TiendaConveniencia/ProveedoresTienda/ProveedoresTienda";
 import ReportesTienda from "TiendaConveniencia/ReportesTienda/ReportesTienda";
 import Inventario from "TiendaConveniencia/InventarioTienda/List/Inventario";
-import Reports from "views/examples/Reports";
 import LotesList from "TiendaConveniencia/Lotes/LotesList";
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
@@ -133,11 +132,7 @@ root.render(
       <Route path="/admin/services" element={<Servicios />} />
       <Route path="/admin/movimientos" element={<Movimientos />} />
 
-
-      {/* Add more routes as needed */}+
-      <Route path="/admin/reports" element={<Reports />} />
-
-
+      {/* Si necesitan agregar mas rutas, agregenlas abajo */}
     </Routes>
   </BrowserRouter>
 );

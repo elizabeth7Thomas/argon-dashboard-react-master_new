@@ -18,6 +18,10 @@ import {
 import { faIdCard } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import axios from "axios";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 
 const filtros = [
   { label: "Todos", value: "GET_ALL" },
@@ -188,6 +192,46 @@ export default function MovimientoList() {
     setPagina(1);
   }, [busqueda, filtro, fechaDia, fechaMes, anio, numeroTrimestre, numeroSemestre, servicioId]);
 
+  // Exportar a PDF
+  const exportToPDF = () => {
+    const doc = new jsPDF();
+    doc.text("Reporte de Movimientos", 10, 10);
+    doc.autoTable({
+      head: [["#", "Concepto", "Cantidad", "Fecha", "Servicio", "Empleado", "Producto", "Nota Crédito"]],
+      body: movimientosFiltrados.map((item, idx) => [
+        idx + 1,
+        item.concepto,
+        item.cantidad,
+        item.fecha_movimiento,
+        getServicioNombre(item.id_servicio),
+        item.nombre_empleado || "",
+        item.producto || "",
+        item.notaCredito || ""
+      ]),
+      startY: 20
+    });
+    doc.save("movimientos.pdf");
+  };
+
+  // Exportar a Excel
+  const exportToExcel = () => {
+    const data = movimientosFiltrados.map((item, idx) => ({
+      "#": idx + 1,
+      Concepto: item.concepto,
+      Cantidad: item.cantidad,
+      Fecha: item.fecha_movimiento,
+      Servicio: getServicioNombre(item.id_servicio),
+      Empleado: item.nombre_empleado || "",
+      Producto: item.producto || "",
+      "Nota Crédito": item.notaCredito || ""
+    }));
+    const ws = XLSX.utils.json_to_sheet(data);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Movimientos");
+    const wbout = XLSX.write(wb, { bookType: "xlsx", type: "array" });
+    saveAs(new Blob([wbout], { type: "application/octet-stream" }), "movimientos.xlsx");
+  };
+
   return (
     <Row>
       <Col>
@@ -354,6 +398,20 @@ export default function MovimientoList() {
                   onChange={(e) => setBusqueda(e.target.value)}
                   style={{ maxWidth: "300px" }}
                 />
+                <button
+                  className="btn btn-danger ml-2"
+                  onClick={exportToPDF}
+                  title="Descargar PDF"
+                >
+                  PDF
+                </button>
+                <button
+                  className="btn btn-success ml-2"
+                  onClick={exportToExcel}
+                  title="Descargar Excel"
+                >
+                  Excel
+                </button>
               </Col>
             </Row>
           </CardHeader>
