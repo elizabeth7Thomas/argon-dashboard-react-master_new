@@ -247,3 +247,4 @@ const HeaderPagos = () => {
 };
 
 export default HeaderPagos;
+ 
