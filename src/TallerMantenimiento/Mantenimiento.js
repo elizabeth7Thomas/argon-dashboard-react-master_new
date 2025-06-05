@@ -8,6 +8,7 @@ import ServiciosMantenimiento from './ServiciosMantenimiento';
 import Empleados from './Empleados';
 import Inventario from './InventariosLote';
 import TipoServicioMantenimiento from './TipoServicioMantenimiento';
+import VentasMantenimiento from '../TallerMantenimiento/Ventas/VentasMantenimiento';
 
 
 import {
@@ -26,7 +27,8 @@ import {
   faBoxOpen,
   faUserTie,
   faWarehouse,
-  faTools
+  faTools,
+  faShoppingCart
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 //import Inventario from 'TiendaConveniencia/InventarioTienda/Inventario';
@@ -43,6 +45,7 @@ const Mantenimiento = () => {
     { id: 'servicios', label: 'Servicios', icon: faTools, color: 'primary' },
     { id: 'Empleados', label: 'Empleados', icon: faUserTie, color: 'primary' },
     { id: 'inventario', label: 'Inventario', icon: faWarehouse, color: 'primary'},
+    {id: 'ventas', label: 'Ventas', icon: faShoppingCart, color: 'success' },
   ];
 
   return (
@@ -93,6 +96,7 @@ const Mantenimiento = () => {
               {selectedSection === 'servicios' && <ServiciosMantenimiento />}
               {selectedSection === 'Empleados' && <Empleados />}
               {selectedSection === 'inventario' && <Inventario />}
+              {selectedSection === 'ventas' && <VentasMantenimiento />}
               {!selectedSection && (
                 <div>
                   <p>Selecciona una opción para comenzar.</p>
