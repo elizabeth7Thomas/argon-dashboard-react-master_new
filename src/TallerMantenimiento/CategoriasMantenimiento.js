@@ -21,21 +21,22 @@ import {
 import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-const BASE_URL = "https://tallerrepuestos.vercel.app/tallerrepuestos";
+import apiClient from "./apiClient"; // <-- Importar el broker (mismo nivel)
 
 const CategoriasMantenimiento = () => {
   const [categorias, setCategorias] = useState([]);
   const [modal, setModal] = useState(false);
   const [modoEdicion, setModoEdicion] = useState(false);
   const [categoriaEditando, setCategoriaEditando] = useState(null);
-  const [showDeleteModal, setShowDeleteModal] = useState(false);
-  const [categoriaAEliminar, setCategoriaAEliminar] = useState(null);
 
   const [formulario, setFormulario] = useState({
     nombre: "",
     descripcion: "",
     status: 1,
   });
+
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [categoriaAEliminar, setCategoriaAEliminar] = useState(null);
 
   // Al montar el componente, traemos todas las categorías
   useEffect(() => {
@@ -45,8 +46,14 @@ const CategoriasMantenimiento = () => {
   // 1) Listar todas las categorías
   const obtenerTodasLasCategorias = async () => {
     try {
-      const resp = await axios.get(`${BASE_URL}/categorias`);
-      setCategorias(resp.data);
+      const response = await apiClient.post("", {
+        metadata: { uri: "/tallerrepuestos/GET/categorias" },
+        request: {},
+      });
+
+      if (response.data?.response?.data) {
+        setCategorias(response.data.response.data);
+      }
     } catch (error) {
       console.error("Error al obtener categorías:", error);
     }
@@ -66,14 +73,13 @@ const CategoriasMantenimiento = () => {
     }
   };
 
-  // Manejar cambios en formulario
+  // Manejador de cambios en el formulario
   const handleChange = (e) => {
     setFormulario({ ...formulario, [e.target.name]: e.target.value });
   };
 
   // 2) Agregar nueva categoría
   const handleAgregar = async () => {
-    // validaciones mínimas
     if (!formulario.nombre.trim()) {
       return;
     }
@@ -82,10 +88,14 @@ const CategoriasMantenimiento = () => {
       const nueva = {
         nombre: formulario.nombre.trim(),
         descripcion: formulario.descripcion.trim(),
-        status: formulario.status,
+        status: parseInt(formulario.status, 10),
       };
 
-      await axios.post(`${BASE_URL}/categorias`, nueva);
+      await apiClient.post("", {
+        metadata: { uri: "/tallerrepuestos/POST/categorias" },
+        request: nueva,
+      });
+
       await obtenerTodasLasCategorias();
       toggle();
     } catch (error) {
@@ -113,13 +123,16 @@ const CategoriasMantenimiento = () => {
       const actualizado = {
         nombre: formulario.nombre.trim(),
         descripcion: formulario.descripcion.trim(),
-        status: formulario.status,
+        status: parseInt(formulario.status, 10),
       };
 
-      await axios.put(
-        `${BASE_URL}/categorias/${categoriaEditando.idcategoria}`,
-        actualizado
-      );
+      await apiClient.post("", {
+        metadata: {
+          uri: `/tallerrepuestos/PUT/categorias/${categoriaEditando.idcategoria}`,
+        },
+        request: actualizado,
+      });
+
       await obtenerTodasLasCategorias();
       toggle();
     } catch (error) {
@@ -138,9 +151,13 @@ const CategoriasMantenimiento = () => {
     if (!categoriaAEliminar) return;
 
     try {
-      await axios.delete(
-        `${BASE_URL}/categorias/${categoriaAEliminar.idcategoria}`
-      );
+      await apiClient.post("", {
+        metadata: {
+          uri: `/tallerrepuestos/DELETE/categorias/${categoriaAEliminar.idcategoria}`,
+        },
+        request: {},
+      });
+
       await obtenerTodasLasCategorias();
       setShowDeleteModal(false);
       setCategoriaAEliminar(null);
@@ -156,69 +173,70 @@ const CategoriasMantenimiento = () => {
 
   return (
     <>
-
-        <Row>
-          <Col>
-            <Card className="shadow">
-              <CardHeader className=" border-0 d-flex justify-content-between align-items-center">
-                <Col className="align-items-center">
-                  <h3 className="mb-0">Lista de Categorías</h3>
-                </Col>
-                <Col className="d-flex justify-content-end align-items-center">
-                   <Button color="primary" onClick={toggle}>
-                     Agregar Categoría
-                   </Button>
-                </Col>
-              </CardHeader>
-              <CardBody>
-                <Table className="align-items-center table-flush" responsive hover>
-                  <thead className="thead-light">
-                    <tr>
-                      <th>Nombre</th>
-                      <th>Descripción</th>
-                      <th>Status</th>
-                      <th>Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {categorias.length > 0 ? (
-                      categorias.map((c) => (
-                        <tr key={c.idcategoria}>
-                          <td>{c.nombre}</td>
-                          <td>{c.descripcion}</td>
-                          <td>{c.status === 1 ? "Activo" : "Inactivo"}</td>
-                          <td>
-                            <Button
-                              size="sm"
-                              color="info"
-                              className="me-2"
-                              onClick={() => handleEditarClick(c)}>
-                                <FontAwesomeIcon icon={faEdit} className="mr-0" />
-                            </Button>
-                            <Button
-                              size="sm"
-                              color="danger"
-                              onClick={() => solicitarBorrado(c)}>
-                              <FontAwesomeIcon icon={faTrashAlt} className="mr-0" />
-                            </Button>
-                          </td>
-                        </tr>
-                      ))
-                    ) : (
-                      <tr>
-                        <td colSpan="4" className="text-center">
-                          No hay categorías disponibles
+      <Row>
+        <Col>
+          <Card className="shadow">
+            <CardHeader className="border-0 d-flex justify-content-between align-items-center">
+              <Col className="align-items-center">
+                <h3 className="mb-0">Lista de Categorías</h3>
+              </Col>
+              <Col className="d-flex justify-content-end align-items-center">
+                <Button color="primary" onClick={toggle}>
+                  Agregar Categoría
+                </Button>
+              </Col>
+            </CardHeader>
+            <CardBody>
+              <Table className="align-items-center table-flush" responsive hover>
+                <thead className="thead-light">
+                  <tr>
+                    <th>Nombre</th>
+                    <th>Descripción</th>
+                    <th>Status</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {categorias.length > 0 ? (
+                    categorias.map((c) => (
+                      <tr key={c.idcategoria}>
+                        <td>{c.nombre}</td>
+                        <td>{c.descripcion}</td>
+                        <td>{c.status === 1 ? "Activo" : "Inactivo"}</td>
+                        <td>
+                          <Button
+                            size="sm"
+                            color="info"
+                            className="me-2"
+                            onClick={() => handleEditarClick(c)}
+                          >
+                            <FontAwesomeIcon icon={faEdit} />
+                          </Button>
+                          <Button
+                            size="sm"
+                            color="danger"
+                            onClick={() => solicitarBorrado(c)}
+                          >
+                            <FontAwesomeIcon icon={faTrashAlt} />
+                          </Button>
                         </td>
                       </tr>
-                    )}
-                  </tbody>
-                </Table>
-              </CardBody>
-            </Card>
-          </Col>
-        </Row>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="4" className="text-center">
+                        No hay categorías disponibles
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
+              </Table>
+            </CardBody>
+          </Card>
+        </Col>
+      </Row>
 
-      {/* Moda para agregar y editar c */}
+      {/* Modal para agregar/editar categoría */}
       <Modal isOpen={modal} toggle={toggle}>
         <ModalHeader toggle={toggle}>
           {modoEdicion ? "Editar Categoría" : "Agregar Categoría"}
@@ -227,15 +245,30 @@ const CategoriasMantenimiento = () => {
           <Form>
             <FormGroup>
               <Label>Nombre</Label>
-              <Input type="text" name="nombre" value={formulario.nombre} onChange={handleChange} />
+              <Input
+                type="text"
+                name="nombre"
+                value={formulario.nombre}
+                onChange={handleChange}
+              />
             </FormGroup>
             <FormGroup>
               <Label>Descripción</Label>
-              <Input type="text" name="descripcion" value={formulario.descripcion} onChange={handleChange} />
+              <Input
+                type="text"
+                name="descripcion"
+                value={formulario.descripcion}
+                onChange={handleChange}
+              />
             </FormGroup>
             <FormGroup>
               <Label>Status</Label>
-              <Input type="select" name="status" value={formulario.status} onChange={handleChange}>
+              <Input
+                type="select"
+                name="status"
+                value={formulario.status}
+                onChange={handleChange}
+              >
                 <option value={1}>Activo</option>
                 <option value={0}>Inactivo</option>
               </Input>
@@ -243,25 +276,39 @@ const CategoriasMantenimiento = () => {
           </Form>
         </ModalBody>
         <ModalFooter>
-          <Button color={modoEdicion ? "success" : "primary"} onClick={modoEdicion ? handleActualizar : handleAgregar}>
-            {modoEdicion ? "Actualizar" : "Agregar"}
-          </Button>
+          {modoEdicion ? (
+            <Button color="success" onClick={handleActualizar}>
+              Actualizar
+            </Button>
+          ) : (
+            <Button color="primary" onClick={handleAgregar}>
+              Agregar
+            </Button>
+          )}
           <Button color="secondary" onClick={toggle}>
             Cancelar
           </Button>
         </ModalFooter>
       </Modal>
 
-      {/* Modal de Confirmación de eliminacion */}
+      {/* Modal de confirmación de eliminación */}
       <Modal isOpen={showDeleteModal} toggle={cancelarBorrado}>
-        <ModalHeader toggle={cancelarBorrado}>Confirmar eliminación</ModalHeader>
+        <ModalHeader toggle={cancelarBorrado}>
+          Confirmar eliminación
+        </ModalHeader>
         <ModalBody>
           {categoriaAEliminar && (
             <>
-              <p>Estás a punto de eliminar la categoría:</p>
+              <p>
+                Estás a punto de eliminar la categoría con los siguientes datos:
+              </p>
               <ul>
-                <li><strong>Nombre:</strong> {categoriaAEliminar.nombre}</li>
-                <li><strong>Descripción:</strong> {categoriaAEliminar.descripcion}</li>
+                <li>
+                  <strong>Nombre:</strong> {categoriaAEliminar.nombre}
+                </li>
+                <li>
+                  <strong>Descripción:</strong> {categoriaAEliminar.descripcion}
+                </li>
               </ul>
               <p>¿Deseas continuar?</p>
             </>

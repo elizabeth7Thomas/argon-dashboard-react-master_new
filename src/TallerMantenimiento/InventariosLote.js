@@ -1,10 +1,13 @@
 // src/components/PrecioHistorial.js
+
+import React, { useState, useEffect } from "react";
 import {
   Button,
   Card,
   CardHeader,
   CardBody,
   Table,
+  Container,
   Row,
   Col,
   Modal,
@@ -15,13 +18,8 @@ import {
   FormGroup,
   Input,
   Label,
-  Alert,
 } from "reactstrap";
-
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
-
-const BASE_URL = "https://tallerrepuestos.vercel.app/tallerrepuestos";
+import apiClient from "./apiClient"; // <-- Importa el broker (mismo nivel)
 
 const PrecioHistorial = () => {
   const [historial, setHistorial] = useState([]);
@@ -30,7 +28,6 @@ const PrecioHistorial = () => {
   const [modal, setModal] = useState(false);
   const [modoEdicion, setModoEdicion] = useState(false);
   const [registroEditando, setRegistroEditando] = useState(null);
-  const [error, setError] = useState(null);
 
   const [form, setForm] = useState({
     idproducto: "",
@@ -41,30 +38,40 @@ const PrecioHistorial = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [registroAEliminar, setRegistroAEliminar] = useState(null);
 
+  useEffect(() => {
+    fetchHistorial();
+    fetchProductos();
+  }, []);
+
   // 1) Obtener historial de precios
   const fetchHistorial = async () => {
     try {
-      const resp = await axios.get(`${BASE_URL}/preciohistorial`);
-      setHistorial(resp.data);
+      const response = await apiClient.post("", {
+        metadata: { uri: "/tallerrepuestos/GET/preciohistorial" },
+        request: {},
+      });
+      if (response.data?.response?.data) {
+        setHistorial(response.data.response.data);
+      }
     } catch (err) {
-      setError("Error al obtener historial de precios.");
+      console.error("Error al obtener historial de precios:", err);
     }
   };
 
   // 2) Obtener lista de productos
   const fetchProductos = async () => {
     try {
-      const resp = await axios.get(`${BASE_URL}/productos`);
-      setProductos(resp.data);
+      const response = await apiClient.post("", {
+        metadata: { uri: "/tallerrepuestos/GET/productos" },
+        request: {},
+      });
+      if (response.data?.response?.data) {
+        setProductos(response.data.response.data);
+      }
     } catch (err) {
-      setError("Error al obtener productos.");
+      console.error("Error al obtener productos:", err);
     }
   };
-
-  useEffect(() => {
-    fetchHistorial();
-    fetchProductos();
-  }, []);
 
   const toggle = () => {
     setModal(!modal);
@@ -73,7 +80,6 @@ const PrecioHistorial = () => {
       setModoEdicion(false);
       setRegistroEditando(null);
       setBusquedaProducto("");
-      setError(null);
     }
   };
 
@@ -82,39 +88,81 @@ const PrecioHistorial = () => {
   // 3) Agregar nuevo registro
   const agregarRegistro = async () => {
     if (!form.idproducto || !form.precioanterior || !form.precionuevo) return;
-    await axios.post(`${BASE_URL}/preciohistorial`, {
-      idproducto: +form.idproducto,
-      precioanterior: +form.precioanterior,
-      precionuevo: +form.precionuevo,
-    });
-    fetchHistorial(); toggle();
+
+    try {
+      await apiClient.post("", {
+        metadata: { uri: "/tallerrepuestos/POST/preciohistorial" },
+        request: {
+          idproducto: parseInt(form.idproducto, 10),
+          precioanterior: parseFloat(form.precioanterior),
+          precionuevo: parseFloat(form.precionuevo),
+        },
+      });
+      await fetchHistorial();
+      toggle();
+    } catch (err) {
+      console.error("Error al agregar registro:", err);
+    }
   };
 
+  // 4) Cargar datos en formulario para edición
   const editarClick = (reg) => {
     setForm({
       idproducto: reg.idproducto.toString(),
       precioanterior: reg.precioanterior,
       precionuevo: reg.precionuevo,
     });
-    setModoEdicion(true); setRegistroEditando(reg); setModal(true); setBusquedaProducto("");
+    setModoEdicion(true);
+    setRegistroEditando(reg);
+    setModal(true);
+    setBusquedaProducto("");
   };
 
   // 5) Actualizar registro existente
   const actualizarRegistro = async () => {
     if (!registroEditando) return;
-    await axios.put(`${BASE_URL}/preciohistorial/${registroEditando.idhistorial}`, {
-      idproducto: +form.idproducto,
-      precioanterior: +form.precioanterior,
-      precionuevo: +form.precionuevo,
-    });
-    fetchHistorial(); toggle();
+    try {
+      await apiClient.post("", {
+        metadata: {
+          uri: `/tallerrepuestos/PUT/preciohistorial/${registroEditando.idhistorial}`,
+        },
+        request: {
+          idproducto: parseInt(form.idproducto, 10),
+          precioanterior: parseFloat(form.precioanterior),
+          precionuevo: parseFloat(form.precionuevo),
+        },
+      });
+      await fetchHistorial();
+      toggle();
+    } catch (err) {
+      console.error("Error al actualizar registro:", err);
+    }
   };
 
-  const solicitarBorrado = (reg) => { setRegistroAEliminar(reg); setShowDeleteModal(true); };
-  const confirmarBorrado = async () => {
-    await axios.delete(`${BASE_URL}/preciohistorial/${registroAEliminar.idhistorial}`);
-    fetchHistorial(); setShowDeleteModal(false); setRegistroAEliminar(null);
+  // 6) Solicitar borrado: abrir modal de confirmación
+  const solicitarBorrado = (reg) => {
+    setRegistroAEliminar(reg);
+    setShowDeleteModal(true);
   };
+
+  // 7) Confirmar y borrar registro
+  const confirmarBorrado = async () => {
+    if (!registroAEliminar) return;
+    try {
+      await apiClient.post("", {
+        metadata: {
+          uri: `/tallerrepuestos/DELETE/preciohistorial/${registroAEliminar.idhistorial}`,
+        },
+        request: {},
+      });
+      await fetchHistorial();
+      setShowDeleteModal(false);
+      setRegistroAEliminar(null);
+    } catch (err) {
+      console.error("Error al borrar registro:", err);
+    }
+  };
+
   const cancelarBorrado = () => setShowDeleteModal(false);
 
   // Filtrar productos para el select
@@ -124,48 +172,69 @@ const PrecioHistorial = () => {
 
   return (
     <>
-     
+      <Container fluid className="mt-4">
         <Row>
           <Col>
-          <Card className="shadow">
-            <CardHeader className="border-0 d-flex justify-content-between align-items-center">
-              <h3>Historial de Precios</h3>
-              <Button color="primary" onClick={toggle}>Agregar Registro</Button>
-            </CardHeader>
-            <CardBody>
-              <Table responsive hover className="align-items-center table-flush">
-                <thead className="thead-light"><tr>
-                  <th>ID Historial</th><th>Producto</th><th>Precio Anterior</th>
-                  <th>Precio Nuevo</th><th>Fecha Cambio</th><th>Acciones</th>
-                </tr></thead>
-                <tbody>
-                  {historial.length > 0 ? historial.map(h => {
-                    const prod = productos.find(p => p.idproducto === h.idproducto);
-                    return (
-                      <tr key={h.idhistorial}>
-                        <td>{h.idhistorial}</td>
-                        <td>{prod?.nombre || h.idproducto}</td>
-                        <td>{h.precioanterior}</td>
-                        <td>{h.precionuevo}</td>
-                        <td>{new Date(h.fechacambio).toLocaleString()}</td>
-                        <td>
-                          <Button size="sm" color="info" className="me-2" onClick={() => editarClick(h)}>
-                            <FontAwesomeIcon icon={faEdit} className="mr-0" />
-                          </Button>
-                          <Button size="sm" color="danger" onClick={() => solicitarBorrado(h)}>
-                            <FontAwesomeIcon icon={faTrashAlt} className="mr-0" />
-                          </Button>
+            <Card>
+              <CardHeader className="d-flex justify-content-between align-items-center">
+                <h3>Historial de Precios</h3>
+                <Button color="primary" onClick={toggle}>
+                  Agregar Registro
+                </Button>
+              </CardHeader>
+              <CardBody>
+                <Table responsive>
+                  <thead>
+                    <tr>
+                      <th>ID Historial</th>
+                      <th>Producto</th>
+                      <th>Precio Anterior</th>
+                      <th>Precio Nuevo</th>
+                      <th>Fecha Cambio</th>
+                      <th>Acciones</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {historial.length > 0 ? (
+                      historial.map((h) => {
+                        const prod = productos.find((p) => p.idproducto === h.idproducto);
+                        return (
+                          <tr key={h.idhistorial}>
+                            <td>{h.idhistorial}</td>
+                            <td>{prod?.nombre || h.idproducto}</td>
+                            <td>{h.precioanterior}</td>
+                            <td>{h.precionuevo}</td>
+                            <td>{new Date(h.fechacambio).toLocaleString()}</td>
+                            <td>
+                              <Button
+                                size="sm"
+                                color="warning"
+                                className="me-2"
+                                onClick={() => editarClick(h)}
+                              >
+                                Editar
+                              </Button>
+                              <Button size="sm" color="danger" onClick={() => solicitarBorrado(h)}>
+                                Eliminar
+                              </Button>
+                            </td>
+                          </tr>
+                        );
+                      })
+                    ) : (
+                      <tr>
+                        <td colSpan={6} className="text-center">
+                          No hay registros
                         </td>
                       </tr>
-                    );
-                  }) : (
-                    <tr><td colSpan={6} className="text-center">No hay registros</td></tr>
-                  )}
-                </tbody>
-              </Table>
-            </CardBody>
-          </Card>
-        </Col></Row>
+                    )}
+                  </tbody>
+                </Table>
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
+      </Container>
 
       {/* Modal para agregar/editar registro */}
       <Modal isOpen={modal} toggle={toggle}>
@@ -173,7 +242,6 @@ const PrecioHistorial = () => {
           {modoEdicion ? "Editar Registro" : "Agregar Registro"}
         </ModalHeader>
         <ModalBody>
-          {error && <Alert color="danger">{error}</Alert>}
           <Form>
             <FormGroup>
               <Label>Buscar Producto</Label>
