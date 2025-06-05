@@ -25,7 +25,7 @@ import {
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
-import Header from "components/Headers/Header.js";
+import Header from "components/Headers/Header";
 
 const Index = () => {
   const navigate = useNavigate();

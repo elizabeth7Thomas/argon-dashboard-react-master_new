@@ -1,5 +1,6 @@
+// src/components/ServiciosMantenimiento.js
+
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import {
   Button,
   Card,
@@ -20,8 +21,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 
-// Ajusta esta URL según tu despliegue
-const BASE_URL = "https://tallerrepuestos.vercel.app/tallerrepuestos";
+import apiClient from "./apiClient"; // <-- Importa el broker (mismo nivel)
 
 const ServiciosMantenimiento = () => {
   const [servicios, setServicios] = useState([]);
@@ -50,34 +50,55 @@ const ServiciosMantenimiento = () => {
     obtenerTodosLosEmpleados();
   }, []);
 
+  // GET /servicios
   const obtenerTodosLosServicios = async () => {
     try {
-      const resp = await axios.get(`${BASE_URL}/servicios`);
-      setServicios(resp.data);
+      const response = await apiClient.post("", {
+        metadata: { uri: "/tallerrepuestos/GET/servicios" },
+        request: {},
+      });
+      if (response.data?.response?.data) {
+        setServicios(response.data.response.data);
+      }
     } catch (error) {
       console.error("Error al obtener servicios:", error);
     }
   };
 
+  // GET /tiposervicios (filtrar solo status = 1)
   const obtenerTodosLosTipos = async () => {
     try {
-      const resp = await axios.get(`${BASE_URL}/tiposervicios`);
-      const activos = resp.data.filter((t) => t.status === 1);
-      setTiposList(
-        activos.map((t) => ({ id: t.idtiposervicio, nombre: t.tiposervicio }))
-      );
+      const response = await apiClient.post("", {
+        metadata: { uri: "/tallerrepuestos/GET/tiposervicios" },
+        request: {},
+      });
+      if (response.data?.response?.data) {
+        const activos = response.data.response.data.filter((t) => t.status === 1);
+        setTiposList(
+          activos.map((t) => ({ id: t.idtiposervicio, nombre: t.tiposervicio }))
+        );
+      }
     } catch (error) {
       console.error("Error al obtener tipos de servicio:", error);
     }
   };
 
+  // GET /empleados (filtrar solo status = 1)
   const obtenerTodosLosEmpleados = async () => {
     try {
-      const resp = await axios.get(`${BASE_URL}/empleados`);
-      const activos = resp.data.filter((e) => e.status === 1);
-      setEmpleadosList(
-        activos.map((e) => ({ id: e.idempleado, nombre: `${e.nombre} ${e.apellido}` }))
-      );
+      const response = await apiClient.post("", {
+        metadata: { uri: "/tallerrepuestos/GET/empleados" },
+        request: {},
+      });
+      if (response.data?.response?.data) {
+        const activos = response.data.response.data.filter((e) => e.status === 1);
+        setEmpleadosList(
+          activos.map((e) => ({
+            id: e.idempleado,
+            nombre: `${e.nombre} ${e.apellido}`,
+          }))
+        );
+      }
     } catch (error) {
       console.error("Error al obtener empleados:", error);
     }
@@ -91,10 +112,16 @@ const ServiciosMantenimiento = () => {
     e.nombre.toLowerCase().includes(busquedaEmpleado.toLowerCase())
   );
 
+  // Abrir/Cerrar modal de Agregar/Editar
   const toggle = () => {
     setModal(!modal);
     if (!modal) {
-      setFormulario({ tipovehiculo: "", idtiposervicio: "", idempleado: "", status: 1 });
+      setFormulario({
+        tipovehiculo: "",
+        idtiposervicio: "",
+        idempleado: "",
+        status: 1,
+      });
       setModoEdicion(false);
       setServicioEditando(null);
       setBusquedaTipo("");
@@ -106,12 +133,14 @@ const ServiciosMantenimiento = () => {
     setFormulario({ ...formulario, [e.target.name]: e.target.value });
   };
 
+  // POST /servicios
   const handleAgregar = async () => {
     if (
       !formulario.tipovehiculo.trim() ||
       !formulario.idtiposervicio ||
       !formulario.idempleado
-    ) return;
+    )
+      return;
     try {
       const nuevo = {
         tipovehiculo: formulario.tipovehiculo.trim(),
@@ -119,7 +148,10 @@ const ServiciosMantenimiento = () => {
         idempleado: parseInt(formulario.idempleado, 10),
         status: formulario.status,
       };
-      await axios.post(`${BASE_URL}/servicios`, nuevo);
+      await apiClient.post("", {
+        metadata: { uri: "/tallerrepuestos/POST/servicios" },
+        request: nuevo,
+      });
       await obtenerTodosLosServicios();
       toggle();
     } catch (error) {
@@ -127,6 +159,7 @@ const ServiciosMantenimiento = () => {
     }
   };
 
+  // Cargar datos en el formulario para edición
   const handleEditarClick = (servicio) => {
     setFormulario({
       tipovehiculo: servicio.tipovehiculo,
@@ -136,13 +169,16 @@ const ServiciosMantenimiento = () => {
     });
     setModoEdicion(true);
     setServicioEditando(servicio);
-    const tipoNombre = tiposList.find((t) => t.id === servicio.idtiposervicio)?.nombre || "";
-    const empleadoNombre = empleadosList.find((e) => e.id === servicio.idempleado)?.nombre || "";
+    const tipoNombre =
+      tiposList.find((t) => t.id === servicio.idtiposervicio)?.nombre || "";
+    const empleadoNombre =
+      empleadosList.find((e) => e.id === servicio.idempleado)?.nombre || "";
     setBusquedaTipo(tipoNombre);
     setBusquedaEmpleado(empleadoNombre);
     setModal(true);
   };
 
+  // PUT /servicios/{id}
   const handleActualizar = async () => {
     if (!servicioEditando) return;
     try {
@@ -152,10 +188,12 @@ const ServiciosMantenimiento = () => {
         idempleado: parseInt(formulario.idempleado, 10),
         status: formulario.status,
       };
-      await axios.put(
-        `${BASE_URL}/servicios/${servicioEditando.idservicio}`,
-        actualizado
-      );
+      await apiClient.post("", {
+        metadata: {
+          uri: `/tallerrepuestos/PUT/servicios/${servicioEditando.idservicio}`,
+        },
+        request: actualizado,
+      });
       await obtenerTodosLosServicios();
       toggle();
     } catch (error) {
@@ -163,17 +201,22 @@ const ServiciosMantenimiento = () => {
     }
   };
 
+  // Solicitar borrado: abrir modal de confirmación
   const solicitarBorrado = (servicio) => {
     setServicioAEliminar(servicio);
     setShowDeleteModal(true);
   };
 
+  // DELETE /servicios/{id}
   const confirmarBorrado = async () => {
     if (!servicioAEliminar) return;
     try {
-      await axios.delete(
-        `${BASE_URL}/servicios/${servicioAEliminar.idservicio}`
-      );
+      await apiClient.post("", {
+        metadata: {
+          uri: `/tallerrepuestos/DELETE/servicios/${servicioAEliminar.idservicio}`,
+        },
+        request: {},
+      });
       await obtenerTodosLosServicios();
       setShowDeleteModal(false);
       setServicioAEliminar(null);
@@ -189,61 +232,74 @@ const ServiciosMantenimiento = () => {
 
   return (
     <>
-        <Row>
-          <Col>
-            <Card className="shadow">
-              <CardHeader className="border-0 d-flex justify-content-between align-items-center">
-                <h3 className="mb-0">Lista de Servicios</h3>
-                <Button color="primary" onClick={toggle}>
-                  Agregar Servicio
-                </Button>
-              </CardHeader>
-              <CardBody>
-                <Table responsive hover className="align-items-center table-flush">
-                  <thead  className="thead-light">
+      <Row>
+        <Col>
+          <Card className="shadow">
+            <CardHeader className="border-0 d-flex justify-content-between align-items-center">
+              <h3 className="mb-0">Lista de Servicios</h3>
+              <Button color="primary" onClick={toggle}>
+                Agregar Servicio
+              </Button>
+            </CardHeader>
+            <CardBody>
+              <Table responsive hover className="align-items-center table-flush">
+                <thead className="thead-light">
+                  <tr>
+                    <th>Tipo Vehículo</th>
+                    <th>Tipo de Servicio</th>
+                    <th>Empleado</th>
+                    <th>Status</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {servicios.length > 0 ? (
+                    servicios.map((s) => {
+                      const tipo = tiposList.find(
+                        (t) => t.id === s.idtiposervicio
+                      );
+                      const empleado = empleadosList.find(
+                        (e) => e.id === s.idempleado
+                      );
+                      return (
+                        <tr key={s.idservicio}>
+                          <td>{s.tipovehiculo}</td>
+                          <td>{tipo?.nombre || "N/A"}</td>
+                          <td>{empleado?.nombre || s.idempleado}</td>
+                          <td>{s.status === 1 ? "Activo" : "Inactivo"}</td>
+                          <td>
+                            <Button
+                              size="sm"
+                              color="info"
+                              className="me-2"
+                              onClick={() => handleEditarClick(s)}
+                            >
+                              <FontAwesomeIcon icon={faEdit} />
+                            </Button>
+                            <Button
+                              size="sm"
+                              color="danger"
+                              onClick={() => solicitarBorrado(s)}
+                            >
+                              <FontAwesomeIcon icon={faTrashAlt} />
+                            </Button>
+                          </td>
+                        </tr>
+                      );
+                    })
+                  ) : (
                     <tr>
-                      <th>Tipo Vehículo</th>
-                      <th>Tipo de Servicio</th>
-                      <th>Empleado</th>
-                      <th>Status</th>
-                      <th>Acciones</th>
+                      <td colSpan="5" className="text-center">
+                        No hay servicios disponibles
+                      </td>
                     </tr>
-                  </thead>
-                  <tbody>
-                    {servicios.length > 0 ? (
-                      servicios.map((s) => {
-                        const tipo = tiposList.find((t) => t.id === s.idtiposervicio);
-                        const empleado = empleadosList.find((e) => e.id === s.idempleado);
-                        return (
-                          <tr key={s.idservicio}>
-                            <td>{s.tipovehiculo}</td>
-                            <td>{tipo?.nombre || "N/A"}</td>
-                            <td>{empleado?.nombre || s.idempleado}</td>
-                            <td>{s.status === 1 ? "Activo" : "Inactivo"}</td>
-                            <td>
-                              <Button size="sm" color="info" className="me-2" onClick={() => handleEditarClick(s)}>
-                                <FontAwesomeIcon icon={faEdit} className="mr-0" />
-                              </Button>
-                              <Button size="sm" color="danger" onClick={() => solicitarBorrado(s)}>
-                                <FontAwesomeIcon icon={faTrashAlt} className="mr-0" />
-                              </Button>
-                            </td>
-                          </tr>
-                        );
-                      })
-                    ) : (
-                      <tr>
-                        <td colSpan="5" className="text-center">
-                          No hay servicios disponibles
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
-                </Table>
-              </CardBody>
-            </Card>
-          </Col>
-        </Row>
+                  )}
+                </tbody>
+              </Table>
+            </CardBody>
+          </Card>
+        </Col>
+      </Row>
 
       {/* Modal Agregar / Editar Servicio */}
       <Modal isOpen={modal} toggle={toggle}>
@@ -355,17 +411,20 @@ const ServiciosMantenimiento = () => {
               </p>
               <ul>
                 <li>
-                  <strong>Tipo Vehículo:</strong> {servicioAEliminar.tipovehiculo}
+                  <strong>Tipo Vehículo:</strong>{" "}
+                  {servicioAEliminar.tipovehiculo}
                 </li>
                 <li>
                   <strong>Tipo de Servicio:</strong>{" "}
                   {
-                    tiposList.find((t) => t.id === servicioAEliminar.idtiposervicio)
-                      ?.nombre
+                    tiposList.find(
+                      (t) => t.id === servicioAEliminar.idtiposervicio
+                    )?.nombre
                   }
                 </li>
                 <li>
-                  <strong>Empleado (ID):</strong> {servicioAEliminar.idempleado}
+                  <strong>Empleado (ID):</strong>{" "}
+                  {servicioAEliminar.idempleado}
                 </li>
               </ul>
               <p>¿Deseas continuar?</p>
