@@ -1,9 +1,9 @@
-// Tienda.js
 import React, { useState, useEffect } from "react";
-import ProductList from "TiendaConveniencia/InventarioTienda/List/ProductList";
 import HeaderTienda from "components/Headers/HeaderTienda";
 import CarritoPanel from "./CarritoPanel";
 import axios from "axios";
+import ProductListSoloVista from "./InventarioTienda/List/ProductListSoloVista";
+
 import {
   Container,
   Row,
@@ -12,7 +12,6 @@ import {
   CardHeader,
   CardBody,
   Input,
- 
   TabContent,
   TabPane,
   Nav,
@@ -20,14 +19,16 @@ import {
   NavLink,
   Badge
 } from "reactstrap";
+
 import classnames from "classnames";
-import { 
-  faSearch, 
-  faTh, 
+import {
+  faSearch,
+  faTh,
   faList,
   faFilter,
   faShoppingCart
 } from "@fortawesome/free-solid-svg-icons";
+
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 function Tienda() {
@@ -39,102 +40,54 @@ function Tienda() {
   const [selectedCategory, setSelectedCategory] = useState("Todas");
   const [categories, setCategories] = useState(["Todas"]);
 
-  // Cargar productos desde la API
- useEffect(() => {
-  const fetchProducts = async () => {
-    try {
-      const res = await axios.get("http://localhost:3001/inventario");
-      // Mapear campos para que ProductList entienda los productos
-      const mappedProducts = res.data.map(p => ({
-        id: p.id,
-        name: p.nombre,
-        description: p.descripcion,
-        category: p.categoria,
-        price: p.precio,
-        image: p.imagen
-      }));
-      setProducts(mappedProducts);
-      
-      // Categorías desde datos originales para filtro
-      const uniqueCategories = ["Todas", ...new Set(res.data.map(p => p.categoria))];
-      setCategories(uniqueCategories);
+  useEffect(() => {
+    const fetchProducts = async () => {
+      try {
+        const res = await axios.get("http://localhost:3001/inventario");
 
-    } catch (error) {
-      console.error("Error al obtener productos del inventario:", error);
+        const mappedProducts = res.data.map((p) => ({
+          id: p.id,
+          nombre: p.nombre,
+          descripcion: p.descripcion,
+          categoria: p.categoria,
+          precio_referencia: p.precio,
+          imagen: p.imagen
+        }));
 
-      // Productos estáticos para fallback
-      const staticProducts = [
-        {
-          id: 1,
-          nombre: "Croquetas para perro",
-          descripcion: "Saco de 20 kg para razas medianas",
-          categoria: "Perros",
-          precio: 250.00,
-          imagen: "https://via.placeholder.com/100?text=Croquetas"
-        },
-        {
-          id: 2,
-          nombre: "Arena para gato",
-          descripcion: "Arena absorbente 10 kg",
-          categoria: "Gatos",
-          precio: 120.00,
-          imagen: "https://via.placeholder.com/100?text=Arena"
-        },
-        {
-          id: 3,
-          nombre: "Jaula para loro",
-          descripcion: "Jaula metálica con perchas",
-          categoria: "Exóticos",
-          precio: 400.00,
-          imagen: "https://via.placeholder.com/100?text=Jaula"
-        },
-        {
-          id: 4,
-          nombre: "Shampoo para perro",
-          descripcion: "Con aroma a coco y antipulgas",
-          categoria: "Perros",
-          precio: 80.00,
-          imagen: "https://via.placeholder.com/100?text=Shampoo"
-        }
-      ];
+        setProducts(mappedProducts);
 
-      // Mapear productos estáticos al formato esperado
-      const mappedStatic = staticProducts.map(p => ({
-        id: p.id,
-        name: p.nombre,
-        description: p.descripcion,
-        category: p.categoria,
-        price: p.precio,
-        image: p.imagen
-      }));
+        const uniqueCategories = ["Todas", ...new Set(mappedProducts.map((p) => p.categoria))];
+        setCategories(uniqueCategories);
+      } catch (error) {
+        console.error("Error al obtener productos del inventario:", error);
+      }
+    };
 
-      setProducts(mappedStatic);
-      setCategories(["Todas", ...new Set(staticProducts.map(p => p.categoria))]);
-    }
-  };
-  fetchProducts();
-}, []);
+    fetchProducts();
+  }, []);
 
-  // Filtrar productos
   useEffect(() => {
     let result = products;
-    
-    // Filtrar por categoría
+
     if (selectedCategory !== "Todas") {
-      result = result.filter(p => p.categoria === selectedCategory);
+      result = result.filter((p) => p.categoria === selectedCategory);
     }
-    
-    // Filtrar por término de búsqueda
+
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      result = result.filter(p => 
-        p.nombre.toLowerCase().includes(term) || 
-        p.descripcion.toLowerCase().includes(term)
+      result = result.filter(
+        (p) =>
+          p.nombre.toLowerCase().includes(term) ||
+          p.descripcion.toLowerCase().includes(term)
       );
     }
-    
+
     setFilteredProducts(result);
   }, [products, selectedCategory, searchTerm]);
+
+  const toggleTab = (tab) => {
+    if (activeTab !== tab) setActiveTab(tab);
+  };
 
   const handleAddProduct = (product) => {
     const existing = cart.find((p) => p.id === product.id);
@@ -149,14 +102,14 @@ function Tienda() {
     }
   };
 
-  const toggleTab = (tab) => {
-    if (activeTab !== tab) setActiveTab(tab);
-  };
-
   return (
     <>
       <HeaderTienda />
-      <br></br><br></br><br></br><br></br><br></br>
+      <br />
+      <br />
+      <br />
+      <br />
+      <br />
       <Container className="mt--7" fluid>
         <Row className="mb-4">
           <Col>
@@ -181,13 +134,15 @@ function Tienda() {
                   <Col md="6">
                     <div className="d-flex align-items-center">
                       <FontAwesomeIcon icon={faFilter} className="mr-2" />
-                      <select 
+                      <select
                         className="form-control"
                         value={selectedCategory}
                         onChange={(e) => setSelectedCategory(e.target.value)}
                       >
-                        {categories.map(cat => (
-                          <option key={cat} value={cat}>{cat}</option>
+                        {categories.map((cat) => (
+                          <option key={cat} value={cat}>
+                            {cat}
+                          </option>
                         ))}
                       </select>
                     </div>
@@ -214,22 +169,7 @@ function Tienda() {
                   </Col>
                   <Col className="text-right">
                     <Nav tabs>
-                      <NavItem>
-                        <NavLink
-                          className={classnames({ active: activeTab === "1" })}
-                          onClick={() => toggleTab("1")}
-                        >
-                          <FontAwesomeIcon icon={faTh} /> Galería
-                        </NavLink>
-                      </NavItem>
-                      <NavItem>
-                        <NavLink
-                          className={classnames({ active: activeTab === "2" })}
-                          onClick={() => toggleTab("2")}
-                        >
-                          <FontAwesomeIcon icon={faList} /> Lista
-                        </NavLink>
-                      </NavItem>
+                     
                     </Nav>
                   </Col>
                 </Row>
@@ -237,17 +177,17 @@ function Tienda() {
               <CardBody>
                 <TabContent activeTab={activeTab}>
                   <TabPane tabId="1">
-                    <ProductList 
-                      products={filteredProducts} 
-                      onAdd={handleAddProduct}
+                    <ProductListSoloVista
+                      products={filteredProducts}
                       viewMode="grid"
+                      onAdd={handleAddProduct}
                     />
                   </TabPane>
                   <TabPane tabId="2">
-                    <ProductList 
-                      products={filteredProducts} 
-                      onAdd={handleAddProduct}
+                    <ProductListSoloVista
+                      products={filteredProducts}
                       viewMode="list"
+                      onAdd={handleAddProduct}
                     />
                   </TabPane>
                 </TabContent>

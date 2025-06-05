@@ -11,97 +11,115 @@ import {
   Form,
 } from "reactstrap";
 
-const ModalAgregarServicio = ({ isOpen, toggle, modoEdicion = false, tipoEditar = null }) => {
+const ModalAgregarServicio = ({
+  isOpen,
+  toggle,
+  modoEdicion = false,
+  tipoEditar = null,
+  onSubmit,
+}) => {
   const [form, setForm] = useState({
     NombreServicio: "",
     DescripcionServicio: "",
+    ValidoDev: false,
   });
 
   useEffect(() => {
     if (modoEdicion && tipoEditar) {
       setForm({
-        NombreServicio: tipoEditar.NombreServicio,
-        DescripcionServicio: tipoEditar.DescripcionServicio,
+        NombreServicio: tipoEditar.NombreServicio || "",
+        DescripcionServicio: tipoEditar.DescripcionServicio || "",
+        ValidoDev: tipoEditar.ValidoDev ?? false,
       });
     } else {
       setForm({
         NombreServicio: "",
         DescripcionServicio: "",
+        ValidoDev: false,
       });
     }
   }, [modoEdicion, tipoEditar]);
 
   const handleChange = (e) => {
-    setForm({ ...form, [e.target.name]: e.target.value });
+    const { name, value, type, checked } = e.target;
+    setForm((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : value,
+    }));
   };
 
-  const handleSubmit = async () => {
-  const token = localStorage.getItem("token");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-  try {
-    const response = await fetch("http://64.23.169.22:3761/broker/api/rest", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${token}`,
-        //"Access-Control-Allow-Origin": "*"
+    // Payload para POST o PUT según modoEdicion
+    const payload = {
+      metadata: {
+        uri: modoEdicion
+          ? `/pintura/PUT/servicios/${tipoEditar.idServicio}`
+          : "/pintura/POST/servicios",
       },
-      body: JSON.stringify({
-        metadata: {
-          uri: "/pintura/POST/servicios"
-        },
-        request: {
-          NombreServicio: form.NombreServicio,
-          DescripcionServicio: form.DescripcionServicio
-        }
-      })
-    });
+      request: {
+        NombreServicio: form.NombreServicio,
+        DescripcionServicio: form.DescripcionServicio,
+        ValidoDev: form.ValidoDev,
+        deleted: false,
+      },
+    };
 
-    if (response.ok) {
-      const data = await response.json();
-      console.log("Servicio creado:", data);
-      toggle(); // Cierra el modal
-      setForm({ NombreServicio: "", DescripcionServicio: "" }); // Limpiar formulario
-    } else {
-      const errorData = await response.json();
-      console.error("Error al crear servicio:", errorData);
+    if (onSubmit) {
+      await onSubmit(payload);
     }
-  } catch (error) {
-    console.error("Error de red:", error);
-  }
-};
 
+    toggle();
+  };
 
-   return (
+  return (
     <Modal isOpen={isOpen} toggle={toggle}>
-      <ModalHeader toggle={toggle}>Agregar nuevo servicio</ModalHeader>
+      <ModalHeader toggle={toggle}>
+        {modoEdicion ? "Editar Servicio" : "Agregar nuevo servicio"}
+      </ModalHeader>
       <ModalBody>
         <Form>
           <FormGroup>
             <Label for="NombreServicio">Nombre del Servicio</Label>
             <Input
+              type="text"
               id="NombreServicio"
               name="NombreServicio"
               value={form.NombreServicio}
               onChange={handleChange}
               placeholder="Ingrese el nombre del servicio"
+              required
             />
           </FormGroup>
           <FormGroup>
             <Label for="DescripcionServicio">Descripción</Label>
             <Input
+              type="text"
               id="DescripcionServicio"
               name="DescripcionServicio"
               value={form.DescripcionServicio}
               onChange={handleChange}
               placeholder="Ingrese una descripción"
+              required
             />
+          </FormGroup>
+          <FormGroup check>
+            <Label check>
+              <Input
+                type="checkbox"
+                name="ValidoDev"
+                checked={form.ValidoDev}
+                onChange={handleChange}
+              />{" "}
+              ¿Es válida la devolución?
+            </Label>
           </FormGroup>
         </Form>
       </ModalBody>
       <ModalFooter>
         <Button color="primary" onClick={handleSubmit}>
-          Agregar
+          {modoEdicion ? "Guardar Cambios" : "Agregar"}
         </Button>
         <Button color="secondary" onClick={toggle}>
           Cancelar

@@ -37,18 +37,25 @@ const CategoriasForm = ({ isOpen, toggle, onCreated }) => {
 
   const handleSubmit = async () => {
     if (!validate()) return;
-    setLoading(true);
-    try {
-      const token = localStorage.getItem('token');
 
+    setLoading(true);
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      alert('No se encontró un token de autenticación.');
+      setLoading(false);
+      return;
+    }
+
+    try {
       const payload = {
         metadata: {
-          uri: 'tienda-conveniencia/POST/categorias'
+          uri: 'tienda-conveniencia/POST/categorias/'
         },
         request: {
-          nombre: formData.nombre,
-          descripcion: formData.descripcion,
-          usuario_creacion: 1 // <- puedes hacerlo dinámico si quieres
+          nombre: formData.nombre.trim(),
+          descripcion: formData.descripcion.trim(),
+          usuario_creacion: 1
         }
       };
 
@@ -62,14 +69,15 @@ const CategoriasForm = ({ isOpen, toggle, onCreated }) => {
         }
       );
 
-      // Limpia y notifica al padre
+      // Limpieza y notificación
       setFormData({ nombre: '', descripcion: '' });
       setErrors({});
-      onCreated(); // recarga la lista
-      toggle();    // cierra el modal
+      onCreated(); // recargar lista
+      toggle();    // cerrar modal
     } catch (error) {
       console.error('Error al crear categoría:', error);
-      alert('Error al guardar la categoría.');
+      const msg = error?.response?.data?.message || 'Error al guardar la categoría.';
+      alert(msg);
     } finally {
       setLoading(false);
     }
