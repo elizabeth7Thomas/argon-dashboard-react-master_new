@@ -38,6 +38,11 @@ const Login = () => {
 
       // Acceder al token correctamente
       const token = response.data?.response?._broker_session_token;
+      const userId = response.data?.response?.data?.userData?.userId;
+      const user = response.data?.response?.data?.userData?.usuario;
+
+      if(userId) localStorage.setItem("userId", userId)
+      if(user) localStorage.setItem("user", user)
 
       if (token) {
         localStorage.setItem("token", token); // Guarda el token
