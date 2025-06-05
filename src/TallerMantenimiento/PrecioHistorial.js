@@ -1,5 +1,6 @@
+// src/components/PrecioHistorial.js
+
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import {
   Button,
   Card,
@@ -20,7 +21,7 @@ import {
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 
-const BASE_URL = "https://tallerrepuestos.vercel.app/tallerrepuestos";
+import apiClient from "./apiClient"; // <-- mismo nivel
 
 const PrecioHistorial = () => {
   const [historial, setHistorial] = useState([]);
@@ -44,19 +45,31 @@ const PrecioHistorial = () => {
     fetchProductos();
   }, []);
 
+  // 1) Obtener historial de precios
   const fetchHistorial = async () => {
     try {
-      const resp = await axios.get(`${BASE_URL}/preciohistorial`);
-      setHistorial(resp.data);
+      const response = await apiClient.post("", {
+        metadata: { uri: "/tallerrepuestos/GET/preciohistorial" },
+        request: {},
+      });
+      if (response.data?.response?.data) {
+        setHistorial(response.data.response.data);
+      }
     } catch (err) {
       console.error("Error al obtener historial de precios:", err);
     }
   };
 
+  // 2) Obtener lista de productos
   const fetchProductos = async () => {
     try {
-      const resp = await axios.get(`${BASE_URL}/productos`);
-      setProductos(resp.data);
+      const response = await apiClient.post("", {
+        metadata: { uri: "/tallerrepuestos/GET/productos" },
+        request: {},
+      });
+      if (response.data?.response?.data) {
+        setProductos(response.data.response.data);
+      }
     } catch (err) {
       console.error("Error al obtener productos:", err);
     }
@@ -72,28 +85,33 @@ const PrecioHistorial = () => {
     }
   };
 
-  const handleChange = (e) => {
+  const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
-  };
 
+  // 3) Agregar nuevo registro
   const agregarRegistro = async () => {
     if (!form.idproducto || !form.precioanterior || !form.precionuevo) return;
+
     try {
-      await axios.post(`${BASE_URL}/preciohistorial`, {
-        idproducto: parseInt(form.idproducto, 10),
-        precioanterior: parseFloat(form.precioanterior),
-        precionuevo: parseFloat(form.precionuevo),
+      await apiClient.post("", {
+        metadata: { uri: "/tallerrepuestos/POST/preciohistorial" },
+        request: {
+          idproducto: +form.idproducto,
+          precioanterior: +form.precioanterior,
+          precionuevo: +form.precionuevo,
+        },
       });
-      fetchHistorial();
+      await fetchHistorial();
       toggle();
     } catch (err) {
-      console.error("Error al agregar registro:", err);
+      console.error("Error al crear registro de historial:", err);
     }
   };
 
+  // 4) Cargar datos en el formulario para editar
   const editarClick = (reg) => {
     setForm({
-      idproducto: reg.idproducto.toString(),
+      idproducto: reg.idproducto + "",
       precioanterior: reg.precioanterior,
       precionuevo: reg.precionuevo,
     });
@@ -103,111 +121,137 @@ const PrecioHistorial = () => {
     setBusquedaProducto("");
   };
 
+  // 5) Actualizar registro existente
   const actualizarRegistro = async () => {
     if (!registroEditando) return;
+
     try {
-      await axios.put(
-        `${BASE_URL}/preciohistorial/${registroEditando.idhistorial}`,
-        {
-          idproducto: parseInt(form.idproducto, 10),
-          precioanterior: parseFloat(form.precioanterior),
-          precionuevo: parseFloat(form.precionuevo),
-        }
-      );
-      fetchHistorial();
+      await apiClient.post("", {
+        metadata: {
+          uri: `/tallerrepuestos/PUT/preciohistorial/${registroEditando.idhistorial}`,
+        },
+        request: {
+          idproducto: +form.idproducto,
+          precioanterior: +form.precioanterior,
+          precionuevo: +form.precionuevo,
+        },
+      });
+      await fetchHistorial();
       toggle();
     } catch (err) {
-      console.error("Error al actualizar registro:", err);
+      console.error("Error al actualizar registro de historial:", err);
     }
   };
 
+  // 6) Solicitar borrado: abrir modal de confirmación
   const solicitarBorrado = (reg) => {
     setRegistroAEliminar(reg);
     setShowDeleteModal(true);
   };
 
+  // 7) Confirmar y borrar registro
   const confirmarBorrado = async () => {
     if (!registroAEliminar) return;
+
     try {
-      await axios.delete(
-        `${BASE_URL}/preciohistorial/${registroAEliminar.idhistorial}`
-      );
-      fetchHistorial();
+      await apiClient.post("", {
+        metadata: {
+          uri: `/tallerrepuestos/DELETE/preciohistorial/${registroAEliminar.idhistorial}`,
+        },
+        request: {},
+      });
+      await fetchHistorial();
       setShowDeleteModal(false);
       setRegistroAEliminar(null);
     } catch (err) {
-      console.error("Error al borrar registro:", err);
+      console.error("Error al borrar registro de historial:", err);
     }
   };
 
-  const cancelarBorrado = () => {
-    setShowDeleteModal(false);
-    setRegistroAEliminar(null);
-  };
+  const cancelarBorrado = () => setShowDeleteModal(false);
 
+  // Filtrar productos para el select
   const productosFiltrados = productos.filter((p) =>
     p.nombre.toLowerCase().includes(busquedaProducto.toLowerCase())
   );
 
   return (
     <>
-
-        <Row>
-          <Col>
-            <Card className="shadow">
-              <CardHeader className="border-0 d-flex justify-content-between align-items-center">
-                <h3 className="mb-0">Historial de Precios</h3>
-                <Button color="primary" onClick={toggle}>Agregar Registro</Button>
-              </CardHeader>
-              <CardBody>
-                <Table responsive hover className="align-items-center table-flush">
-                  <thead className="thead-light">
-                    <tr>
-                      <th>ID Historial</th>
-                      <th>Producto</th>
-                      <th>Precio Anterior</th>
-                      <th>Precio Nuevo</th>
-                      <th>Fecha Cambio</th>
-                      <th>Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {historial.length ? (
-                      historial.map((h) => {
-                        const prod = productos.find(p => p.idproducto === h.idproducto);
+      <Row>
+        <Col>
+          <Card className="shadow">
+            <CardHeader className="border-0 d-flex justify-content-between align-items-center">
+              <h3>Historial de Precios</h3>
+              <Button color="primary" onClick={toggle}>
+                Agregar Registro
+              </Button>
+            </CardHeader>
+            <CardBody>
+              <Table responsive hover className="align-items-center table-flush">
+                <thead className="thead-light">
+                  <tr>
+                    <th>ID Historial</th>
+                    <th>Producto</th>
+                    <th>Precio Anterior</th>
+                    <th>Precio Nuevo</th>
+                    <th>Fecha Cambio</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {historial.length > 0
+                    ? historial.map((h) => {
+                        const prod = productos.find(
+                          (p) => p.idproducto === h.idproducto
+                        );
                         return (
                           <tr key={h.idhistorial}>
                             <td>{h.idhistorial}</td>
                             <td>{prod?.nombre || h.idproducto}</td>
                             <td>{h.precioanterior}</td>
                             <td>{h.precionuevo}</td>
-                            <td>{new Date(h.fechacambio).toLocaleString()}</td>
                             <td>
-                              <Button size="sm" color="info" className="me-2" onClick={() => editarClick(h)}>
-                                <FontAwesomeIcon icon={faEdit} className="mr-0" />
+                              {new Date(h.fechacambio).toLocaleString()}
+                            </td>
+                            <td>
+                              <Button
+                                size="sm"
+                                color="info"
+                                className="me-2"
+                                onClick={() => editarClick(h)}
+                              >
+                                <FontAwesomeIcon icon={faEdit} />
                               </Button>
-                              <Button size="sm" color="danger" onClick={() => solicitarBorrado(h)}>
-                                <FontAwesomeIcon icon={faTrashAlt} className="mr-0" />
+                              <Button
+                                size="sm"
+                                color="danger"
+                                onClick={() => solicitarBorrado(h)}
+                              >
+                                <FontAwesomeIcon icon={faTrashAlt} />
                               </Button>
                             </td>
                           </tr>
                         );
                       })
-                    ) : (
+                    : (
                       <tr>
-                        <td colSpan="6" className="text-center">No hay registros</td>
+                        <td colSpan={6} className="text-center">
+                          No hay registros
+                        </td>
                       </tr>
                     )}
-                  </tbody>
-                </Table>
-              </CardBody>
-            </Card>
-          </Col>
-        </Row>
+                </tbody>
+              </Table>
+            </CardBody>
+          </Card>
+        </Col>
+      </Row>
 
-      {/* Modal Agregar/Editar */}
+      {/* Modal para agregar/editar registro */}
       <Modal isOpen={modal} toggle={toggle}>
-        <ModalHeader toggle={toggle}>{modoEdicion ? "Editar Registro" : "Agregar Registro"}</ModalHeader>
+        <ModalHeader toggle={toggle}>
+          {modoEdicion ? "Editar Registro" : "Agregar Registro"}
+        </ModalHeader>
         <ModalBody>
           <Form>
             <FormGroup>
@@ -258,31 +302,43 @@ const PrecioHistorial = () => {
         </ModalBody>
         <ModalFooter>
           {modoEdicion ? (
-            <Button color="success" onClick={actualizarRegistro}>Actualizar</Button>
+            <Button color="success" onClick={actualizarRegistro}>
+              Actualizar
+            </Button>
           ) : (
-            <Button color="primary" onClick={agregarRegistro}>Agregar</Button>
+            <Button color="primary" onClick={agregarRegistro}>
+              Agregar
+            </Button>
           )}
-          <Button color="secondary" onClick={toggle}>Cancelar</Button>
+          <Button color="secondary" onClick={toggle}>
+            Cancelar
+          </Button>
         </ModalFooter>
       </Modal>
 
-      {/* Modal Confirmación Borrado */}
+      {/* Modal de confirmación de eliminación */}
       <Modal isOpen={showDeleteModal} toggle={cancelarBorrado}>
-        <ModalHeader toggle={cancelarBorrado}>Confirmar eliminación</ModalHeader>
+        <ModalHeader toggle={cancelarBorrado}>
+          Confirmar eliminación
+        </ModalHeader>
         <ModalBody>
           {registroAEliminar && (
             <>
               <p>
-                Estás a punto de eliminar el registro #
-                <strong>{registroAEliminar.idhistorial}</strong> del historial.
+                Estás a punto de eliminar el registro{" "}
+                <strong>#{registroAEliminar.idhistorial}</strong>.
               </p>
               <p>¿Deseas continuar?</p>
             </>
           )}
         </ModalBody>
         <ModalFooter>
-          <Button color="danger" onClick={confirmarBorrado}>Sí, eliminar</Button>
-          <Button color="secondary" onClick={cancelarBorrado}>Cancelar</Button>
+          <Button color="danger" onClick={confirmarBorrado}>
+            Sí, eliminar
+          </Button>
+          <Button color="secondary" onClick={cancelarBorrado}>
+            Cancelar
+          </Button>
         </ModalFooter>
       </Modal>
     </>
