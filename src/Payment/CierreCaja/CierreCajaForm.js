@@ -1,135 +1,278 @@
-import React, { useState } from 'react';
+// src/Payment/CierreCaja/CierreCajaForm.js
+import React, { useState, useEffect } from 'react';
+import {
+  Modal, ModalHeader, ModalBody,
+  Form, FormGroup, Label, Input, Button, Alert, Row, Col
+} from 'reactstrap';
 import axios from 'axios';
 
-const CierreCajaForm = ({ onClose, onSuccess }) => {
+const CierreCajaForm = ({ isOpen, toggle, onSuccess }) => {
   const [form, setForm] = useState({
     IdCaja: '',
-    Servicio: '',
+    Servicio: '4',
     CantidadFinal: '',
     Empleado: {
       IdEmpleado: '',
       NombreCompleto: '',
     },
-    Retiro: 0,
+    Retiro: 0
   });
+
+  const [empleados, setEmpleados] = useState([]);
+  const [loadingEmpleados, setLoadingEmpleados] = useState(false);
+  const [errorEmpleados, setErrorEmpleados] = useState(null);
+
   const [error, setError] = useState(null);
+  const [success, setSuccess] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  const servicios = [
+    { value: '4', label: 'Gasolineria' },
+    { value: '5', label: 'Tienda de conveniencia' },
+    { value: '6', label: 'Repuestos' },
+    { value: '7', label: 'Pintura' }
+  ];
+
+  useEffect(() => {
+    const fetchEmpleados = async () => {
+      setLoadingEmpleados(true);
+      setErrorEmpleados(null);
+      try {
+        const token = localStorage.getItem('token');
+        const response = await axios.post(
+          'http://64.23.169.22:3761/broker/api/rest',
+          {
+            metadata: { uri: 'administracion/GET/empleados' },
+            request: {}
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            }
+          }
+        );
+
+        const empleadosData = response?.data?.response?.data?.empleados;
+        if (Array.isArray(empleadosData)) {
+          setEmpleados(empleadosData);
+        } else {
+          setErrorEmpleados('No se encontraron empleados.');
+        }
+      } catch (err) {
+        console.error('Error al obtener empleados:', err);
+        setErrorEmpleados('Error al cargar la lista de empleados.');
+      } finally {
+        setLoadingEmpleados(false);
+      }
+    };
+
+    if (isOpen) {
+      fetchEmpleados();
+    }
+  }, [isOpen]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    if (name.startsWith('Empleado.')) {
-      const field = name.split('.')[1];
-      setForm((prev) => ({
+    // Previene valores negativos
+    if (['CantidadFinal', 'Retiro'].includes(name) && parseFloat(value) < 0) return;
+
+    setForm(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleSelectEmpleado = (e) => {
+    const empleadoId = e.target.value;
+    const empleadoSeleccionado = empleados.find(e => e.empleado.id === empleadoId);
+
+    if (empleadoSeleccionado) {
+      setForm(prev => ({
         ...prev,
-        Empleado: { ...prev.Empleado, [field]: value },
+        Empleado: {
+          IdEmpleado: empleadoSeleccionado.empleado.id,
+          NombreCompleto: `${empleadoSeleccionado.empleado.nombres} ${empleadoSeleccionado.empleado.apellidos}`
+        }
       }));
-    } else {
-      setForm((prev) => ({ ...prev, [name]: value }));
     }
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setError(null);
+    setSuccess(null);
+
+    if (!form.IdCaja || !form.Servicio || !form.CantidadFinal || !form.Empleado.IdEmpleado) {
+      setError('Todos los campos obligatorios deben ser completados.');
+      return;
+    }
+
+    setLoading(true);
     try {
-      setError(null);
+      const token = localStorage.getItem('token');
       const response = await axios.post(
         'http://64.23.169.22:3761/broker/api/rest',
         {
-          metadata: { uri: '/pagos/cierre/crear' },
-          request: form,
+          metadata: { uri: 'pagos/cierre/crear' },
+          request: form
         },
         {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem('token')}`,
+            Authorization: `Bearer ${token}`,
             'Content-Type': 'application/json',
-          },
+          }
         }
       );
 
-      const status = response.data?.response?._broker_status;
-      if (status === 201 || status === 200) {
+      const { _broker_status, _broker_message } = response.data?.response || {};
+      if (_broker_status === 200 || _broker_status === 201) {
+        setSuccess(_broker_message || 'Cierre de caja creado exitosamente');
         onSuccess();
-        onClose();
+        setTimeout(toggle, 2000);
       } else {
-        setError(response.data?.response?._broker_message || 'Error al crear cierre');
+        setError(_broker_message || 'Error al crear el cierre de caja');
       }
     } catch (err) {
-      console.error(err);
-      setError('Ocurrió un error al enviar el formulario.');
+      const mensaje = err.response?.data?.response?._broker_message;
+      setError(mensaje || 'Ocurrió un error al enviar el formulario');
+      console.error('Error al crear cierre:', err);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div className="mb-2">
-        <label>Caja</label>
-        <input
-          type="number"
-          name="IdCaja"
-          className="form-control"
-          value={form.IdCaja}
-          onChange={handleChange}
-          required
-        />
-      </div>
-      <div className="mb-2">
-        <label>Servicio</label>
-        <input
-          type="number"
-          name="Servicio"
-          className="form-control"
-          value={form.Servicio}
-          onChange={handleChange}
-          required
-        />
-      </div>
-      <div className="mb-2">
-        <label>Cantidad Final</label>
-        <input
-          type="number"
-          name="CantidadFinal"
-          className="form-control"
-          value={form.CantidadFinal}
-          onChange={handleChange}
-          required
-        />
-      </div>
-      <div className="mb-2">
-        <label>Empleado ID</label>
-        <input
-          type="text"
-          name="Empleado.IdEmpleado"
-          className="form-control"
-          value={form.Empleado.IdEmpleado}
-          onChange={handleChange}
-          required
-        />
-      </div>
-      <div className="mb-2">
-        <label>Nombre Empleado</label>
-        <input
-          type="text"
-          name="Empleado.NombreCompleto"
-          className="form-control"
-          value={form.Empleado.NombreCompleto}
-          onChange={handleChange}
-          required
-        />
-      </div>
-      <div className="mb-2">
-        <label>Retiro</label>
-        <input
-          type="number"
-          name="Retiro"
-          className="form-control"
-          value={form.Retiro}
-          onChange={handleChange}
-        />
-      </div>
-      {error && <div className="alert alert-danger">{error}</div>}
-      <button type="submit" className="btn btn-primary">
-        Guardar
-      </button>
-    </form>
+    <Modal isOpen={isOpen} toggle={toggle} size="lg">
+      <ModalHeader toggle={toggle}>Crear Cierre de Caja</ModalHeader>
+      <ModalBody>
+        <Form onSubmit={handleSubmit}>
+          <Row>
+            <Col md={6}>
+              <FormGroup>
+                <Label for="IdCaja">Caja</Label>
+                <Input
+                  type="number"
+                  name="IdCaja"
+                  id="IdCaja"
+                  value={form.IdCaja}
+                  onChange={handleChange}
+                  min="0"
+                  required
+                />
+              </FormGroup>
+            </Col>
+
+            <Col md={6}>
+              <FormGroup>
+                <Label for="Servicio">Servicio</Label>
+                <Input
+                  type="select"
+                  name="Servicio"
+                  id="Servicio"
+                  value={form.Servicio}
+                  onChange={handleChange}
+                  required
+                >
+                  <option value="">Seleccione un servicio</option>
+                  {servicios.map((servicio) => (
+                    <option key={servicio.value} value={servicio.value}>
+                      {servicio.label}
+                    </option>
+                  ))}
+                </Input>
+              </FormGroup>
+            </Col>
+          </Row>
+
+          <Row>
+            <Col md={6}>
+              <FormGroup>
+                <Label for="Empleado">Empleado</Label>
+                {loadingEmpleados ? (
+                  <Input type="select" disabled>
+                    <option>Cargando empleados...</option>
+                  </Input>
+                ) : errorEmpleados ? (
+                  <Alert color="danger">{errorEmpleados}</Alert>
+                ) : (
+                  <Input
+                    type="select"
+                    name="Empleado"
+                    id="Empleado"
+                    value={form.Empleado.IdEmpleado}
+                    onChange={handleSelectEmpleado}
+                    required
+                  >
+                    <option value="">Seleccione un empleado</option>
+                    {empleados.map((e) => (
+                      <option key={e.empleado.id} value={e.empleado.id}>
+                        {e.empleado.nombres} {e.empleado.apellidos}
+                      </option>
+                    ))}
+                  </Input>
+                )}
+              </FormGroup>
+            </Col>
+
+            <Col md={6}>
+              <FormGroup>
+                <Label for="NombreCompleto">Nombre Completo</Label>
+                <Input
+                  type="text"
+                  name="NombreCompleto"
+                  id="NombreCompleto"
+                  value={form.Empleado.NombreCompleto}
+                  readOnly
+                />
+              </FormGroup>
+            </Col>
+          </Row>
+
+          <Row>
+            <Col md={6}>
+              <FormGroup>
+                <Label for="CantidadFinal">Cantidad Final</Label>
+                <Input
+                  type="number"
+                  name="CantidadFinal"
+                  id="CantidadFinal"
+                  value={form.CantidadFinal}
+                  onChange={handleChange}
+                  step="0.01"
+                  min="0"
+                  required
+                />
+              </FormGroup>
+            </Col>
+
+            <Col md={6}>
+              <FormGroup>
+                <Label for="Retiro">Retiro</Label>
+                <Input
+                  type="number"
+                  name="Retiro"
+                  id="Retiro"
+                  value={form.Retiro}
+                  onChange={handleChange}
+                  step="0.01"
+                  min="0"
+                />
+              </FormGroup>
+            </Col>
+          </Row>
+
+          {error && <Alert color="danger">{error}</Alert>}
+          {success && <Alert color="success">{success}</Alert>}
+
+          <div className="d-flex justify-content-end mt-3">
+            <Button color="secondary" onClick={toggle} className="mr-2">
+              Cancelar
+            </Button>
+            <Button color="primary" type="submit" disabled={loading}>
+              {loading ? 'Guardando...' : 'Guardar'}
+            </Button>
+          </div>
+        </Form>
+      </ModalBody>
+    </Modal>
   );
 };
 

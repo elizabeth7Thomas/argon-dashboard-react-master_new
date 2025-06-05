@@ -1,16 +1,16 @@
 // src/Gasoline/Sales/SaleList.js
-import React from 'react';
-import { Table, Button, Badge } from 'reactstrap';
+import React from "react";
+import { Table, Button, Badge } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEdit, faTrash } from "@fortawesome/free-solid-svg-icons";
+import { faEdit, faInfo } from "@fortawesome/free-solid-svg-icons";
 
-export default function SaleList({ sales, onEdit, onDelete }) {
+export default function SaleList({ sales, onEdit, onShow }) {
   return (
     <Table responsive hover>
       <thead>
         <tr>
-          <th>Producto</th>
-          <th>Cantidad (L)</th>
+          <th>Combustible</th>
+          <th>Cantidad (G)</th>
           <th>Fecha</th>
           <th>Monto ($)</th>
           <th>Acciones</th>
@@ -19,28 +19,41 @@ export default function SaleList({ sales, onEdit, onDelete }) {
       <tbody>
         {sales.map((sale) => (
           <tr key={sale.id}>
-            <td>{sale.producto}</td>
-            <td>{sale.cantidad}</td>
-            <td>{sale.fecha}</td>
+            <td>{sale.fuel.fuelName}</td>
+            <td>{Number(sale.consumedQuantity).toFixed(4)}</td>
             <td>
-              <Badge color="success">${sale.monto}</Badge>
+              {sale.createdAt
+                ? new Date(sale.createdAt).toLocaleString()
+                : "Sin fecha"}
+            </td>
+
+            <td>
+              <Badge color="success">
+                $
+                {typeof sale.amount === "number"
+                  ? sale.amount.toFixed(2)
+                  : "0.00"}
+              </Badge>
             </td>
             <td>
               <Button
                 color="info"
                 size="sm"
-                onClick={() => onEdit(sale)}
+                onClick={() => onShow(sale)}
                 className="mr-2"
               >
-                <FontAwesomeIcon icon={faEdit} />
+                <FontAwesomeIcon icon={faInfo} />
               </Button>
-              <Button
-                color="danger"
-                size="sm"
-                onClick={() => onDelete(sale.id)}
-              >
-                <FontAwesomeIcon icon={faTrash} />
-              </Button>
+              {(sale.status === 2 || sale.status === 4) && (
+                <Button
+                  color="primary"
+                  size="sm"
+                  onClick={() => onEdit(sale)}
+                  className="mr-2"
+                >
+                  <FontAwesomeIcon icon={faEdit} />
+                </Button>
+              )}
             </td>
           </tr>
         ))}

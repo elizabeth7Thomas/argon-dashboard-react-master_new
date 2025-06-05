@@ -15,7 +15,6 @@ import HeaderTallerPintura from "components/Headers/HeaderTallerPintura";
 const TablaTiposVehiculos = () => {
   const [tiposVehiculos, setTiposVehiculos] = useState([]);
   const [modal, setModal] = useState(false);
-  const [nextId, setNextId] = useState(1);
   const [modoEdicion, setModoEdicion] = useState(false);
   const [tipoEditar, setTipoEditar] = useState(null);
 
@@ -26,66 +25,73 @@ const TablaTiposVehiculos = () => {
       setTipoEditar(null);
     }
   };
+
   const obtenerTipoVehiculos = async () => {
-  try {
-    const token = localStorage.getItem("token");
-
-    const res = await fetch("http://64.23.169.22:3761/broker/api/rest", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: token
-      },
-      body: JSON.stringify({
-        metadata: {
-          uri: "/pintura/GET/tipovehiculos"
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch("http://64.23.169.22:3761/broker/api/rest", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
         },
-        request: {}
-      })
-    });
+        body: JSON.stringify({
+          metadata: {
+            uri: "/pintura/GET/tipovehiculos",
+          },
+          request: {},
+        }),
+      });
 
-    if (!res.ok) {
-      console.error("Respuesta del servidor no fue OK:", res.status);
-      setTiposVehiculos([]);
-      return;
+      const data = await res.json();
+      const tiposArray = Array.isArray(data.response?.data) ? data.response.data : [];
+      setTiposVehiculos(tiposArray);
+    } catch (error) {
+      console.error("Error al cargar los datos", error.message);
     }
-
-    const data = await res.json();
-
-    const tiposArray = Array.isArray(data.response?.data) ? data.response.data : [];
-
-    setTiposVehiculos(tiposArray);
-
-  } catch (error) {
-    console.error("Error al cargar los datos", error.message);
-    setTiposVehiculos([]);
-  }
-}; 
-
-  const agregarTipoVehiculo = (nuevoTipo) => {
-    if (modoEdicion && tipoEditar) {
-      // Editar tipo existente
-      const tiposActualizados = tiposVehiculos.map((tipo) =>
-        tipo.idTipoVehiculo === tipoEditar.idTipoVehiculo
-          ? { ...tipo, NombreTipoVehiculo: nuevoTipo.NombreTipoVehiculo }
-          : tipo
-      );
-      setTiposVehiculos(tiposActualizados);
-    } else {
-      // Agregar nuevo tipo
-      const tipoConId = {
-        ...nuevoTipo,
-        idTipoVehiculo: nextId,
-      };
-      setTiposVehiculos((prev) => [...prev, tipoConId]);
-      setNextId((prev) => prev + 1);
-    }
-    toggleModal();
   };
 
-  const eliminarTipoVehiculo = (id) => {
-    const nuevosTipos = tiposVehiculos.filter((tipo) => tipo.idTipoVehiculo !== id);
-    setTiposVehiculos(nuevosTipos);
+  const actualizarTipoVehiculo = async (tipoActualizado) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch("http://64.23.169.22:3761/broker/api/rest", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+        body: JSON.stringify({
+          metadata: {
+            uri: `/pintura/PUT/tipovehiculos/${tipoActualizado.idTipoVehiculo}`,
+          },
+          request: {
+            NombreTipoVehiculo: tipoActualizado.NombreTipoVehiculo,
+          },
+        }),
+      });
+
+      if (res.ok) {
+        obtenerTipoVehiculos();
+        toggleModal();
+      } else {
+        console.error("Error al actualizar tipo");
+      }
+    } catch (error) {
+      console.error("Error en actualización:", error.message);
+    }
+  };
+
+  const agregarTipoVehiculo = async (nuevoTipo) => {
+    if (modoEdicion && tipoEditar) {
+      const tipoConId = {
+        ...nuevoTipo,
+        idTipoVehiculo: tipoEditar.idTipoVehiculo,
+      };
+      await actualizarTipoVehiculo(tipoConId);
+    } else {
+      obtenerTipoVehiculos(); // El modal ya hace el POST
+    }
   };
 
   const iniciarEdicion = (tipo) => {
@@ -100,54 +106,59 @@ const TablaTiposVehiculos = () => {
 
   return (
     <>
-     <br></br><br></br>
-      <Container className="mt--7" fluid>
-      
-        <Card className="shadow p-4 mb-4">
-          <Table className="align-items-center table-flush" responsive>
-            <thead className="thead-light">
-              <tr>
-                <th>ID</th>
-                <th>Tipo de Vehículo</th>
-                <th className="text-right">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tiposVehiculos.length === 0 ? (
+      <Container className="mt-4" fluid>
+        <Card className="shadow mb-3 p-3">
+          <div className="d-flex justify-content-between align-items-center mb-3 px-2">
+            <h3 className="mb-0">Listado de Tipos de Vehículos</h3>
+            <Button color="primary" onClick={toggleModal}>
+              Agregar
+            </Button>
+          </div>
+
+          <div style={{ maxHeight: "400px", overflowY: "auto" }}>
+            <Table className="table-bordered table-hover table-striped mb-0" responsive>
+              <thead className="thead-light">
                 <tr>
-                  <td colSpan="3" className="text-center">
-                    No hay datos disponibles
-                  </td>
+                  <th>ID</th>
+                  <th>Tipo de Vehículo</th>
+                  <th className="text-right">Acciones</th>
                 </tr>
-              ) : (
-                tiposVehiculos.map((tipo) => (
-                  <tr key={tipo.idTipoVehiculo}>
-                    <td>{tipo.idTipoVehiculo}</td>
-                    <td>{tipo.NombreTipoVehiculo}</td>
-                    <td className="text-right">
-                      <UncontrolledDropdown>
-                        <DropdownToggle className="btn-icon-only text-light" size="sm">
-                          <i className="fas fa-ellipsis-v" />
-                        </DropdownToggle>
-                        <DropdownMenu right>
-                          <DropdownItem onClick={() => alert(`Ver: ${tipo.NombreTipoVehiculo}`)}>
-                            Ver
-                          </DropdownItem>
-                          <DropdownItem onClick={() => iniciarEdicion(tipo)}>
-                            Editar
-                          </DropdownItem>
-                          <DropdownItem onClick={() => eliminarTipoVehiculo(tipo.idTipoVehiculo)}>
-                            Eliminar
-                          </DropdownItem>
-                        </DropdownMenu>
-                      </UncontrolledDropdown>
+              </thead>
+              <tbody>
+                {tiposVehiculos.length === 0 ? (
+                  <tr>
+                    <td colSpan="3" className="text-center">
+                      No hay datos disponibles
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </Table>
+                ) : (
+                  tiposVehiculos.map((tipo) => (
+                    <tr key={tipo.idTipoVehiculo}>
+                      <td>{tipo.idTipoVehiculo}</td>
+                      <td>{tipo.NombreTipoVehiculo}</td>
+                      <td className="text-right">
+                        <UncontrolledDropdown>
+                          <DropdownToggle className="btn-icon-only text-light" size="sm">
+                            <i className="fas fa-ellipsis-v" />
+                          </DropdownToggle>
+                          <DropdownMenu right>
+                            <DropdownItem onClick={() => iniciarEdicion(tipo)}>
+                              Editar
+                            </DropdownItem>
+                            <DropdownItem disabled title="No disponible en backend">
+                              Eliminar (deshabilitado)
+                            </DropdownItem>
+                          </DropdownMenu>
+                        </UncontrolledDropdown>
+                      </td>
+                    </tr>
+                  ))
+                )}
+              </tbody>
+            </Table>
+          </div>
         </Card>
+
         <ModalAgregarTipoVehiculo
           isOpen={modal}
           toggle={toggleModal}
@@ -155,11 +166,7 @@ const TablaTiposVehiculos = () => {
           modoEdicion={modoEdicion}
           tipoEditar={tipoEditar}
         />
-        <Button color="primary" onClick={toggleModal}>
-          Agregar Tipo de Vehículo
-        </Button>
       </Container>
-        
     </>
   );
 };
