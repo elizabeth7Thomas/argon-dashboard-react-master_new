@@ -21,7 +21,8 @@ import {
   faStore,
   faExclamationTriangle,
   faChartLine,
-  faCalendarAlt
+  faCalendarAlt,
+  faMoneyBillWave,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
@@ -95,7 +96,15 @@ const Index = () => {
                   <FontAwesomeIcon icon={faChartLine} className="mr-2" />
                   Pagos
                 </Button>
-              
+                
+                <Button 
+                  color="primary" 
+                  onClick={() => navigate('/admin/administracion')}
+                  className="btn-icon"
+                >
+                  <FontAwesomeIcon icon={faMoneyBillWave} className="mr-2" />
+                  administracion
+                </Button>
               </CardBody>
             </Card>
           </Col>

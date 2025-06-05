@@ -6,6 +6,7 @@ import {
   Col,
   Button,
   CardBody,
+  CardHeader
 } from "reactstrap";
 import {
   faCar,
@@ -48,7 +49,13 @@ const TallerPinturas = () => {
       case "precioservicio": return <TablaPrecioServicio />;
       case "movimientos": return <TablaMovimientos />;
       default:
-        return <p className="text-muted text-center">Selecciona una opción para comenzar.</p>;
+        return (
+          <div className="d-flex flex-column align-items-center justify-content-center" style={{ minHeight: "300px" }}>
+            <p className="text-muted" style={{ fontSize: "1.2rem" }}>
+              Selecciona una opción del menú para comenzar
+            </p>
+          </div>
+        );
     }
   };
 
@@ -65,55 +72,91 @@ const TallerPinturas = () => {
     { key: "movimientos", icon: faClipboardList, label: "Movimientos" },
   ];
 
+  // Dividir los botones en dos grupos de 5
+  const primeraFila = botones.slice(0, 5);
+  const segundaFila = botones.slice(5, 10);
+
   return (
     <>
       <HeaderTallerPintura />
 
       <Container className="mt-4" fluid>
-        <Row className="mb-4">
+        {/* Primera fila de botones (5 botones) */}
+        <Row className="mb-2">
           <Col>
-            <Card className="shadow border-0">
-              <CardBody
-  className="d-flex flex-wrap justify-content-center"
-  style={{
-    gap: "1.5rem", // espacio entre botones (aumentado)
-    padding: "2rem",
-  }}
->
-  {botones.map((btn) => (
-    <Button
-      key={btn.key}
-      color="primary"
-      outline={activeComponent !== btn.key}
-      onClick={() => setActiveComponent(btn.key)}
-      className="d-flex align-items-center justify-content-center gap-2"
-      style={{
-        minWidth: "220px",
-        height: "55px",
-        fontWeight: "500",
-        borderRadius: "14px",
-        boxShadow: "0 4px 8px rgba(0, 0, 0, 0.1)",
-        fontSize: "1rem",
-        margin: "0.5rem", // separación adicional entre botones
-      }}
-    >
-      <FontAwesomeIcon icon={btn.icon} />
-      {btn.label}
-    </Button>
-  ))}
-</CardBody>
-
+            <Card className="shadow">
+              <CardBody>
+                <Row className="justify-content-center">
+                  {primeraFila.map((btn) => (
+                    <Col key={btn.key} xs="12" sm="6" md="4" lg="2" className="mb-3 mb-lg-0 px-2">
+                      <Button
+                        color="primary"
+                        onClick={() => setActiveComponent(btn.key)}
+                        className={`w-100 d-flex align-items-center justify-content-center ${
+                          activeComponent === btn.key ? "" : "btn-outline-primary"
+                        }`}
+                        style={{
+                          height: "50px",
+                          fontWeight: "500",
+                          borderRadius: "8px",
+                          transition: "all 0.2s",
+                        }}
+                      >
+                        <FontAwesomeIcon icon={btn.icon} className="mr-2" />
+                        {btn.label}
+                      </Button>
+                    </Col>
+                  ))}
+                </Row>
+              </CardBody>
             </Card>
           </Col>
         </Row>
 
+        {/* Segunda fila de botones (5 botones) */}
+        <Row className="mb-4">
+          <Col>
+            <Card className="shadow">
+              <CardBody>
+                <Row className="justify-content-center">
+                  {segundaFila.map((btn) => (
+                    <Col key={btn.key} xs="12" sm="6" md="4" lg="2" className="mb-3 mb-lg-0 px-2">
+                      <Button
+                        color="primary"
+                        onClick={() => setActiveComponent(btn.key)}
+                        className={`w-100 d-flex align-items-center justify-content-center ${
+                          activeComponent === btn.key ? "" : "btn-outline-primary"
+                        }`}
+                        style={{
+                          height: "50px",
+                          fontWeight: "500",
+                          borderRadius: "8px",
+                          transition: "all 0.2s",
+                        }}
+                      >
+                        <FontAwesomeIcon icon={btn.icon} className="mr-2" />
+                        {btn.label}
+                      </Button>
+                    </Col>
+                  ))}
+                </Row>
+              </CardBody>
+            </Card>
+          </Col>
+        </Row>
+
+        {/* Contenedor del componente dinámico */}
         <Row>
           <Col>
-            <Card className="shadow border-0">
-              <div className="card-header bg-light">
-                <h3 className="mb-0">Sección Activa</h3>
-              </div>
-              <CardBody style={{ minHeight: "300px" }}>
+            <Card className="shadow">
+              <CardHeader className="bg-transparent">
+                <h3 className="mb-0">
+                  {activeComponent 
+                    ? botones.find(b => b.key === activeComponent)?.label 
+                    : "Panel de Taller de Pinturas"}
+                </h3>
+              </CardHeader>
+              <CardBody style={{ minHeight: "400px" }}>
                 {renderComponent()}
               </CardBody>
             </Card>
