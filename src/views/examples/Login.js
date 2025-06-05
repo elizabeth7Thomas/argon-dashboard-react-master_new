@@ -3,8 +3,8 @@ import axios from "axios";
 import { Button, Card,CardHeader, CardBody, FormGroup, Form, Input, InputGroupAddon, InputGroupText, InputGroup, Row, Col, Alert, Spinner} from "reactstrap";
 
 const Login = () => {
-  const [username, setUsername] = useState("usuario");
-  const [password, setPassword] = useState("contraseña");
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);

@@ -12,6 +12,18 @@ import {Button,Card,CardHeader,CardBody,CardTitle,Collapse,DropdownMenu,Dropdown
 var ps;
 
 const Sidebar = (props) => {
+  const myToken = localStorage.getItem('token')
+  if (! myToken) {
+    window.location.href = "/";
+    return (
+      <div style="position: absolute;
+      width:100%;
+      height:100%;
+      margin:0px;
+      z-index:999999;"></div>
+    );
+  }
+
   const [collapseOpen, setCollapseOpen] = useState();
   // verifies if routeName is the one active (in browser input)
   const activeRoute = (routeName) => {
