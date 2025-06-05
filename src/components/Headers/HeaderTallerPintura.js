@@ -1,9 +1,8 @@
-//src/components/Headers/HeaderTallerPintura.js
 import { Container, Row, Col } from "reactstrap";
 
 const HeaderTallerPintura = () => {
   return (
-    <div className="header bg-gradient-info pb-6 pt-5">
+    <div className="header bg-gradient-info py-4">
       <Container fluid>
         <Row className="justify-content-center align-items-center">
           <Col xs="12" className="text-center">

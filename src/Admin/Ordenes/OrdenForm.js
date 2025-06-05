@@ -174,7 +174,7 @@ const OrdenForm = ({
   // Utilidad para mostrar nombre de proveedor
   const getProveedorNombre = (id) => {
     const prov = catalogoProveedores.find((p) => p.id === Number(id));
-    return prov ? `${prov.nombres} ${prov.apellidos}` : id;
+    return prov ? `${prov.nombre} ${prov.apellido}` : id;
   };
 
   // Utilidad para mostrar nombre de servicio

@@ -6,13 +6,12 @@ import {
   CardBody,
   Row,
   Col,
-  Button,
+
   Input,
   Spinner,
 } from "reactstrap";
 import {
-  faEdit,
-  faTrashAlt,
+
   faIdCard,
   faClock,
   faCalendarAlt,
@@ -167,7 +166,6 @@ export default function JornadaList({
                   <th>
                     <FontAwesomeIcon icon={faClock} className="mr-1" /> Salida
                   </th>
-                  <th>Acciones</th>
                 </tr>
               </thead>
               <tbody>
@@ -184,23 +182,6 @@ export default function JornadaList({
                       </td>
                       <td>{item.hora_inicio}</td>
                       <td>{item.hora_fin}</td>
-                      <td>
-                        <Button
-                          size="sm"
-                          color="info"
-                          onClick={() => onEditar(item)}
-                          className="mr-2"
-                        >
-                          <FontAwesomeIcon icon={faEdit} />
-                        </Button>
-                        <Button
-                          size="sm"
-                          color="danger"
-                          onClick={() => onEliminar(item)}
-                        >
-                          <FontAwesomeIcon icon={faTrashAlt} />
-                        </Button>
-                      </td>
                     </tr>
                   ))
                 ) : (
