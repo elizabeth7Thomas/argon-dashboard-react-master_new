@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { Input, Container, Row, Col, Button } from "reactstrap";
+import { Container, Row, Col, Button } from "reactstrap";
 import OrdenList from "../Ordenes/OrdenList";
 import OrdenForm from "../Ordenes/OrdenForm";
 import routes from "../routes";
@@ -10,9 +10,7 @@ const PageOrdenesAdmin = () => {
   const [ordenSeleccionada, setOrdenSeleccionada] = useState(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [estadosDetalles, setEstadosDetalles] = useState([]);
-  const [filtroServicio, setFiltroServicio] = useState("");
-  const [busqueda, setBusqueda] = useState("");
-  const [catalogoServicios, setCatalogoServicios] = useState([]);
+
 
   useEffect(() => {
     const fetchOrdenes = async () => {
@@ -46,10 +44,6 @@ const PageOrdenesAdmin = () => {
 
     fetchOrdenes();
     fetchEstadosDetalles();
-
-    // Cargar catálogo de servicios desde localStorage
-    const servicios = JSON.parse(localStorage.getItem("catalogo_servicios") || "[]");
-    setCatalogoServicios(servicios);
   }, []);
 
   const toggleModal = () => setModalOpen(!modalOpen);
@@ -64,48 +58,20 @@ const PageOrdenesAdmin = () => {
     setModalOpen(true);
   };
 
-  const ordenesFiltradas = ordenes
-    .filter((o) =>
-      filtroServicio ? o.servicio?.id.toString() === filtroServicio : true
-    )
-    .filter((o) =>
-      busqueda ? o.id.toString().includes(busqueda.toLowerCase()) : true
-    );
 
   return (
     <Container>
       <h2>Gestión de Órdenes</h2>
 
       <Row className="mb-3">
-        <Col md={6}>
-          <Input
-            type="text"
-            placeholder="Buscar por ID"
-            value={busqueda}
-            onChange={(e) => setBusqueda(e.target.value)}
-          />
-        </Col>
-        <Col md={6} className="d-flex justify-content-end align-items-center">
-          <Input
-            type="select"
-            value={filtroServicio}
-            onChange={(e) => setFiltroServicio(e.target.value)}
-            style={{ maxWidth: "300px", marginRight: "10px" }}
-          >
-            <option value="">Todos los servicios</option>
-            {catalogoServicios.map((servicio) => (
-              <option key={servicio.id} value={servicio.id}>
-                {servicio.nombre}
-              </option>
-            ))}
-          </Input>
+        <Col md={12} className="d-flex justify-content-end align-items-center">
           <Button color="primary" onClick={handleNuevaOrden}>
             Nueva Orden
           </Button>
         </Col>
       </Row>
 
-      <OrdenList ordenes={ordenesFiltradas} onVerDetalles={handleVerDetalles} />
+      <OrdenList ordenes={ordenes} onVerDetalles={handleVerDetalles} />
 
       <OrdenForm
         orden={ordenSeleccionada}

@@ -223,7 +223,7 @@ export default function ProveedorList({ onEditar }) {
             <Table className="align-items-center table-flush" responsive hover>
               <thead className="thead-light">
                 <tr>
-                  <th><FontAwesomeIcon icon={faIdCard} className="mr-1" /> ID</th>
+                  <th><FontAwesomeIcon icon={faIdCard} className="mr-1" /> #</th>
                   <th>Nombres</th>
                   <th>Apellidos</th>
                   <th>Teléfono</th>
@@ -235,7 +235,7 @@ export default function ProveedorList({ onEditar }) {
                 {proveedoresFiltrados.length > 0 ? (
                   proveedoresFiltrados.map((item, index) => (
                     <tr key={item.id || index}>
-                      <td>{item.id}</td>
+                      <td>{index + 1}</td>
                       <td>{item.nombres}</td>
                       <td>{item.apellidos}</td>
                       <td>{item.telefono}</td>

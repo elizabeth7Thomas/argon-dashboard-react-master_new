@@ -19,7 +19,6 @@ import {
   faPaintRoller, 
   faTools, 
   faStore,
-  faExclamationTriangle,
   faChartLine,
   faCalendarAlt
 } from "@fortawesome/free-solid-svg-icons";
