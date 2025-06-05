@@ -1,16 +1,7 @@
-// src/Admin/Roles/RolList.js
-
 import React, { useEffect, useState } from 'react';
 import {
-  Table,
-  Button,
-  Row,
-  Col,
-  Input,
-  Card,
-  CardHeader,
-  CardBody,
-  Spinner
+  Table, Button, Row, Col, Input,
+  Card, CardHeader, CardBody, Spinner,
 } from 'reactstrap';
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrash, faIdCard } from "@fortawesome/free-solid-svg-icons";
@@ -21,6 +12,17 @@ export default function RolList({ onEdit, onDelete }) {
   const [busqueda, setBusqueda] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [alert, setAlert] = useState(null);
+
+  // Cargar catálogo de roles desde localStorage
+  const catalogoRoles = JSON.parse(localStorage.getItem("catalogo_roles") || "[]");
+
+  // Helper para mostrar el nombre del rol superior
+  const getNombreRolSuperior = (id) => {
+    if (!id) return "Sin superior";
+    const rol = catalogoRoles.find(r => r.id === id || r.id === Number(id));
+    return rol ? rol.nombre : "Sin superior";
+  };
 
   useEffect(() => {
     const fetchRoles = async () => {
@@ -44,28 +46,22 @@ export default function RolList({ onEdit, onDelete }) {
             },
           }
         );
-        console.log("Respuesta completa del broker (Roles):", response.data);
-
         if (
           response.data?.response?.data?.roles &&
           Array.isArray(response.data.response.data.roles)
         ) {
-          console.log("Roles extraídos (roles):", response.data.response.data.roles);
           setRoles(response.data.response.data.roles);
         } else if (
           response.data?.response?.data?.data &&
           Array.isArray(response.data.response.data.data)
         ) {
-          console.log("Roles extraídos (data):", response.data.response.data.data);
           setRoles(response.data.response.data.data);
         } else if (
           response.data?.response?.data &&
           Array.isArray(response.data.response.data.data)
         ) {
-          console.log("Roles extraídos (array directo):", response.data.response.data.data);
           setRoles(response.data.response.data);
         } else {
-          console.log("Contenido de response.data.response.data:", response.data?.response?.data);
           setError("La respuesta del broker no tiene datos válidos");
         }
       } catch (err) {
@@ -87,6 +83,107 @@ export default function RolList({ onEdit, onDelete }) {
     };
     fetchRoles();
   }, []);
+
+  // Eliminar rol con manejo de mensajes del broker
+  const handleDelete = async (id) => {
+    if (!window.confirm("¿Seguro que deseas eliminar este rol?")) return;
+    setAlert(null);
+    const token = localStorage.getItem("token");
+    const uri = `administracion/PATCH/roles/${id}`;
+    const payload = {
+      metadata: { uri },
+      request: {}
+    };
+    try {
+      const response = await axios.post(
+        "http://64.23.169.22:3761/broker/api/rest",
+        payload,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const brokerResponse = response.data?.response?.data;
+      const brokerMsg = response.data?.response?._broker_message;
+      const brokerStatus = response.data?.response?._broker_status;
+      if (brokerMsg || brokerResponse?.message) {
+        setAlert(
+          <div style={{ color: "#fff" }}>
+            {brokerResponse?.message && (
+              <>
+                <strong>{brokerResponse.message}</strong>
+                <br />
+              </>
+            )}
+            {brokerMsg && <span>{brokerMsg}</span>}
+            {brokerStatus && (
+              <>
+                <br />
+                <span>Código: {brokerStatus}</span>
+              </>
+            )}
+          </div>
+        );
+      }
+      // Refresca la lista después de eliminar
+      setRoles(prev => prev.filter(r => r.id !== id));
+    } catch (error) {
+      let brokerMsg = "";
+      let brokerStatus = "";
+      let brokerError = "";
+      let brokerPath = "";
+      let brokerTimestamp = "";
+      if (error.response) {
+        const resp = error.response.data?.response;
+        brokerMsg = resp?._broker_message;
+        brokerStatus = resp?._broker_status;
+        brokerError = resp?.data?.error;
+        brokerPath = resp?.data?.path;
+        brokerTimestamp = resp?.data?.timestamp;
+        setAlert(
+          <div style={{ color: "#fff" }}>
+            <strong>Error del broker:</strong>
+            {brokerMsg && (
+              <>
+                <br />
+                <span>{brokerMsg}</span>
+              </>
+            )}
+            {brokerStatus && (
+              <>
+                <br />
+                <span>Código: {brokerStatus}</span>
+              </>
+            )}
+            {brokerError && (
+              <>
+                <br />
+                <span>Detalle: {brokerError}</span>
+              </>
+            )}
+            {brokerPath && (
+              <>
+                <br />
+                <span>Ruta: {brokerPath}</span>
+              </>
+            )}
+            {brokerTimestamp && (
+              <>
+                <br />
+                <span>Fecha: {brokerTimestamp}</span>
+              </>
+            )}
+          </div>
+        );
+      } else if (error.request) {
+        setAlert(<span style={{ color: "#fff" }}>No hubo respuesta del servidor. Revisa tu conexión.</span>);
+      } else {
+        setAlert(<span style={{ color: "#fff" }}>{error.message || "Error desconocido."}</span>);
+      }
+    }
+  };
 
   const rolesFiltrados = roles.filter(
     (r) =>
@@ -125,6 +222,11 @@ export default function RolList({ onEdit, onDelete }) {
             </Row>
           </CardHeader>
           <CardBody>
+            {alert && (
+              <div style={{ background: "#dc3545", borderRadius: 4, padding: 12, margin: 10, color: "#fff" }}>
+                {alert}
+              </div>
+            )}
             <Table className="align-items-center table-flush" bordered responsive hover>
               <thead className="thead-light">
                 <tr>
@@ -132,7 +234,7 @@ export default function RolList({ onEdit, onDelete }) {
                   <th>Nombre</th>
                   <th>Descripción</th>
                   <th>Salario</th>
-                  <th>ID Rol Superior</th>
+                  <th>Superior</th>
                   <th>Acciones</th>
                 </tr>
               </thead>
@@ -144,12 +246,12 @@ export default function RolList({ onEdit, onDelete }) {
                       <td>{item.nombre}</td>
                       <td>{item.descripcion}</td>
                       <td>{item.salario}</td>
-                      <td>{item.id_rol_superior}</td>
+                      <td>{getNombreRolSuperior(item.id_rol_superior)}</td>
                       <td>
-                        <Button size="sm" color="warning" onClick={() => onEdit(item)} className="mr-2">
+                        <Button size="sm" color="info" onClick={() => onEdit(item)} className="mr-2">
                           <FontAwesomeIcon icon={faEdit} />
                         </Button>
-                        <Button size="sm" color="danger" onClick={() => onDelete(item.id)}>
+                        <Button size="sm" color="danger" onClick={() => handleDelete(item.id)}>
                           <FontAwesomeIcon icon={faTrash} />
                         </Button>
                       </td>

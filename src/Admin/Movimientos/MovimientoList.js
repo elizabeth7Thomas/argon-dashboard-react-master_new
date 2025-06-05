@@ -11,6 +11,9 @@ import {
   FormGroup,
   Label,
   Spinner,
+  Pagination,
+  PaginationItem,
+  PaginationLink,
 } from "reactstrap";
 import { faIdCard } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
@@ -40,6 +43,8 @@ export default function MovimientoList() {
   const [movimientos, setMovimientos] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [pagina, setPagina] = useState(1);
+  const porPagina = 15;
 
   // Parámetros de filtrado
   const [fechaDia, setFechaDia] = useState("");
@@ -99,26 +104,26 @@ export default function MovimientoList() {
         console.log("Respuesta completa del broker (movimientos):", response.data);
 
         // Ajuste para la estructura esperada
-        if (
-          response.data?.response?.data?.data &&
-          Array.isArray(response.data.response.data.data)
-        ) {
-          console.log("Movimientos extraídos (data):", response.data.response.data.data);
-          setMovimientos(response.data.response.data.data);
+        const data = response.data?.response?.data;
+        if (data && typeof data === "object" && !Array.isArray(data)) {
+          // Unir todos los movimientos de todas las categorías
+          let todosMovimientos = [];
+          Object.values(data).forEach(cat => {
+            if (cat && Array.isArray(cat.movimientos)) {
+              todosMovimientos = todosMovimientos.concat(cat.movimientos);
+            }
+          });
+          setMovimientos(todosMovimientos);
         } else if (
-          response.data?.response?.data?.movimientos &&
-          Array.isArray(response.data.response.data.movimientos)
+          data?.movimientos &&
+          Array.isArray(data.movimientos)
         ) {
-          console.log("Movimientos extraídos (movimientos):", response.data.response.data.movimientos);
-          setMovimientos(response.data.response.data.movimientos);
+          setMovimientos(data.movimientos);
         } else if (
-          response.data?.response?.data &&
-          Array.isArray(response.data.response.data)
+          Array.isArray(data)
         ) {
-          console.log("Movimientos extraídos (array directo):", response.data.response.data);
-          setMovimientos(response.data.response.data);
+          setMovimientos(data);
         } else {
-          console.log("Contenido de response.data.response.data:", response.data?.response?.data);
           setError("La respuesta del broker no tiene datos válidos");
         }
       } catch (err) {
@@ -150,6 +155,23 @@ export default function MovimientoList() {
       .includes(busqueda.toLowerCase());
     return matchBusqueda;
   });
+
+  // Paginación
+  const totalPaginas = Math.ceil(movimientosFiltrados.length / porPagina);
+  const movimientosPagina = movimientosFiltrados.slice(
+    (pagina - 1) * porPagina,
+    pagina * porPagina
+  );
+
+  // Cambiar de página
+  const irPagina = (num) => {
+    if (num >= 1 && num <= totalPaginas) setPagina(num);
+  };
+
+  // Reiniciar página al cambiar filtro o búsqueda
+  useEffect(() => {
+    setPagina(1);
+  }, [busqueda, filtro, fechaDia, fechaMes, anio, numeroTrimestre, numeroSemestre, servicioId]);
 
   return (
     <Row>
@@ -325,44 +347,70 @@ export default function MovimientoList() {
                 <pre style={{ whiteSpace: "pre-wrap", wordBreak: "break-all" }}>{error}</pre>
               </div>
             ) : (
-              <Table className="align-items-center table-flush" responsive hover>
-                <thead className="thead-light">
-                  <tr>
-                    <th>
-                      <FontAwesomeIcon icon={faIdCard} className="mr-1" /> #
-                    </th>
-                    <th>Concepto</th>
-                    <th>Cantidad</th>
-                    <th>Fecha</th>
-                    <th>Servicio</th>
-                    <th>Empleado</th>
-                    <th>Producto</th>
-                    <th>Nota Crédito</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {movimientosFiltrados.length > 0 ? (
-                    movimientosFiltrados.map((item, index) => (
-                      <tr key={item.id || index}>
-                        <td>{index + 1}</td>
-                        <td>{item.concepto}</td>
-                        <td>{item.cantidad}</td>
-                        <td>{item.fecha_movimiento}</td>
-                        <td>{item.id_servicio || ""}</td>
-                        <td>{item.nombre_empleado || ""}</td>
-                        <td>{item.producto || ""}</td>
-                        <td>{item.notaCredito || ""}</td>
-                      </tr>
-                    ))
-                  ) : (
+              <>
+                <Table className="align-items-center table-flush" responsive hover>
+                  <thead className="thead-light">
                     <tr>
-                      <td colSpan="8" className="text-center text-muted py-4">
-                        No se encontraron movimientos
-                      </td>
+                      <th>
+                        <FontAwesomeIcon icon={faIdCard} className="mr-1" /> #
+                      </th>
+                      <th>Concepto</th>
+                      <th>Cantidad</th>
+                      <th>Fecha</th>
+                      <th>Servicio</th>
+                      <th>Empleado</th>
+                      <th>Producto</th>
+                      <th>Nota Crédito</th>
                     </tr>
-                  )}
-                </tbody>
-              </Table>
+                  </thead>
+                  <tbody>
+                    {movimientosPagina.length > 0 ? (
+                      movimientosPagina.map((item, index) => (
+                        <tr key={index}>
+                          <td>{(pagina - 1) * porPagina + index + 1}</td> {/* Número sucesivo */}
+                          <td>{item.concepto}</td>
+                          <td>{item.cantidad}</td>
+                          <td>{item.fecha_movimiento}</td>
+                          <td>{item.id_servicio || ""}</td>
+                          <td>{item.nombre_empleado || ""}</td>
+                          <td>{item.producto || ""}</td>
+                          <td>{item.notaCredito || ""}</td>
+                        </tr>
+                      ))
+                    ) : (
+                      <tr>
+                        <td colSpan="8" className="text-center text-muted py-4">
+                          No se encontraron movimientos
+                        </td>
+                      </tr>
+                    )}
+                  </tbody>
+                </Table>
+                {/* Paginación */}
+                {totalPaginas > 1 && (
+                  <Pagination className="justify-content-center mt-3">
+                    <PaginationItem disabled={pagina === 1}>
+                      <PaginationLink first onClick={() => irPagina(1)} />
+                    </PaginationItem>
+                    <PaginationItem disabled={pagina === 1}>
+                      <PaginationLink previous onClick={() => irPagina(pagina - 1)} />
+                    </PaginationItem>
+                    {Array.from({ length: totalPaginas }, (_, i) => (
+                      <PaginationItem active={pagina === i + 1} key={i}>
+                        <PaginationLink onClick={() => irPagina(i + 1)}>
+                          {i + 1}
+                        </PaginationLink>
+                      </PaginationItem>
+                    ))}
+                    <PaginationItem disabled={pagina === totalPaginas}>
+                      <PaginationLink next onClick={() => irPagina(pagina + 1)} />
+                    </PaginationItem>
+                    <PaginationItem disabled={pagina === totalPaginas}>
+                      <PaginationLink last onClick={() => irPagina(totalPaginas)} />
+                    </PaginationItem>
+                  </Pagination>
+                )}
+              </>
             )}
           </CardBody>
         </Card>

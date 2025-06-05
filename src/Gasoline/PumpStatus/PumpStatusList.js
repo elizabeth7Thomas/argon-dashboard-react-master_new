@@ -47,8 +47,9 @@ export default function PumpStatusList() {
     setLoading(true);
     try {
       await deletePump(bombId);
-      setSuccess("Bomba eliminada correctamente");
-      loadPumps();
+    setTimeout(() => {
+        setSuccess(null);
+      }, 3000);      loadPumps();
     } catch (err) {
       setError(err);
     } finally {
@@ -58,9 +59,10 @@ export default function PumpStatusList() {
 
   const getStatusBadge = (status) => {
     switch (status) {
-      case 1: return <Badge color="success">Activo</Badge>;
-      case 0: return <Badge color="danger">Inactivo</Badge>;
-      case 2: return <Badge color="warning">Mantenimiento</Badge>;
+      case 1: return <Badge color="dark">Bloqueado</Badge>;
+      case 2: return <Badge color="info">Liberada</Badge>;
+      case 3: return <Badge color="success">Activo</Badge>;
+      case 4: return <Badge color="warning">Mantenimiento</Badge>;
       default: return <Badge color="secondary">Desconocido</Badge>;
     }
   };
@@ -102,8 +104,7 @@ export default function PumpStatusList() {
         <Table striped responsive>
           <thead>
             <tr>
-              <th>#</th>
-              <th>Número</th>
+              <th>No.</th>
               <th>Cantidad (gal)</th>
               <th>Encargado</th>
               <th>Estado</th>
@@ -113,7 +114,6 @@ export default function PumpStatusList() {
           <tbody>
             {bombs.map((pump, index) => (
               <tr key={pump.bombId || index}>
-                <td>{index + 1}</td>
                 <td>{pump.bombNumber}</td>
                 <td>{pump.servedQuantity}</td>
                 <td>{pump.employeeInCharge?.employeeName || "N/A"}</td>

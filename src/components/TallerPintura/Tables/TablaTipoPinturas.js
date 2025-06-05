@@ -1,17 +1,21 @@
 import React, { useState, useEffect } from "react";
-import axios from 'axios';
-import {Table,Card,Button,DropdownItem,DropdownMenu,DropdownToggle,UncontrolledDropdown,Container,} from "reactstrap";
+import {
+  Table,
+  Card,
+  Button,
+  DropdownItem,
+  DropdownMenu,
+  DropdownToggle,
+  UncontrolledDropdown,
+  Container,
+} from "reactstrap";
 import ModalAgregarTipoPintura from "../Modals/ModalAgregarTipoPintura";
-
 
 const TablaTipoPinturas = () => {
   const [tiposPintura, setTiposPintura] = useState([]);
   const [modal, setModal] = useState(false);
   const [modoEdicion, setModoEdicion] = useState(false);
   const [tipoEditar, setTipoEditar] = useState(null);
-  const [nextId, setNextId] = useState(1);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
 
   const toggleModal = () => {
     setModal(!modal);
@@ -21,57 +25,72 @@ const TablaTipoPinturas = () => {
     }
   };
 
-  const obtenerTiposPinturas = async () =>{
+  const obtenerTiposPinturas = async () => {
     const token = localStorage.getItem("token");
 
-    if(!token){
-      setError("No se encontro un token de autenticación");
-      setLoading(false);
-      return
-    }
+    try {
+      const res = await fetch("http://64.23.169.22:3761/broker/api/rest", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+        body: JSON.stringify({
+          metadata: {
+            uri: "/pintura/GET/tipopinturas",
+          },
+          request: {},
+        }),
+      });
 
-    try{
-      const res = await fetch("http://localhost:8000/pintura/GET/tipopinturas");
       const data = await res.json();
-      const TiposPinturaArray = Array.isArray(data) ? data : [data];
-      setTiposPintura(TiposPinturaArray);
-
-      if(TiposPinturaArray.length > 0){
-        const maxId = Math.max(...TiposPinturaArray.map(i => i.idTipoPintura));
-        setNextId(maxId + 1);
-      }
-    }catch (error) {
-     console.error("Error al obtener los datos", error);
-     setTiposPintura([]);   
+      const tipos = Array.isArray(data.response?.data) ? data.response.data : [];
+      setTiposPintura(tipos);
+    } catch (error) {
+      console.error("Error al obtener tipos de pintura:", error);
     }
-  }
-
-  const agregarTipoPintura = (nuevoTipo) => {
-    if (modoEdicion && tipoEditar) {
-      // Editar
-      const tiposActualizados = tiposPintura.map((tipo) =>
-        tipo.idTipoPintura === tipoEditar.idTipoPintura
-          ? { ...tipo, NombreTipoPintura: nuevoTipo.NombreTipoPintura }
-          : tipo
-      );
-      setTiposPintura(tiposActualizados);
-    } else {
-      // Agregar
-      const nuevoTipoConId = {
-        idTipoPintura: nextId,
-        ...nuevoTipo,
-      };
-      setTiposPintura([...tiposPintura, nuevoTipoConId]);
-      setNextId(nextId + 1);
-    }
-    toggleModal();
   };
 
-  const eliminarTipoPintura = (id) => {
-    const confirmacion = window.confirm("¿Estás seguro de que deseas eliminar este tipo de pintura?");
-    if (confirmacion) {
-      const nuevosTipos = tiposPintura.filter((tipo) => tipo.idTipoPintura !== id);
-      setTiposPintura(nuevosTipos);
+  const actualizarTipoPintura = async (tipoActualizado) => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch("http://64.23.169.22:3761/broker/api/rest", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+        body: JSON.stringify({
+          metadata: {
+            uri: `/pintura/PUT/tipopinturas/${tipoActualizado.idTipoPintura}`,
+          },
+          request: {
+            NombreTipoPintura: tipoActualizado.NombreTipoPintura,
+          },
+        }),
+      });
+
+      if (res.ok) {
+        obtenerTiposPinturas();
+        toggleModal();
+      } else {
+        console.error("Error al actualizar tipo de pintura");
+      }
+    } catch (error) {
+      console.error("Error en actualización:", error.message);
+    }
+  };
+
+  const agregarTipoPintura = async (nuevoTipo) => {
+    if (modoEdicion && tipoEditar) {
+      const tipoConId = {
+        ...nuevoTipo,
+        idTipoPintura: tipoEditar.idTipoPintura,
+      };
+      await actualizarTipoPintura(tipoConId);
+    } else {
+      obtenerTiposPinturas(); // El modal hace el POST
     }
   };
 
@@ -82,18 +101,21 @@ const TablaTipoPinturas = () => {
   };
 
   useEffect(() => {
-    // Inicializar tipos de pintura vacíos (local)
-    obtenerTiposPinturas([]);
+    obtenerTiposPinturas();
   }, []);
 
   return (
-    <>
-      
-      <br></br> <br></br>
-      <Container className="mt--7" fluid>
-      
-        <Card className="shadow p-4 mb-4">
-          <Table className="align-items-center table-flush" responsive>
+    <Container className="mt-4" fluid>
+      <Card className="shadow mb-3 p-3">
+        <div className="d-flex justify-content-between align-items-center mb-3 px-2">
+          <h3 className="mb-0">Listado de Tipos de Pintura</h3>
+          <Button color="primary" onClick={toggleModal}>
+            Agregar
+          </Button>
+        </div>
+
+        <div style={{ maxHeight: "400px", overflowY: "auto" }}>
+          <Table className="table-bordered table-hover table-striped mb-0" responsive>
             <thead className="thead-light">
               <tr>
                 <th>ID</th>
@@ -119,14 +141,11 @@ const TablaTipoPinturas = () => {
                           <i className="fas fa-ellipsis-v" />
                         </DropdownToggle>
                         <DropdownMenu right>
-                          <DropdownItem onClick={() => alert(`Ver: ${tipo.NombreTipoPintura}`)}>
-                            Ver
-                          </DropdownItem>
                           <DropdownItem onClick={() => iniciarEdicion(tipo)}>
                             Editar
                           </DropdownItem>
-                          <DropdownItem onClick={() => eliminarTipoPintura(tipo.idTipoPintura)}>
-                            Eliminar
+                          <DropdownItem disabled title="No disponible en backend">
+                            Eliminar (deshabilitado)
                           </DropdownItem>
                         </DropdownMenu>
                       </UncontrolledDropdown>
@@ -136,20 +155,17 @@ const TablaTipoPinturas = () => {
               )}
             </tbody>
           </Table>
-          <ModalAgregarTipoPintura
-            isOpen={modal}
-            toggle={toggleModal}
-            onSubmit={agregarTipoPintura}
-            modoEdicion={modoEdicion}
-            tipoEditar={tipoEditar}
-          />
-        </Card>
-          <Button color="primary" onClick={toggleModal}>
-          Agregar Tipo de Pintura
-        </Button>
-      </Container>
+        </div>
+      </Card>
 
-    </>
+      <ModalAgregarTipoPintura
+        isOpen={modal}
+        toggle={toggleModal}
+        onSubmit={agregarTipoPintura}
+        modoEdicion={modoEdicion}
+        tipoEditar={tipoEditar}
+      />
+    </Container>
   );
 };
 

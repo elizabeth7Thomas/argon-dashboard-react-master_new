@@ -11,7 +11,13 @@ import {
   Form,
 } from "reactstrap";
 
-const ModalAgregarTipoServicio = ({ isOpen, toggle, onSuccess }) => {
+const ModalAgregarTipoServicio = ({
+  isOpen,
+  toggle,
+  onSuccess,
+  modoEdicion = false,
+  tipoServicio = null,
+}) => {
   const [form, setForm] = useState({
     NombreTipo: "",
     idServicio: "",
@@ -23,12 +29,37 @@ const ModalAgregarTipoServicio = ({ isOpen, toggle, onSuccess }) => {
   const [submitError, setSubmitError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
+  useEffect(() => {
+    if (modoEdicion && tipoServicio) {
+      setForm({
+        NombreTipo: tipoServicio.NombreTipo,
+        idServicio: tipoServicio.idServicio.toString(),
+      });
+    } else {
+      setForm({ NombreTipo: "", idServicio: "" });
+    }
+  }, [modoEdicion, tipoServicio]);
+
   const obtenerServicios = async () => {
     try {
-      const res = await fetch("http://localhost:8000/pintura/GET/servicios");
+      const token = localStorage.getItem("token");
+      const res = await fetch("http://64.23.169.22:3761/broker/api/rest", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token,
+        },
+        body: JSON.stringify({
+          metadata: {
+            uri: "/pintura/GET/servicios",
+          },
+          request: {},
+        }),
+      });
+
       if (!res.ok) throw new Error("No se pudo obtener los servicios");
       const data = await res.json();
-      setServicios(data);
+      setServicios(data.response?.data || []);
     } catch (err) {
       setError(err.message);
     } finally {
@@ -58,14 +89,24 @@ const ModalAgregarTipoServicio = ({ isOpen, toggle, onSuccess }) => {
     setSubmitError("");
 
     try {
-      const response = await fetch("http://localhost:8000/pintura/POST/tiposervicios", {
+      const token = localStorage.getItem("token");
+
+      const uri = modoEdicion
+        ? `/pintura/PUT/tiposervicios/${tipoServicio.idTipoServicio}`
+        : "/pintura/POST/tiposervicios";
+
+      const response = await fetch("http://64.23.169.22:3761/broker/api/rest", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          Authorization: token,
         },
         body: JSON.stringify({
-          NombreTipo: form.NombreTipo,
-          idServicio: parseInt(form.idServicio),
+          metadata: { uri },
+          request: {
+            NombreTipo: form.NombreTipo,
+            idServicio: parseInt(form.idServicio),
+          },
         }),
       });
 
@@ -75,7 +116,7 @@ const ModalAgregarTipoServicio = ({ isOpen, toggle, onSuccess }) => {
       }
 
       const result = await response.json();
-      console.log("Guardado exitosamente:", result);
+      console.log("Procesado:", result);
       if (onSuccess) onSuccess();
       toggle();
       setForm({ NombreTipo: "", idServicio: "" });
@@ -88,7 +129,9 @@ const ModalAgregarTipoServicio = ({ isOpen, toggle, onSuccess }) => {
 
   return (
     <Modal isOpen={isOpen} toggle={toggle}>
-      <ModalHeader toggle={toggle}>Agregar Tipo de Servicio</ModalHeader>
+      <ModalHeader toggle={toggle}>
+        {modoEdicion ? "Editar Tipo de Servicio" : "Agregar Tipo de Servicio"}
+      </ModalHeader>
       <ModalBody>
         <Form>
           <FormGroup>
@@ -126,7 +169,13 @@ const ModalAgregarTipoServicio = ({ isOpen, toggle, onSuccess }) => {
       </ModalBody>
       <ModalFooter>
         <Button color="primary" onClick={handleSubmit} disabled={submitting}>
-          {submitting ? "Agregando..." : "Agregar"}
+          {submitting
+            ? modoEdicion
+              ? "Guardando..."
+              : "Agregando..."
+            : modoEdicion
+            ? "Guardar Cambios"
+            : "Agregar"}
         </Button>
         <Button color="secondary" onClick={toggle} disabled={submitting}>
           Cancelar

@@ -1,91 +1,141 @@
-import React, { useState } from "react";
-import { Container, Card, CardBody, Button } from "reactstrap";
+// src/Payment/pages/TransaccionesPage.js
 
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { Container, Row, Col, Button, Input, FormGroup } from "reactstrap";
 import TransaccionList from "../Transacciones/TransaccionList";
 import TransaccionForm from "../Transacciones/TransaccionForm";
-import TransaccionDetail from "../Transacciones/TransaccionDetail";
 
-export default function TransaccionesPage() {
-  const [transacciones] = useState([]);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [detailOpen, setDetailOpen] = useState(false);
-  const [isEditing, setIsEditing] = useState(false);
-  const [selectedTransaccion, setSelectedTransaccion] = useState(null);
-  const [formData, setFormData] = useState({
-    Cliente: "",
-    MetodoPago: "",
-    Monto: "",
-    Fecha: "",
+const TransaccionesPage = () => {
+  const [transacciones, setTransacciones] = useState([]);
+  const [mostrarFormulario, setMostrarFormulario] = useState(false);
+  const [transaccionSeleccionada, setTransaccionSeleccionada] = useState(null);
+  const [filtros, setFiltros] = useState({
+    fechaInicio: "",
+    fechaFinal: "",
   });
 
-  const handleCreate = () => {
-    setFormData({
-      Cliente: "",
-      MetodoPago: "",
-      Monto: "",
-      Fecha: "",
-    });
-    setIsEditing(false);
-    setModalOpen(true);
+  const token = localStorage.getItem("token");
+
+  const fetchTransacciones = async () => {
+    try {
+      const response = await axios.post(
+        "http://64.23.169.22:3761/broker/api/rest",
+        {
+          metadata: { uri: "pagos/transacciones/obtener" },
+          request: {
+            fechaInicio: filtros.fechaInicio,
+            fechaFinal: filtros.fechaFinal,
+          },
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+     
+      const data = response.data?.response?.data?.Transacciones;
+      setTransacciones(Array.isArray(data) ? data : []);
+    } catch (error) {
+      console.error("Error al obtener transacciones:", error);
+      alert("Hubo un error al cargar las transacciones.");
+    }
   };
 
-  const handleEdit = (transaccion) => {
-    setFormData(transaccion);
-    setIsEditing(true);
-    setModalOpen(true);
+ 
+
+  const anularTransaccion = async (noTransaccion) => {
+    try {
+      await axios.put(
+        "http://64.23.169.22:3761/broker/api/rest",
+        {
+          metadata: { uri: `pagos/transaccion/anular/${noTransaccion}` },
+          request: {},
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      ); 
+      alert("Transacción anulada correctamente.");
+      fetchTransacciones();
+    } catch (err) {
+      console.error("Error al anular transacción:", err);
+      alert("No se pudo anular la transacción.");
+    }
   };
 
-  const handleView = (transaccion) => {
-    setSelectedTransaccion(transaccion);
-    setDetailOpen(true);
+  
+  useEffect(() => {
+    fetchTransacciones();
+    
+  }, []);
+
+  
+  const handleCrearClick = () => {
+    setTransaccionSeleccionada(null);
+    setMostrarFormulario(true);
   };
 
-  const handleDelete = (transaccion) => {
-    alert(`Eliminar transacción: ${transaccion.Cliente}`);
-  };
 
-  const handleSubmit = () => {
-    alert(isEditing ? "Editar transacción" : "Crear nueva transacción");
-    setModalOpen(false);
+  const handleGuardar = () => {
+    setMostrarFormulario(false);
+    fetchTransacciones();
   };
 
   return (
-    <>
-      <br></br> <br></br>
-      <br></br><br></br>
-      <Container className="mt--6" fluid>
-        <Card>
-          <CardBody>
-            <div className="d-flex justify-content-end mb-3">
-              
-            </div>
-            <TransaccionList
-              transacciones={transacciones}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onView={handleView}
+    <Container className="mt-4">
+      <h1 className="mb-4">Gestión de Transacciones</h1>
+
+      <Row className="mb-3">
+        <Col md={3}>
+          <FormGroup>
+            <Input
+              type="date"
+              value={filtros.fechaInicio}
+              onChange={(e) =>
+                setFiltros({ ...filtros, fechaInicio: e.target.value })
+              }
             />
-          </CardBody>
-        </Card>
-      </Container>
+          </FormGroup>
+        </Col>
+        <Col md={3}>
+          <FormGroup>
+            <Input
+              type="date"
+              value={filtros.fechaFinal}
+              onChange={(e) =>
+                setFiltros({ ...filtros, fechaFinal: e.target.value })
+              }
+            />
+          </FormGroup>
+        </Col>
+        <Col md={3}>
+          <Button color="primary" onClick={fetchTransacciones}>
+            Filtrar
+          </Button>
+        </Col>
+    
+      </Row>
 
-      <TransaccionForm
-        isOpen={modalOpen}
-        toggle={() => setModalOpen(!modalOpen)}
-        formData={formData}
-        setFormData={setFormData}
-        onSubmit={handleSubmit}
-        isEditing={isEditing}
+      <TransaccionList
+        transacciones={transacciones}
+        onAnular={anularTransaccion}
       />
 
-      <TransaccionDetail
-        isOpen={detailOpen}
-        toggle={() => setDetailOpen(!detailOpen)}
-        transaccion={selectedTransaccion}
-      />
-      <Button color="primary" onClick={handleCreate}>
-                Nueva Transacción
-              </Button>
-    </>
+      {mostrarFormulario && (
+        <TransaccionForm
+          transaccion={transaccionSeleccionada}
+          onClose={() => setMostrarFormulario(false)}
+          onSave={handleGuardar}
+        />
+      )}
+    </Container>
   );
-}
+};
+
+export default TransaccionesPage;

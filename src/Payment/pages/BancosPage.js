@@ -1,132 +1,148 @@
-import React, { useState } from "react";
-import {
-  Container,
-  Button,
-  Table,
-  Modal,
-  ModalHeader,
-  ModalBody,
-  ModalFooter,
-  Form,
-  FormGroup,
-  Label,
-  Input
-} from "reactstrap";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import { Button, Alert, Spinner } from "reactstrap";
+import { toast } from "react-toastify";
+import { handleBrokerError } from "../utils/apiErrorHandler";
 
-function BancosPage() {
+export default function BancosPage() {
   const [bancos, setBancos] = useState([]);
-  const [modalOpen, setModalOpen] = useState(false);
-  const [mensaje, setMensaje] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const toggleModal = () => {
-    setModalOpen(!modalOpen);
-    setMensaje("");
-  };
-
-  const [form, setForm] = useState({
-    nombre: ""
-  });
-
-  const handleChange = (e) => {
-    const { name, value } = e.target;
-    setForm((prev) => ({ ...prev, [name]: value }));
-  };
-
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!form.nombre.trim()) {
-      alert("Por favor ingresa el nombre del banco.");
-      return;
-    }
-
+  const fetchBancos = async () => {
+    const token = localStorage.getItem("token");
+    setLoading(true);
+    setError(null);
+    
     try {
-      const res = await fetch("http://localhost:3001/pagos/bancos/crear", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nombre: form.nombre })
-      });
+      const response = await axios.post(
+        "http://64.23.169.22:3761/broker/api/rest",
+        {
+          metadata: { uri: "pagos/bancos/obtener" },
+          request: {},
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
-      const data = await res.json();
-
-      if (res.ok) {
-        setMensaje("✅ " + data.mensaje);
-        setBancos((prev) => [...prev, { id: Date.now(), nombre: form.nombre }]);
-        setForm({ nombre: "" });
-        toggleModal();
-      } else {
-        setMensaje("❌ " + data.mensaje);
+      // Verificar si la respuesta del broker indica error
+      if (response.data?.response?._broker_status !== 200) {
+        throw {
+          response: {
+            data: response.data
+          }
+        };
       }
+
+      const data = response.data?.response?.data?.Bancos;
+      setBancos(Array.isArray(data) ? data : []);
     } catch (error) {
-      setMensaje("❌ Error de red al crear el banco.");
+      const errorMessage = handleBrokerError(error);
+      console.error("Error en fetchBancos:", error);
+      setError(errorMessage);
+      toast.error(errorMessage);
+    } finally {
+      setLoading(false);
     }
   };
+
+  const handleDelete = async (banco) => {
+    if (!window.confirm(`¿Está seguro de eliminar ${banco.nombre}?`)) return;
+    
+    const token = localStorage.getItem("token");
+    try {
+      const response = await axios.put(
+        "http://64.23.169.22:3761/broker/api/rest",
+        {
+          metadata: { uri: `pagos/bancos/eliminar/${banco._id}` },
+          request: {},
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      // Verificar respuesta del broker
+      if (response.data?.response?._broker_status !== 200) {
+        throw {
+          response: {
+            data: response.data
+          }
+        };
+      }
+
+      toast.success(`${banco.nombre} eliminado correctamente`);
+      fetchBancos();
+    } catch (error) {
+      const errorMessage = handleBrokerError(error);
+      console.error("Error en handleDelete:", error);
+      toast.error(errorMessage);
+      
+      // Mostrar detalles completos del error en consola para depuración
+      if (error.response?.data) {
+        console.log("Respuesta completa del error:", error.response.data);
+      }
+    }
+  };
+
+  useEffect(() => {
+    fetchBancos();
+  }, []);
 
   return (
-   
-    <Container className="mt-4">
-      <h2>Bancos</h2>
-      <Button color="primary" onClick={toggleModal}>
-        Nuevo Banco
-      </Button>
-
-      <Table striped responsive className="mt-3">
-        <thead>
-          <tr>
-            <th>Nombre</th>
-          </tr>
-        </thead>
-        <tbody>
-          {bancos.length === 0 ? (
-            <tr>
-              <td colSpan="1" className="text-center">
-                No hay bancos registrados
-              </td>
-            </tr>
-          ) : (
-            bancos.map((banco) => (
-              <tr key={banco.id}>
-                <td>{banco.nombre}</td>
+    <div className="container mt-4">
+      <h2>Lista de Bancos</h2>
+      
+      {error && (
+        <Alert color="danger" toggle={() => setError(null)}>
+          {error}
+        </Alert>
+      )}
+      
+      {loading ? (
+        <div className="text-center">
+          <Spinner color="primary" />
+          <p>Cargando bancos...</p>
+        </div>
+      ) : (
+        <>
+          <Button color="primary" className="mb-3" onClick={() => {}}>
+            Crear Banco
+          </Button>
+          
+          <table className="table">
+            <thead>
+              <tr>
+                <th>Nombre</th>
+                <th>Acciones</th>
               </tr>
-            ))
-          )}
-        </tbody>
-      </Table>
-
-      {/* Modal */}
-      <Modal isOpen={modalOpen} toggle={toggleModal}>
-        <ModalHeader toggle={toggleModal}>Registrar Banco</ModalHeader>
-        <Form onSubmit={handleSubmit}>
-          <ModalBody>
-            <FormGroup>
-              <Label for="nombre">Nombre del banco</Label>
-              <Input
-                type="text"
-                id="nombre"
-                name="nombre"
-                value={form.nombre}
-                onChange={handleChange}
-                required
-              />
-            </FormGroup>
-            {mensaje && (
-              <p className={mensaje.includes("✅") ? "text-success" : "text-danger"}>
-                {mensaje}
-              </p>
-            )}
-          </ModalBody>
-          <ModalFooter>
-            <Button type="submit" color="primary">
-              Guardar
-            </Button>
-            <Button color="secondary" onClick={toggleModal}>
-              Cancelar
-            </Button>
-          </ModalFooter>
-        </Form>
-      </Modal>
-    </Container>
+            </thead>
+            <tbody>
+              {bancos.map(banco => (
+                <tr key={banco._id}>
+                  <td>{banco.nombre}</td>
+                  <td>
+                    <Button 
+                      color="danger" 
+                      size="sm" 
+                      onClick={() => handleDelete(banco)}
+                    >
+                      Eliminar
+                    </Button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </>
+      )}
+    </div>
   );
 }
-
-export default BancosPage;

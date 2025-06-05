@@ -85,7 +85,7 @@ const Index = () => {
                   className="btn-icon"
                 >
                   <FontAwesomeIcon icon={faStore} className="mr-2" />
-                  Tienda
+                  Tienda de Conveniencia
                 </Button>
                 <Button 
                   color="primary" 
@@ -95,14 +95,7 @@ const Index = () => {
                   <FontAwesomeIcon icon={faChartLine} className="mr-2" />
                   Pagos
                 </Button>
-                <Button 
-                  color="primary" 
-                  onClick={() => navigate('/admin/alerts')}
-                  className="btn-icon"
-                >
-                  <FontAwesomeIcon icon={faExclamationTriangle} className="mr-2" />
-                  Alertas
-                </Button>
+              
               </CardBody>
             </Card>
           </Col>

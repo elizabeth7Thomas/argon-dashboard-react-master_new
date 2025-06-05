@@ -348,7 +348,6 @@ export default function SalesPage() {
 
   return (
     <>
-      <Header />
       <Container className="py-4" fluid>
         <Row className="mb-4">
           <Col>

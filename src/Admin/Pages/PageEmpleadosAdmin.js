@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import routes from '../routes';
 import EmpleadoList from '../Empleados/EmpleadoList';
-import EmpleadoForm from '../Empleados//EmpleadoForm';
+import EmpleadoForm from '../Empleados/EmpleadoForm';
 import { Modal, ModalHeader, ModalBody } from 'reactstrap';
 
 export default function Empleados() {
@@ -11,6 +11,7 @@ export default function Empleados() {
   const [modalOpen, setModalOpen] = useState(false);
   const [editingData, setEditingData] = useState(null);
 
+  // Refresca la lista de empleados
   const fetchEmpleados = async () => {
     try {
       const response = await axios.get(routes.Administracion.Empleados.GET_ALL);
@@ -45,17 +46,23 @@ export default function Empleados() {
     }
   };
 
- const handleSave = async (empleadoPayload) => {
-  try {
-    if (editingData) {
-      await axios.put(routes.Administracion.Empleados.UPDATE(editingData.empleado.id), empleadoPayload);
-      alert("Empleado actualizado con éxito");
-    } else {
-      const response = await axios.post(routes.Administracion.Empleados.CREATE, empleadoPayload);
-      alert(response.data.message + "\nUsuario: " + response.data.autenticacion.usuario + "\nContraseña temporal: " + response.data.autenticacion.contraseniaTemporal);
-    }
-    fetchEmpleados();
-    toggleModal();
+  // Esta función se pasa al formulario y refresca la tabla tras guardar
+  const handleSave = async (empleadoPayload) => {
+    try {
+      if (editingData) {
+        await axios.put(routes.Administracion.Empleados.UPDATE(editingData.empleado.id), empleadoPayload);
+        alert("Empleado actualizado con éxito");
+      } else {
+        const response = await axios.post(routes.Administracion.Empleados.CREATE, empleadoPayload);
+        alert(
+          response.data.message +
+          (response.data.autenticacion
+            ? `\nUsuario: ${response.data.autenticacion.usuario}\nContraseña temporal: ${response.data.autenticacion.contraseniaTemporal}`
+            : "")
+        );
+      }
+      fetchEmpleados(); // Refresca la tabla
+      toggleModal();    // Cierra el modal
     } catch (error) {
       console.error("Error al guardar empleado:", error);
       alert("Ocurrió un error al guardar el empleado");
@@ -63,7 +70,6 @@ export default function Empleados() {
   };
 
   return (
-    
     <div>
       <button className="btn btn-primary mb-2 align-items" onClick={toggleModal}>Agregar Empleado</button>
 

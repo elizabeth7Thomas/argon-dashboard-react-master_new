@@ -1,112 +1,167 @@
-// src/payment/pages/ClientesPage.js
-import React, { useState, useEffect } from "react";
-import { Container, Card, CardBody, Button } from "reactstrap";
-import HeaderClients from "../../components/Headers/HeaderClients";
-import HeaderPagos from "components/Headers/HeaderPagos";
+import React, { useEffect, useState } from "react";
+import axios from "axios";
+import ClientesList from "../Clientes/ClienteList";
 import ClienteForm from "../Clientes/ClienteForm";
-import ClienteList from "../Clientes/ClienteList";
-import ClienteDetail from "../Clientes/ClienteDetail";
+import { Button, Input, Row, Col } from "reactstrap";
 
-export default function Clientes() {
+export default function ClientesPage() {
   const [clientes, setClientes] = useState([]);
+  const [formData, setFormData] = useState({});
   const [modalOpen, setModalOpen] = useState(false);
-  const [detailOpen, setDetailOpen] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
-  const [selectedCliente, setSelectedCliente] = useState(null);
-  const [formData, setFormData] = useState({
-    nombre: "",
-    email: "",
-    telefono: "",
-  });
+  const [selectedId, setSelectedId] = useState(null);
+  const [nitBusqueda, setNitBusqueda] = useState("");
+  const [error, setError] = useState("");
 
-  // Mock inicial de clientes para diseño
-  useEffect(() => {
-    const mockClientes = [
-      { id: 1, nombre: "Juan Pérez", email: "juan@example.com", telefono: "123456789" },
-      { id: 2, nombre: "Ana Gómez", email: "ana@example.com", telefono: "987654321" },
-    ];
-    setClientes(mockClientes);
-  }, []);
+  const token = localStorage.getItem("token");
 
-  const toggleModal = () => setModalOpen(!modalOpen);
-  const toggleDetail = () => setDetailOpen(!detailOpen);
-
-  const handleCreate = () => {
-    setFormData({ nombre: "", email: "", telefono: "" });
-    setIsEditing(false);
-    toggleModal();
+  const fetchClientes = async () => {
+    try {
+      const res = await axios.post(
+        "http://64.23.169.22:3761/broker/api/rest",
+        {
+          metadata: { uri: "pagos/cliente/obtener" },
+          request: {},
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const data = res.data.response?.data?.clientes || [];
+      setClientes(data);
+      setError("");
+    } catch (err) {
+      console.error("Error al cargar clientes:", err);
+      const brokerMessage = err?.response?.data?.response?.message;
+      setError(brokerMessage || "Error al cargar los clientes.");
+    }
   };
+
+  useEffect(() => {
+    fetchClientes();
+  }, []);
 
   const handleEdit = (cliente) => {
     setFormData(cliente);
-    setSelectedCliente(cliente);
     setIsEditing(true);
-    toggleModal();
+    setSelectedId(cliente._id);
+    setModalOpen(true);
+  };
+
+  const handleDelete = async (cliente) => {
+    const confirm = window.confirm(`¿Seguro que deseas eliminar a ${cliente.nombreCliente}?`);
+    if (!confirm) return;
+
+    try {
+      const res = await axios.post(
+        "http://64.23.169.22:3761/broker/api/rest",
+        {
+          metadata: { uri: `pagos/cliente/eliminar/${cliente._id}` },
+          request: {},
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+      const mensaje = res.data.response?.message || "Cliente eliminado exitosamente.";
+      alert(mensaje);
+      fetchClientes();
+    } catch (err) {
+      console.error("Error al eliminar cliente:", err);
+      const brokerMessage = err?.response?.data?.response?.message;
+      alert(brokerMessage || "Error al eliminar el cliente.");
+    }
   };
 
   const handleView = (cliente) => {
-    setSelectedCliente(cliente);
-    toggleDetail();
+    alert(`Viendo cliente: ${cliente.nombreCliente} ${cliente.apellidosCliente}`);
   };
 
-  const handleDelete = (cliente) => {
-    if (window.confirm(`¿Seguro que deseas eliminar a ${cliente.nombre}?`)) {
-      const updatedClientes = clientes.filter(c => c.id !== cliente.id);
-      setClientes(updatedClientes);
-    }
-  };
-
-  const handleSubmit = () => {
-    if (isEditing) {
-      const updatedClientes = clientes.map(c =>
-        c.id === formData.id ? formData : c
+  const handleSearch = async () => {
+    if (!nitBusqueda.trim()) return;
+    try {
+      const res = await axios.post(
+        "http://64.23.169.22:3761/broker/api/rest",
+        {
+          metadata: { uri: `pagos/clientes/obtener/${nitBusqueda}` },
+          request: {},
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
       );
-      setClientes(updatedClientes);
-    } else {
-      const nuevoCliente = {
-        ...formData,
-        id: Date.now(), // Genera ID único temporal
-      };
-      setClientes([...clientes, nuevoCliente]);
+      const cliente = res.data.response?.data?.cliente;
+      if (cliente) {
+        setClientes([cliente]);
+        setError("");
+      } else {
+        setClientes([]);
+        setError("Cliente no encontrado.");
+      }
+    } catch (err) {
+      console.error("Error al buscar cliente:", err);
+      const brokerMessage = err?.response?.data?.response?.message;
+      setClientes([]);
+      setError(brokerMessage || "Error al buscar cliente.");
     }
-    toggleModal();
   };
 
   return (
-    <>
-      <br></br><br></br><br></br>
-      <Container className="mt--6" fluid>
-        <Card>
-          <CardBody>
-            <div className="d-flex justify-content-end mb-3">
-              <Button color="primary" onClick={handleCreate}>
-                Nuevo Cliente
-              </Button>
-            </div>
-            <ClienteList
-              clientes={clientes}
-              onEdit={handleEdit}
-              onDelete={handleDelete}
-              onView={handleView}
-            />
-          </CardBody>
-        </Card>
-      </Container>
+    <div className="container mt-4">
+      <h2>Lista de Clientes</h2>
+
+      <Row className="mb-3">
+        <Col sm={8}>
+          <Input
+            placeholder="Buscar por NIT"
+            value={nitBusqueda}
+            onChange={(e) => setNitBusqueda(e.target.value)}
+          />
+        </Col>
+        <Col sm={4}>
+          <Button color="primary" onClick={handleSearch}>
+            Buscar
+          </Button>{" "}
+          <Button
+            color="success"
+            onClick={() => {
+              setFormData({});
+              setIsEditing(false);
+              setModalOpen(true);
+            }}
+          >
+            Nuevo Cliente
+          </Button>
+        </Col>
+      </Row>
+
+      {error && <p className="text-danger small">{error}</p>}
+
+      <ClientesList
+        clientes={clientes}
+        onEdit={handleEdit}
+        onDelete={handleDelete}
+        onView={handleView}
+      />
 
       <ClienteForm
         isOpen={modalOpen}
-        toggle={toggleModal}
+        toggle={() => setModalOpen(!modalOpen)}
         formData={formData}
         setFormData={setFormData}
-        onSubmit={handleSubmit}
+        onSuccess={fetchClientes}
         isEditing={isEditing}
+        idCliente={selectedId}
       />
-
-      <ClienteDetail
-        isOpen={detailOpen}
-        toggle={toggleDetail}
-        cliente={selectedCliente}
-      />
-    </>
+    </div>
   );
 }

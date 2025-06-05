@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from "react";
-import axios from "axios";
+//src/Payment/MetodosPago/// MetodoPagoList.js
+import React from "react";
 import { Table, Button } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faEye } from "@fortawesome/free-solid-svg-icons";
+import { faEdit, faTrash, faEye } from "@fortawesome/free-solid-svg-icons";
 
-function MetodosList({ metodos, onView }) {
+export default function MetodoPagoList({ metodos, onView, onEdit, onDelete }) {
   return (
     <Table responsive hover>
       <thead>
@@ -21,12 +21,32 @@ function MetodosList({ metodos, onView }) {
           </tr>
         ) : (
           metodos.map((metodo) => (
-            <tr key={metodo._id}>
-              <td>{metodo._id}</td>
-              <td>{metodo.metodo}</td>
+            <tr key={metodo.idMetodo}>
+              <td>{metodo.idMetodo}</td>
+              <td>{metodo.Metodo}</td>
               <td>
-                <Button size="sm" color="info" className="me-2" onClick={() => onView(metodo)}>
+                <Button
+                  size="sm"
+                  color="info"
+                  className="me-2"
+                  onClick={() => onView(metodo)}
+                >
                   <FontAwesomeIcon icon={faEye} />
+                </Button>
+                <Button
+                  size="sm"
+                  color="warning"
+                  className="me-2"
+                  onClick={() => onEdit(metodo)}
+                >
+                  <FontAwesomeIcon icon={faEdit} />
+                </Button>
+                <Button
+                  size="sm"
+                  color="danger"
+                  onClick={() => onDelete(metodo)}
+                >
+                  <FontAwesomeIcon icon={faTrash} />
                 </Button>
               </td>
             </tr>
@@ -34,50 +54,5 @@ function MetodosList({ metodos, onView }) {
         )}
       </tbody>
     </Table>
-  );
-}
-
-export default function MetodosForm() {
-  const [metodos, setMetodos] = useState([]);
-
-  useEffect(() => {
-    const fetchMetodos = async () => {
-      try {
-        const response = await axios.get("http://localhost:3001/pagos/metodos/obtener", {
-          headers: {
-            "Cache-Control": "no-cache"
-          }
-        });
-
-        console.log("Respuesta del servidor", response);
-        console.log("Métodos recibidos", response.data.Metodos); // corregido a 'Metodos'
-
-        if (response.status === 200 && response.data && Array.isArray(response.data.Metodos)) {
-          setMetodos(response.data.Metodos); // corregido a 'Metodos'
-        } else {
-          console.warn("La respuesta del servidor no contiene la lista esperada de métodos.");
-          setMetodos([]);
-        }
-      } catch (error) {
-        console.error("Error al cargar los métodos:", error);
-        alert("Error al cargar los métodos");
-      }
-    };
-
-    fetchMetodos();
-  }, []);
-
-  const handleView = (metodo) => {
-    alert(`Viendo método: ${metodo.metodo}`);
-  };
-
-  return (
-    <div className="container mt-4">
-      <h2>Lista de métodos</h2>
-      <MetodosList
-        metodos={metodos}
-        onView={handleView}
-      />
-    </div>
   );
 }

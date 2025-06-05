@@ -19,21 +19,54 @@ const TablaInventario = () => {
   }
 
   const obtenerInventarios = async () => {
-    try {
-      const res = await fetch("http://localhost:8000/pintura/GET/inventarios");
-      const data = await res.json();
-      const inventariosArray = Array.isArray(data) ? data : [data];
-      setInventarios(inventariosArray);
+  try {
+    const token = localStorage.getItem("token");
 
-      if (inventariosArray.length > 0) {
-        const maxId = Math.max(...inventariosArray.map(i => i.idInventario));
-        setNextId(maxId + 1);
-      }
-    } catch (error) {
-      console.error("Error al obtener inventario:", error);
+    if (!token) {
+      console.error("No se encontró un token de autenticación");
       setInventarios([]);
+      return;
     }
-  };
+
+    const res = await fetch("http://64.23.169.22:3761/broker/api/rest", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: token
+      },
+      body: JSON.stringify({
+        metadata: {
+          uri: "/pintura/GET/inventarios"
+        },
+        request: {}
+      })
+    });
+
+    if (!res.ok) {
+      console.error("Respuesta del servidor no fue OK:", res.status);
+      setInventarios([]);
+      return;
+    }
+
+    const data = await res.json();
+    const inventariosArray = Array.isArray(data.response?.data)
+    ? data.response.data.filter(i => !i.deleted) // <== SOLO los no eliminados
+    : [];
+
+    setInventarios(inventariosArray);
+
+    if (inventariosArray.length > 0) {
+      const maxId = Math.max(...inventariosArray.map(i => i.idInventario || 0));
+      setNextId(maxId + 1);
+    } else {
+      setNextId(1);
+    }
+
+  } catch (error) {
+    console.error("Error al obtener inventario:", error);
+    setInventarios([]);
+  }
+};
 
   const agregarInventario = (nuevoInventario) => {
     if (modoEdicion && tipoEditar){
@@ -54,12 +87,57 @@ const TablaInventario = () => {
     toggleModal();
   };
 
-  const eliminarInventario = (id) =>{
+  const eliminarInventario = async (id) => {
     const confirmacion = window.confirm("¿Estás seguro de que deseas eliminar?");
-    if (confirmacion){
-    const nuevosInventarios = inventarios.filter((Inventario) => Inventario.idInventario !== id);
-    setInventarios(nuevosInventarios);
-  }
+    if (!confirmacion) return;
+
+    const token = localStorage.getItem("token");
+    if (!token) {
+      alert("Token de autenticación no encontrado.");
+      return;
+    }
+
+    try {
+      // Buscar el inventario actual para conservar sus valores
+      const inventario = inventarios.find(inv => inv.idInventario === id);
+      if (!inventario) {
+        alert("Inventario no encontrado.");
+        return;
+      }
+
+      const payload = {
+        metadata: {
+          uri: `/pintura/PUT/inventarios/${id}`
+        },
+        request: {
+          ...inventario,
+          deleted: true // Marcamos como eliminado
+        }
+      };
+
+      const response = await fetch("http://64.23.169.22:3761/broker/api/rest", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: token
+        },
+        body: JSON.stringify(payload)
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        console.error("Error al eliminar inventario:", error);
+        alert("Error al eliminar inventario");
+        return;
+      }
+
+      alert("Inventario eliminado correctamente");
+      obtenerInventarios(); // Refresca la lista
+
+    } catch (error) {
+      console.error("Error de red al eliminar:", error);
+      alert("Error de red: " + error.message);
+    }
   };
 
   const iniciarEdicion = (Inventario) => {
@@ -73,71 +151,83 @@ const TablaInventario = () => {
   }, []);
 
   return (
-    <>
-      <HeaderTallerPintura />
-      <br></br><br></br>
-      <Container className="mt--7" fluid>
-       
-        <Card className="shadow p-4 mb-4">
-          <Table className="align-items-center table-flush" responsive>
-            <thead className="thead-light">
-              <tr>
-                <th>ID</th>
-                <th>Nombre del Producto</th>
-                <th>Cantidad Disponible</th>
-                <th>ID Tipo Pintura</th>
-                <th>Tipo Inventario</th>
-                <th>Lote</th>
-                <th>Código Color</th>
-                <th>Fecha Adquisición</th>
-                <th>Fecha Vencimiento</th>
-                <th>Estado Inventario</th>
-                <th className="text-right">Acciones</th>
-              </tr>
-            </thead>
-            <tbody>
-              {inventarios.length === 0 ? (
-                <tr>
-                  <td colSpan="11" className="text-center">
-                    No hay inventario disponible
-                  </td>
-                </tr>
-              ) : (
-                inventarios.map((inv) => (
-                  <tr key={inv.idInventario}>
-                    <td>{inv.idInventario}</td>
-                    <td>{inv.NombreProducto}</td>
-                    <td>{inv.CantidadDisponible}</td>
-                    <td>{inv.idTipoPintura}</td>
-                    <td>{inv.TipoInventario}</td>
-                    <td>{inv.Lote}</td>
-                    <td>{inv.CodigoColor}</td>
-                    <td>{inv.FechaAdquisicion}</td>
-                    <td>{inv.FechaVencimiento}</td>
-                    <td>{inv.EstadoInventario}</td>
-                    <td className="text-right">
-                      <UncontrolledDropdown>
-                        <DropdownToggle className="btn-icon-only text-light" size="sm">
-                          <i className="fas fa-ellipsis-v" />
-                        </DropdownToggle>
-                        <DropdownMenu right>
-                          <DropdownItem onClick={() => iniciarEdicion(inv)}>Editar</DropdownItem>
-                          <DropdownItem onClick={() => eliminarInventario(inv.idInventario)}>Eliminar</DropdownItem>
-                        </DropdownMenu>
-                      </UncontrolledDropdown>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </Table>
-          <ModalAgregarInventario isOpen={modal} toggle={toggleModal} onSubmit={agregarInventario}/>
-        </Card>
-         <Button color="primary" onClick={toggleModal}>
+<>
+  <Container className="mt-4" fluid>
+    <Card className="shadow mb-3 p-3">
+      <div className="d-flex justify-content-between align-items-center mb-3 px-2">
+        <h3 className="mb-0">Listado de Inventario</h3>
+        <Button color="primary" onClick={toggleModal}>
           Agregar Inventario
         </Button>
-      </Container>
-    </>
+      </div>
+
+      <div style={{ maxHeight: "400px", overflowY: "auto" }}>
+        <Table className="table-bordered table-hover table-striped mb-0" responsive>
+          <thead className="thead-light">
+            <tr>
+              <th>ID</th>
+              <th>Nombre del Producto</th>
+              <th>Cantidad Disponible</th>
+              <th>ID Tipo Pintura</th>
+              <th>Tipo Inventario</th>
+              <th>Lote</th>
+              <th>Código Color</th>
+              <th>Fecha Adquisición</th>
+              <th>Fecha Vencimiento</th>
+              <th>Estado Inventario</th>
+              <th className="text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {inventarios.length === 0 ? (
+              <tr>
+                <td colSpan="11" className="text-center">
+                  No hay inventario disponible
+                </td>
+              </tr>
+            ) : (
+              inventarios.map((inv) => (
+                <tr key={inv.idInventario}>
+                  <td>{inv.idInventario}</td>
+                  <td>{inv.NombreProducto}</td>
+                  <td>{inv.CantidadDisponible}</td>
+                  <td>{inv.idTipoPintura}</td>
+                  <td>{inv.TipoInventario}</td>
+                  <td>{inv.Lote}</td>
+                  <td>{inv.CodigoColor}</td>
+                  <td>{inv.FechaAdquisicion}</td>
+                  <td>{inv.FechaVencimiento}</td>
+                  <td>{inv.EstadoInventario}</td>
+                  <td className="text-right">
+                    <UncontrolledDropdown>
+                      <DropdownToggle className="btn-icon-only text-light" size="sm">
+                        <i className="fas fa-ellipsis-v" />
+                      </DropdownToggle>
+                      <DropdownMenu right>
+                        <DropdownItem onClick={() => iniciarEdicion(inv)}>Editar</DropdownItem>
+                        <DropdownItem onClick={() => eliminarInventario(inv.idInventario)}>Eliminar</DropdownItem>
+                      </DropdownMenu>
+                    </UncontrolledDropdown>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </Table>
+      </div>
+    </Card>
+
+    <ModalAgregarInventario
+      isOpen={modal}
+      toggle={toggleModal}
+      onSubmit={agregarInventario}
+      onInventarioCreado={obtenerInventarios}
+      modoEdicion={modoEdicion}
+      inventarioEditar={tipoEditar}
+    />
+  </Container>
+</>
+
   );
 };
 

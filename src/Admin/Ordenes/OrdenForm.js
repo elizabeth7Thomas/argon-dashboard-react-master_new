@@ -17,9 +17,6 @@ import {
 const OrdenForm = ({
   orden,
   estadosDetalles = [],
-  proveedores = [],
-  servicios = [],
-  productos = [],
   isOpen,
   toggle,
   onSave,
@@ -59,8 +56,14 @@ const OrdenForm = ({
           })) || [],
       });
     } else {
+      // Obtener fecha actual en formato YYYY-MM-DD
+      const hoy = new Date();
+      const yyyy = hoy.getFullYear();
+      const mm = String(hoy.getMonth() + 1).padStart(2, "0");
+      const dd = String(hoy.getDate()).padStart(2, "0");
+      const fechaActual = `${yyyy}-${mm}-${dd}`;
       setForm({
-        fecha_orden: "",
+        fecha_orden: fechaActual,
         id_proveedor: "",
         id_servicio: "",
         detalles: [],
@@ -157,10 +160,27 @@ const OrdenForm = ({
     return estado ? estado.nombre : "Desconocido";
   };
 
+  // Cargar catálogos de proveedores, servicios y productos desde localStorage
+  const catalogoProveedores = JSON.parse(localStorage.getItem("catalogo_proveedores") || "[]");
+  const catalogoServicios = JSON.parse(localStorage.getItem("catalogo_servicios") || "[]");
+  const productos = JSON.parse(localStorage.getItem("catalogo_productos") || "[]");
+
   // Utilidad para mostrar nombre de producto
   const getProductoNombre = (id) => {
-    const prod = productos.find((p) => p.id === id);
+    const prod = productos.find((p) => p.id === Number(id));
     return prod ? prod.nombre : id;
+  };
+
+  // Utilidad para mostrar nombre de proveedor
+  const getProveedorNombre = (id) => {
+    const prov = catalogoProveedores.find((p) => p.id === Number(id));
+    return prov ? `${prov.nombres} ${prov.apellidos}` : id;
+  };
+
+  // Utilidad para mostrar nombre de servicio
+  const getServicioNombre = (id) => {
+    const serv = catalogoServicios.find((s) => s.id === Number(id));
+    return serv ? serv.nombre : id;
   };
 
   return (
@@ -171,7 +191,7 @@ const OrdenForm = ({
           : `Detalle de la Orden #${orden?.id || ""}`}
       </ModalHeader>
       <ModalBody>
-        {modo === "crear" || modo === "editar" ? (
+        {(modo === "crear" || modo === "editar") ? (
           <Form onSubmit={handleSubmit}>
             <Row>
               <Col md={4}>
@@ -181,8 +201,8 @@ const OrdenForm = ({
                     type="date"
                     name="fecha_orden"
                     value={form.fecha_orden}
-                    onChange={handleChange}
-                    required
+                    readOnly
+                    disabled
                   />
                 </FormGroup>
               </Col>
@@ -197,7 +217,7 @@ const OrdenForm = ({
                     required
                   >
                     <option value="">Seleccione</option>
-                    {proveedores.map((p) => (
+                    {catalogoProveedores.map((p) => (
                       <option key={p.id} value={p.id}>
                         {p.nombres} {p.apellidos}
                       </option>
@@ -216,7 +236,7 @@ const OrdenForm = ({
                     required
                   >
                     <option value="">Seleccione</option>
-                    {servicios.map((s) => (
+                    {catalogoServicios.map((s) => (
                       <option key={s.id} value={s.id}>
                         {s.nombre}
                       </option>
@@ -313,11 +333,10 @@ const OrdenForm = ({
               <strong>Fecha:</strong> {orden?.fecha_orden}
             </p>
             <p>
-              <strong>Servicio:</strong> {orden?.servicio?.nombre}
+              <strong>Servicio:</strong> {getServicioNombre(orden?.id_servicio || orden?.servicio?.id)}
             </p>
             <p>
-              <strong>Proveedor:</strong> {orden?.proveedor?.nombres}{" "}
-              {orden?.proveedor?.apellidos}
+              <strong>Proveedor:</strong> {getProveedorNombre(orden?.id_proveedor || orden?.proveedor?.id)}
             </p>
             <p>
               <strong>Estado:</strong> {orden?.estado_orden?.nombre}

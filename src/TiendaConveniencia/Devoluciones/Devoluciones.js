@@ -88,8 +88,8 @@ function Devoluciones() {
 
   return (
     <>
-    <HeaderTienda />
-    
+    <HeaderTienda />|
+    <br /><br />
     <Container className="mt-4">
       <h2>Devoluciones</h2>
      

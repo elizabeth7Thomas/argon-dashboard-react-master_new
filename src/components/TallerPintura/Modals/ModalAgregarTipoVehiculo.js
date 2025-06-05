@@ -11,7 +11,13 @@ import {
   Input,
 } from "reactstrap";
 
-const ModalAgregarTipoVehiculo = ({ isOpen, toggle, onSubmit, modoEdicion = false, tipoEditar = null }) => {
+const ModalAgregarTipoVehiculo = ({
+  isOpen,
+  toggle,
+  onSubmit,
+  modoEdicion = false,
+  tipoEditar = null,
+}) => {
   const [form, setForm] = useState({ NombreTipoVehiculo: "" });
 
   useEffect(() => {
@@ -29,9 +35,13 @@ const ModalAgregarTipoVehiculo = ({ isOpen, toggle, onSubmit, modoEdicion = fals
   const handleSubmit = async () => {
     const token = localStorage.getItem("token");
 
+    const uri = modoEdicion
+      ? `/pintura/PUT/tipovehiculos/${tipoEditar.idTipoVehiculo}`
+      : "/pintura/POST/tipovehiculos";
+
     const payload = {
       metadata: {
-        uri: "/pintura/POST/tipovehiculos",
+        uri,
       },
       request: {
         NombreTipoVehiculo: form.NombreTipoVehiculo,
@@ -43,7 +53,6 @@ const ModalAgregarTipoVehiculo = ({ isOpen, toggle, onSubmit, modoEdicion = fals
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "Access-Control-Allow-Origin": "*",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(payload),
@@ -51,12 +60,18 @@ const ModalAgregarTipoVehiculo = ({ isOpen, toggle, onSubmit, modoEdicion = fals
 
       if (response.ok) {
         const data = await response.json();
-        console.log("Nuevo tipo de vehículo agregado:", data);
+        console.log("Tipo de vehículo procesado:", data);
+
+        onSubmit({
+          NombreTipoVehiculo: form.NombreTipoVehiculo,
+          idTipoVehiculo: tipoEditar?.idTipoVehiculo || null,
+        });
+
         toggle();
         setForm({ NombreTipoVehiculo: "" });
       } else {
         const errorData = await response.json();
-        console.error("Error al crear:", errorData);
+        console.error("Error en la solicitud:", errorData);
       }
     } catch (error) {
       console.error("Error de red:", error);

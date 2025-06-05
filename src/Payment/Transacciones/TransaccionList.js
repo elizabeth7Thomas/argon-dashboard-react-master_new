@@ -1,43 +1,41 @@
+// src/Payment/Transacciones/TransaccionList.js
+
 import React from "react";
 import { Table, Button } from "reactstrap";
 
-export default function TransaccionList({ transacciones, onEdit, onDelete, onView }) {
+export default function TransaccionList({ transacciones = [], onAnular }) {
   return (
-    <Table striped bordered responsive>
+    <Table responsive hover className="mt-4">
       <thead>
         <tr>
-          <th>#</th>
-          <th>Cliente</th>
-          <th>Método de Pago</th>
-          <th>Monto</th>
+          <th>No. Transacción</th>
           <th>Fecha</th>
+          <th>Monto</th>
+          <th>Servicio</th>
+          <th>Estado</th>
           <th>Acciones</th>
         </tr>
       </thead>
       <tbody>
         {transacciones.length === 0 ? (
           <tr>
-            <td colSpan="6" className="text-center">
-              No hay transacciones registradas.
-            </td>
+            <td colSpan="6" className="text-center">No hay transacciones.</td>
           </tr>
         ) : (
-          transacciones.map((trans, index) => (
-            <tr key={index}>
-              <td>{index + 1}</td>
-              <td>{trans.Cliente}</td>
-              <td>{trans.MetodoPago}</td>
-              <td>{trans.Monto}</td>
-              <td>{trans.Fecha}</td>
+          transacciones.map((tx) => (
+            <tr key={tx.NoTransaccion}>
+              <td>{tx.NoTransaccion}</td>
+              <td>{new Date(tx.Fecha).toLocaleString()}</td>
+              <td>{tx.Monto}</td>
+              <td>{tx.Servicio}</td>
+              <td>{tx.Estado}</td>
               <td>
-                <Button color="info" size="sm" onClick={() => onView(trans)}>
-                  Ver
-                </Button>{" "}
-                <Button color="warning" size="sm" onClick={() => onEdit(trans)}>
-                  Editar
-                </Button>{" "}
-                <Button color="danger" size="sm" onClick={() => onDelete(trans)}>
-                  Eliminar
+                <Button
+                  size="sm"
+                  color="danger"
+                  onClick={() => onAnular(tx.NoTransaccion)}
+                >
+                  Anular
                 </Button>
               </td>
             </tr>
@@ -47,4 +45,3 @@ export default function TransaccionList({ transacciones, onEdit, onDelete, onVie
     </Table>
   );
 }
-

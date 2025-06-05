@@ -11,151 +11,195 @@ import {
 } from "reactstrap";
 import ModalAgregarVenta from "../Modals/ModalAgregarVenta";
 import HeaderTallerPintura from "components/Headers/HeaderTallerPintura";
+import ModalVerDetalles from "../Modals/ModalVerDetalles";
 
 const TablaVentas = ({ onEditarClick, onVerClick }) => {
   const [ventas, setVentas] = useState([]);
   const [modal, setModal] = useState(false);
 
+  const [ventaSeleccionada, setVentaSeleccionada] = useState(null);
+  const [modalDetallesOpen, setModalDetallesOpen] = useState(false);
+
+  const toggleModalDetalles = () => setModalDetallesOpen(!modalDetallesOpen);
   const toggleModal = () => setModal(!modal);
 
-  const obtenerVentasSimuladas = () => {
-    // Datos simulados
-    const ventasData = [
-      { idVenta: 1, FechaVenta: "2025-03-11", TotalVenta: 200.5 },
-      { idVenta: 2, FechaVenta: "2025-03-12", TotalVenta: 320.75 },
-    ];
+  const verDetallesVenta = (venta) => {
+    setVentaSeleccionada(venta);
+    setModalDetallesOpen(true);
+  };
 
-    const detallesData = [
-      {
-        idDetalleVenta: 1,
-        idVenta: 1,
-        idTipoVehiculo: 1,
-        idServicio: 2,
-        Cantidad: 3,
-        Subtotal: 150.0,
-        Devolucion: 1,
-      },
-      {
-        idDetalleVenta: 2,
-        idVenta: 2,
-        idTipoVehiculo: 2,
-        idServicio: 1,
-        Cantidad: 2,
-        Subtotal: 280.0,
-        Devolucion: 0,
-      },
-    ];
+  const obtenerVentas = async () => {
+    try {
+      const token = localStorage.getItem("token");
 
-    const devolucionesData = [
-      {
-        FechaDevolucion: "2025-05-10",
-        Motivo: "Desgaste",
-        idDetalleVenta: 1,
-      },
-    ];
+      if (!token) {
+        console.error("No se encontró un token de autenticación");
+        setVentas([]);
+        return;
+      }
 
-    // Unir la información de los tres endpoints simulados
-    const ventasCompletas = ventasData.map((venta) => {
-      const detalle = detallesData.find((d) => d.idVenta === venta.idVenta);
-      const devolucion = devolucionesData.find(
-        (dev) => dev.idDetalleVenta === detalle?.idDetalleVenta
+      // Función genérica para hacer peticiones al broker
+      const fetchData = async (uri, request = {}) => {
+        const res = await fetch("http://64.23.169.22:3761/broker/api/rest", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: token
+          },
+          body: JSON.stringify({
+            metadata: { uri },
+            request
+          })
+        });
+
+        if (!res.ok) {
+          throw new Error(`Error en ${uri}: ${res.status}`);
+        }
+
+        const data = await res.json();
+        const contenido = data.response?.data;
+
+        if (Array.isArray(contenido)) return contenido;
+        if (contenido?.clientes) return contenido.clientes;
+
+        return [];
+      };
+
+      // 1. Obtener todas las ventas
+      const ventasData = await fetchData("/pintura/GET/venta");
+
+      // 2. Obtener detalles de cada venta
+      const detallesData = await Promise.all(
+        ventasData.map((venta) =>
+          fetchData(`/pintura/GET/detalleventas/${venta.idVenta}`).then((detalles) => ({
+            idVenta: venta.idVenta,
+            detalles,
+          }))
+        )
       );
 
-      return {
-        ...venta,
-        detalle,
-        devolucion,
-      };
-    });
+      // 3. Obtener todas las devoluciones
+      const devolucionesData = await fetchData("/pintura/GET/devolucion");
 
-    setVentas(ventasCompletas);
+      // 4. Obtener todos los clientes
+      const clientesData = await fetchData("/pagos/cliente/obtener");
+
+      // 5. Relacionar ventas con detalles, devoluciones y cliente
+      const ventasCompletas = ventasData.map((venta) => {
+        const detalleObj = detallesData.find((d) => d.idVenta === venta.idVenta);
+        const detalles = detalleObj?.detalles || [];
+
+        const detallesConDevoluciones = detalles.map((detalle) => {
+          const devolucion = devolucionesData.find(
+            (dev) => dev.idDetalleVenta === detalle.idDetalleVenta
+          );
+          return { ...detalle, devolucion };
+        });
+
+        const cliente = clientesData.find(c => c._id === venta.idCliente);
+
+        return {
+          ...venta,
+          detalles: detallesConDevoluciones,
+          cliente
+        };
+      });
+
+      setVentas(ventasCompletas);
+
+    } catch (error) {
+      console.error("Error al obtener ventas completas:", error);
+      setVentas([]);
+    }
   };
 
   const agregarVenta = (nuevaVenta) => {
-    // Lógica simulada (podrías hacer push al array temporal si gustas)
     toggleModal();
   };
+  
+  useEffect(() => {
+    if (!modal) {
+      obtenerVentas();
+    }
+  }, [modal]);
 
   useEffect(() => {
-    obtenerVentasSimuladas();
+    obtenerVentas();
   }, []);
 
   return (
-    <>
-      <HeaderTallerPintura />
-      <Container className="mt--7" fluid>
+<>
+  <Container className="mt-4" fluid>
+    <Card className="shadow mb-3 p-3">
+      <div className="d-flex justify-content-between align-items-center mb-3 px-2">
+        <h3 className="mb-0">Listado de Ventas</h3>
         <Button color="primary" onClick={toggleModal}>
           Agregar Venta
         </Button>
-        <Card className="shadow p-4 mb-4">
-          <Table className="align-items-center table-flush" responsive>
-            <thead className="thead-light">
+      </div>
+
+      <div style={{ maxHeight: "400px", overflowY: "auto" }}>
+        <Table className="table-bordered table-hover table-striped mb-0" responsive>
+          <thead className="thead-light">
+            <tr>
+              <th>No. Venta</th>
+              <th>Fecha Venta</th>
+              <th>Total</th>
+              <th>Cliente</th>
+              <th className="text-right">Acciones</th>
+            </tr>
+          </thead>
+          <tbody>
+            {ventas.length === 0 ? (
               <tr>
-                <th>No. Venta</th>
-                <th>Fecha Venta</th>
-                <th>Total</th>
-                <th>Cantidad</th>
-                <th>Subtotal</th>
-                <th>ID Servicio</th>
-                <th>ID Vehículo</th>
-                <th>Devolución</th>
-                <th>Acciones</th>
+                <td colSpan="5" className="text-center">
+                  No hay ventas registradas
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {ventas.length === 0 ? (
-                <tr>
-                  <td colSpan="9" className="text-center">
-                    No hay ventas registradas
+            ) : (
+              ventas.map((venta) => (
+                <tr key={venta.idVenta}>
+                  <td>{venta.idVenta}</td>
+                  <td>{new Date(venta.FechaVenta).toLocaleString()}</td>
+                  <td>${venta.TotalVenta.toFixed(2)}</td>
+                  <td>
+                    {venta.cliente
+                      ? `${venta.cliente.nombreCliente} ${venta.cliente.apellidosCliente}`
+                      : "Cliente no encontrado"}
+                  </td>
+                  <td className="text-right">
+                    <UncontrolledDropdown>
+                      <DropdownToggle className="btn-icon-only text-light" size="sm">
+                        <i className="fas fa-ellipsis-v" />
+                      </DropdownToggle>
+                      <DropdownMenu right>
+                        <DropdownItem onClick={() => verDetallesVenta(venta)}>
+                          Ver Detalles
+                        </DropdownItem>
+                      </DropdownMenu>
+                    </UncontrolledDropdown>
                   </td>
                 </tr>
-              ) : (
-                ventas.map((venta) => (
-                  <tr key={venta.idVenta}>
-                    <td>{venta.idVenta}</td>
-                    <td>{venta.FechaVenta}</td>
-                    <td>${venta.TotalVenta.toFixed(2)}</td>
-                    <td>{venta.detalle?.Cantidad || "-"}</td>
-                    <td>${venta.detalle?.Subtotal?.toFixed(2) || "-"}</td>
-                    <td>{venta.detalle?.idServicio || "-"}</td>
-                    <td>{venta.detalle?.idTipoVehiculo || "-"}</td>
-                    <td>
-                      {venta.devolucion
-                        ? `${venta.devolucion.Motivo} (${venta.devolucion.FechaDevolucion})`
-                        : "Sin devolución"}
-                    </td>
-                    <td className="text-right">
-                      <UncontrolledDropdown>
-                        <DropdownToggle
-                          className="btn-icon-only text-light"
-                          size="sm"
-                        >
-                          <i className="fas fa-ellipsis-v" />
-                        </DropdownToggle>
-                        <DropdownMenu right>
-                          <DropdownItem onClick={() => onVerClick(venta)}>
-                            Ver
-                          </DropdownItem>
-                          <DropdownItem onClick={() => onEditarClick(venta)}>
-                            Editar
-                          </DropdownItem>
-                          <DropdownItem>Eliminar</DropdownItem>
-                        </DropdownMenu>
-                      </UncontrolledDropdown>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </Table>
-          <ModalAgregarVenta
-            isOpen={modal}
-            toggle={toggleModal}
-            onSubmit={agregarVenta}
-          />
-        </Card>
-      </Container>
-    </>
+              ))
+            )}
+          </tbody>
+        </Table>
+      </div>
+    </Card>
+
+    <ModalAgregarVenta
+      isOpen={modal}
+      toggle={toggleModal}
+      onSubmit={agregarVenta}
+    />
+    <ModalVerDetalles
+      isOpen={modalDetallesOpen}
+      toggle={toggleModalDetalles}
+      venta={ventaSeleccionada}
+    />
+  </Container>
+</>
+
   );
 };
 

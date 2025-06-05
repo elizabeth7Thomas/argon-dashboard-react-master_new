@@ -1,5 +1,5 @@
 // src/Administracion/Dashboard.js
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   Container,
   Row,
@@ -21,6 +21,7 @@ import {
   faExchangeAlt,
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import axios from "axios";
 
 // Importa tus componentes de tablas reales
 import EmpleadosPage from './PageEmpleadosAdmin';
@@ -37,6 +38,55 @@ export default function DashboardAdmin() {
 
   // Estado para la sección seleccionada
   const [selectedSection, setSelectedSection] = useState(null);
+
+  // Efecto para cargar catálogos al montar el componente
+  useEffect(() => {
+    const fetchCatalogos = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) return;
+
+      const catalogos = [
+        { key: "areas", uri: "administracion/GET/areas" },
+        { key: "roles", uri: "administracion/GET/roles" },
+        { key: "jornadas", uri: "administracion/GET/jornadas" },
+        { key: "servicios", uri: "administracion/GET/servicios" },
+        { key: "proveedores", uri: "administracion/GET/proveedores" },
+        // Agrega más si lo necesitas
+      ];
+
+      for (const cat of catalogos) {
+        try {
+          const response = await axios.post(
+            "http://64.23.169.22:3761/broker/api/rest",
+            {
+              metadata: { uri: cat.uri },
+              request: {},
+            },
+            {
+              headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json",
+              }
+            }
+          );
+          // Busca el array de datos según la estructura de cada respuesta
+          let items = [];
+          if (response.data?.response?.data?.[cat.key] && Array.isArray(response.data.response.data[cat.key])) {
+            items = response.data.response.data[cat.key];
+          } else if (response.data?.response?.data?.data && Array.isArray(response.data.response.data.data)) {
+            items = response.data.response.data.data;
+          } else if (Array.isArray(response.data?.response?.data)) {
+            items = response.data.response.data;
+          }
+          localStorage.setItem(`catalogo_${cat.key}`, JSON.stringify(items));
+        } catch (err) {
+          console.error(`Error al obtener ${cat.key}:`, err);
+        }
+      }
+    };
+
+    fetchCatalogos();
+  }, []);
 
   // Render dinámico del componente según la sección seleccionada
   const renderSection = () => {
