@@ -11,12 +11,12 @@ import {
   faBoxOpen,
   faTags,
   faTrademark,
-  faClipboardList
+ 
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import HeaderTienda from "components/Headers/HeaderTienda";
-import ProductList from "./ProductList"
+import ProductList from "./ProductList";
 import CategoriasList from "./CategoriasList";
 import MarcasList from "./MarcasList";
 

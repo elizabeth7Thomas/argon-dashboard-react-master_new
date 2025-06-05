@@ -16,11 +16,12 @@ import {
   FormGroup,
   Label,
   Input,
+  Alert,
 } from "reactstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faEdit, faTrashAlt } from "@fortawesome/free-solid-svg-icons";
 
-const BASE_URL = "https://tallerrepuestos.vercel.app/tallerrepuestos";
+const BASE_URL = "http://64.23.169.22:3761/broker/api/rest";
 
 const PrecioHistorial = () => {
   const [historial, setHistorial] = useState([]);
@@ -29,6 +30,7 @@ const PrecioHistorial = () => {
   const [modal, setModal] = useState(false);
   const [modoEdicion, setModoEdicion] = useState(false);
   const [registroEditando, setRegistroEditando] = useState(null);
+  const [error, setError] = useState(null);
 
   const [form, setForm] = useState({
     idproducto: "",
@@ -39,28 +41,34 @@ const PrecioHistorial = () => {
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [registroAEliminar, setRegistroAEliminar] = useState(null);
 
-  useEffect(() => {
-    fetchHistorial();
-    fetchProductos();
-  }, []);
-
   const fetchHistorial = async () => {
     try {
-      const resp = await axios.get(`${BASE_URL}/preciohistorial`);
+      const resp = await axios.post(BASE_URL, {
+        metadata: { uri: "tallerrepuestos/inventariosl" },
+        request: {},
+      });
       setHistorial(resp.data);
     } catch (err) {
-      console.error("Error al obtener historial de precios:", err);
+      setError("Error al obtener historial de precios.");
     }
   };
 
   const fetchProductos = async () => {
     try {
-      const resp = await axios.get(`${BASE_URL}/productos`);
+      const resp = await axios.post(BASE_URL, {
+        metadata: { uri: "tallerrepuestos/productos" },
+        request: {},
+      });
       setProductos(resp.data);
     } catch (err) {
-      console.error("Error al obtener productos:", err);
+      setError("Error al obtener productos.");
     }
   };
+
+  useEffect(() => {
+    fetchHistorial();
+    fetchProductos();
+  }, []);
 
   const toggle = () => {
     setModal(!modal);
@@ -69,19 +77,27 @@ const PrecioHistorial = () => {
       setModoEdicion(false);
       setRegistroEditando(null);
       setBusquedaProducto("");
+      setError(null);
     }
   };
 
   const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
 
   const agregarRegistro = async () => {
-    if (!form.idproducto || !form.precioanterior || !form.precionuevo) return;
-    await axios.post(`${BASE_URL}/preciohistorial`, {
-      idproducto: +form.idproducto,
-      precioanterior: +form.precioanterior,
-      precionuevo: +form.precionuevo,
-    });
-    fetchHistorial(); toggle();
+    try {
+      await axios.post(BASE_URL, {
+        metadata: { uri: "tallerrepuestos/inventariosl" },
+        request: {
+          idproducto: +form.idproducto,
+          precioanterior: +form.precioanterior,
+          precionuevo: +form.precionuevo,
+        },
+      });
+      fetchHistorial();
+      toggle();
+    } catch (err) {
+      setError("Error al agregar registro.");
+    }
   };
 
   const editarClick = (reg) => {
@@ -90,24 +106,49 @@ const PrecioHistorial = () => {
       precioanterior: reg.precioanterior,
       precionuevo: reg.precionuevo,
     });
-    setModoEdicion(true); setRegistroEditando(reg); setModal(true); setBusquedaProducto("");
+    setModoEdicion(true);
+    setRegistroEditando(reg);
+    setModal(true);
+    setBusquedaProducto("");
+    setError(null);
   };
 
   const actualizarRegistro = async () => {
     if (!registroEditando) return;
-    await axios.put(`${BASE_URL}/preciohistorial/${registroEditando.idhistorial}`, {
-      idproducto: +form.idproducto,
-      precioanterior: +form.precioanterior,
-      precionuevo: +form.precionuevo,
-    });
-    fetchHistorial(); toggle();
+    try {
+      await axios.post(BASE_URL, {
+        metadata: { uri: `tallerrepuestos/inventariosl/${registroEditando.idhistorial}` },
+        request: {
+          idproducto: +form.idproducto,
+          precioanterior: +form.precioanterior,
+          precionuevo: +form.precionuevo,
+        },
+      });
+      fetchHistorial();
+      toggle();
+    } catch (err) {
+      setError("Error al actualizar el registro.");
+    }
   };
 
-  const solicitarBorrado = (reg) => { setRegistroAEliminar(reg); setShowDeleteModal(true); };
-  const confirmarBorrado = async () => {
-    await axios.delete(`${BASE_URL}/preciohistorial/${registroAEliminar.idhistorial}`);
-    fetchHistorial(); setShowDeleteModal(false); setRegistroAEliminar(null);
+  const solicitarBorrado = (reg) => {
+    setRegistroAEliminar(reg);
+    setShowDeleteModal(true);
   };
+
+  const confirmarBorrado = async () => {
+    try {
+      await axios.post(BASE_URL, {
+        metadata: { uri: `tallerrepuestos/inventariosl/${registroAEliminar.idhistorial}/delete` },
+        request: {},
+      });
+      fetchHistorial();
+      setShowDeleteModal(false);
+    } catch (err) {
+      setError("Error al eliminar el registro.");
+    }
+  };
+
   const cancelarBorrado = () => setShowDeleteModal(false);
 
   const productosFiltrados = productos.filter(p =>
@@ -116,20 +157,26 @@ const PrecioHistorial = () => {
 
   return (
     <>
-     
-        <Row>
-          <Col>
+      <Row>
+        <Col>
           <Card className="shadow">
             <CardHeader className="border-0 d-flex justify-content-between align-items-center">
               <h3>Historial de Precios</h3>
               <Button color="primary" onClick={toggle}>Agregar Registro</Button>
             </CardHeader>
             <CardBody>
+              {error && <Alert color="danger">{error}</Alert>}
               <Table responsive hover className="align-items-center table-flush">
-                <thead className="thead-light"><tr>
-                  <th>ID Historial</th><th>Producto</th><th>Precio Anterior</th>
-                  <th>Precio Nuevo</th><th>Fecha Cambio</th><th>Acciones</th>
-                </tr></thead>
+                <thead className="thead-light">
+                  <tr>
+                    <th>ID Historial</th>
+                    <th>Producto</th>
+                    <th>Precio Anterior</th>
+                    <th>Precio Nuevo</th>
+                    <th>Fecha Cambio</th>
+                    <th>Acciones</th>
+                  </tr>
+                </thead>
                 <tbody>
                   {historial.length > 0 ? historial.map(h => {
                     const prod = productos.find(p => p.idproducto === h.idproducto);
@@ -142,10 +189,10 @@ const PrecioHistorial = () => {
                         <td>{new Date(h.fechacambio).toLocaleString()}</td>
                         <td>
                           <Button size="sm" color="info" className="me-2" onClick={() => editarClick(h)}>
-                            <FontAwesomeIcon icon={faEdit} className="mr-0" />
+                            <FontAwesomeIcon icon={faEdit} />
                           </Button>
                           <Button size="sm" color="danger" onClick={() => solicitarBorrado(h)}>
-                            <FontAwesomeIcon icon={faTrashAlt} className="mr-0" />
+                            <FontAwesomeIcon icon={faTrashAlt} />
                           </Button>
                         </td>
                       </tr>
@@ -157,11 +204,13 @@ const PrecioHistorial = () => {
               </Table>
             </CardBody>
           </Card>
-        </Col></Row>
+        </Col>
+      </Row>
 
       <Modal isOpen={modal} toggle={toggle}>
         <ModalHeader toggle={toggle}>{modoEdicion ? "Editar Registro" : "Agregar Registro"}</ModalHeader>
         <ModalBody>
+          {error && <Alert color="danger">{error}</Alert>}
           <Form>
             <FormGroup>
               <Label>Buscar Producto</Label>

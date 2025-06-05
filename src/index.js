@@ -66,6 +66,7 @@ import ReportesTienda from "TiendaConveniencia/ReportesTienda/ReportesTienda";
 import Inventario from "TiendaConveniencia/InventarioTienda/List/Inventario";
 import Reports from "views/examples/Reports";
 import LotesList from "TiendaConveniencia/Lotes/LotesList";
+import TiendaPreparados from "TiendaConveniencia/TiendaPreparados.js/TiendaPreparados";
 const root = ReactDOM.createRoot(document.getElementById("root"));
 
 root.render(
@@ -122,6 +123,7 @@ root.render(
       <Route path = "/admin/proveedoresTienda" element = {<ProveedoresTienda />} />
       <Route path = "/admin/reportesTienda" element = {<ReportesTienda />} />
       <Route path = "/admin/tienda/lotes" element = {<LotesList />} />
+      <Route path = "/admin/tienda/preparados" element = {<TiendaPreparados />} />
 
       {/* ADMINISTRACION ROUTES */}
       <Route path="/admin/empleados" element={<Empleados />} />

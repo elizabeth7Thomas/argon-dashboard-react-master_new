@@ -9,13 +9,9 @@ import {
 } from "reactstrap";
 
 // Obtener el catálogo de estadosMovimiento del localStorage
-const catalogoEstadosMovimiento = JSON.parse(localStorage.getItem("catalogo_estadosMovimiento") || "[]");
+
 
 // Función para mostrar el nombre del estadoMovimiento según el id
-const getEstadoMovimientoNombre = (id) => {
-  const estado = catalogoEstadosMovimiento.find(e => Number(e.id) === Number(id));
-  return estado ? estado.nombre : "No encontrado";
-};
 
 const OrdenDetalleModal = ({ isOpen, toggle, orden }) => {
   if (!orden) return null;

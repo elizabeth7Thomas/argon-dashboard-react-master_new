@@ -6,7 +6,7 @@ import {
   Col,
   Button,
   CardBody,
-  CardHeader
+
 } from "reactstrap";
 import {
   faCar,
@@ -14,10 +14,8 @@ import {
   faPaintRoller,
   faCogs,
   faTruck,
-  faBoxes,
-  faTags,
-  faUndo,
-  faCashRegister,
+  
+ 
 } from "@fortawesome/free-solid-svg-icons";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
