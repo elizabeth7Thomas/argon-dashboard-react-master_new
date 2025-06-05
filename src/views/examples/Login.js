@@ -3,8 +3,8 @@ import axios from "axios";
 import { Button, Card,CardHeader, CardBody, FormGroup, Form, Input, InputGroupAddon, InputGroupText, InputGroup, Row, Col, Alert, Spinner} from "reactstrap";
 
 const Login = () => {
-  const [username, setUsername] = useState("javiergarcia.4534");
-  const [password, setPassword] = useState("Ml8NusZSOI");
+  const [username, setUsername] = useState("usuario");
+  const [password, setPassword] = useState("contraseña");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
@@ -38,6 +38,11 @@ const Login = () => {
 
       // Acceder al token correctamente
       const token = response.data?.response?._broker_session_token;
+      const userId = response.data?.response?.data?.userData?.userId;
+      const user = response.data?.response?.data?.userData?.usuario;
+
+      if(userId) localStorage.setItem("userId", userId)
+      if(user) localStorage.setItem("user", user)
 
       if (token) {
         localStorage.setItem("token", token); // Guarda el token
