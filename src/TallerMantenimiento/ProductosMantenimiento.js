@@ -56,10 +56,6 @@ const ProductosMantenimiento = () => {
     }
   };
 
-  // Filtrado de categorías por nombre
-  const categoriasFiltradas = categoriasList.filter((c) =>
-    c.nombre.toLowerCase().includes(busquedaCategoria.toLowerCase())
-  );
 
   const toggle = () => {
     setModal(!modal);
