@@ -29,55 +29,169 @@ const ReportesTienda = () => {
       setVentas(response.data.response.data);
       console.log('Ventas:', response.data.response.data);
     } catch (error) {
-      console.error('Error al obtener ventas:', error);
-      setError('Hubo un error al cargar las ventas.');
-    } finally {
-      setCargando(false); // ✅ Esto es lo que faltaba
+      console.error("Error al obtener los reportes", error);
+      alert("Hubo un error al obtener los reportes.");
     }
   };
 
-  obtenerVentas();
-}, []);
-
+  const renderCamposEntrada = () => {
+    switch (tipoReporte) {
+      case "diario":
+        return (
+          <FormGroup>
+            <Label for="fecha">Fecha</Label>
+            <Input
+              type="date"
+              name="fecha"
+              onChange={handleInputChange}
+            />
+          </FormGroup>
+        );
+      case "mensual":
+        return (
+          <>
+            <FormGroup>
+              <Label for="mes">Mes</Label>
+              <Input
+                type="number"
+                name="mes"
+                min="1"
+                max="12"
+                onChange={handleInputChange}
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label for="anio">Año</Label>
+              <Input
+                type="number"
+                name="anio"
+                onChange={handleInputChange}
+              />
+            </FormGroup>
+          </>
+        );
+      case "trimestral":
+        return (
+          <>
+            <FormGroup>
+              <Label for="trimestre">Trimestre</Label>
+              <Input
+                type="number"
+                name="trimestre"
+                min="1"
+                max="4"
+                onChange={handleInputChange}
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label for="anio">Año</Label>
+              <Input
+                type="number"
+                name="anio"
+                onChange={handleInputChange}
+              />
+            </FormGroup>
+          </>
+        );
+      case "semestral":
+        return (
+          <>
+            <FormGroup>
+              <Label for="semestre">Semestre</Label>
+              <Input
+                type="number"
+                name="semestre"
+                min="1"
+                max="2"
+                onChange={handleInputChange}
+              />
+            </FormGroup>
+            <FormGroup>
+              <Label for="anio">Año</Label>
+              <Input
+                type="number"
+                name="anio"
+                onChange={handleInputChange}
+              />
+            </FormGroup>
+          </>
+        );
+      case "anual":
+        return (
+          <FormGroup>
+            <Label for="anio">Año</Label>
+            <Input
+              type="number"
+              name="anio"
+              onChange={handleInputChange}
+            />
+          </FormGroup>
+        );
+      default:
+        return null;
+    }
+  };
 
   return (
-    <Container className="mt-4">
-      
-      
-      <h2>Reporte de Ventas</h2>
-      {cargando && <Spinner color="primary">Cargando...</Spinner>}
-      {error && <Alert color="danger">{error}</Alert>}
-      {!cargando && !error && ventas.length === 0 && (
-        <Alert color="info">No hay ventas registradas.</Alert>
-      )}
-      {!cargando && ventas.length > 0 && (
-        <Table striped bordered responsive>
-          <thead>
-            <tr>
-              <th>ID</th>
-              <th>Fecha</th>
-              <th>Cliente</th>
-              <th>NIT</th>
-              <th>Total</th>
-              <th>Estado</th>
-              <th>Observaciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {ventas.map((venta) => (
-              <tr key={venta.id}>
-                <td>{venta.id}</td>
-                <td>{new Date(venta.fecha_venta).toLocaleString()}</td>
-                <td>{venta.nombre}</td>
-                <td>{venta.nit}</td>
-                <td>Q{parseFloat(venta.total).toFixed(2)}</td>
-                <td>{venta.estado_venta}</td>
-                <td>{venta.observaciones}</td>
-              </tr>
-            ))}
-          </tbody>
-        </Table>
-      )}
+    <>
+    <HeaderTienda />
+    <Container className="mt--7" fluid>
+    <div className="col">
+    
+   
+    <Card className="shadow">
+      <CardHeader>📊 Reportes de Tienda</CardHeader>
+      <CardBody>
+        <FormGroup>
+          <Label for="tipoReporte">Tipo de reporte</Label>
+          <Input
+            type="select"
+            name="tipoReporte"
+            value={tipoReporte}
+            onChange={(e) => setTipoReporte(e.target.value)}
+          >
+            <option value="diario">Diario</option>
+            <option value="mensual">Mensual</option>
+            <option value="trimestral">Trimestral</option>
+            <option value="semestral">Semestral</option>
+            <option value="anual">Anual</option>
+          </Input>
+        </FormGroup>
+
+        {renderCamposEntrada()}
+
+        <Button color="primary" onClick={handleBuscar}>
+          Buscar
+        </Button>
+
+        {resultados.length > 0 && (
+          <>
+            <h5 className="mt-4">Resultados:</h5>
+            <Table responsive bordered striped>
+              <thead>
+                <tr>
+                  <th>Fecha</th>
+                  <th>Descripción</th>
+                  <th>Monto</th>
+                </tr>
+              </thead>
+              <tbody>
+                {resultados.map((mov, i) => (
+                  <tr key={i}>
+                    <td>{mov.fecha}</td>
+                    <td>{mov.descripcion}</td>
+                    <td>Q{parseFloat(mov.monto).toFixed(2)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </>
+        )}
+      </CardBody>
+    </Card>
+    
+    </div>
+    
     </Container>
   );
 };
