@@ -71,6 +71,7 @@ const CrearInventarioModal = ({
         idTipoPintura: formData.idTipoPintura !== "" ? parseInt(formData.idTipoPintura) : null,
         CantidadDisponible: parseInt(formData.CantidadDisponible),
         deleted: false, // siempre enviar false aquí
+        accion: modoEdicion ? "editar" : "crear",
       },
     };
 
